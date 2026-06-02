@@ -127,6 +127,16 @@ body{font-family:Arial,sans-serif;background:#F3F4F6;color:var(--text);min-heigh
 .toast-error{border-left-color:#E74C3C}
 .chart-wrap{position:relative;width:100%}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.notif-badge{position:absolute;top:8px;right:12px;background:#E94560;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.nav-item{position:relative}
+.export-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.btn-export{background:#fff;color:var(--text);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:600}
+.btn-export:hover{background:var(--soft);border-color:var(--accent)}
+.btn-export svg{width:14px;height:14px;stroke:currentColor;fill:none}
+.notif-panel{background:#fff;border-radius:12px;border:1px solid var(--border);padding:20px 24px;margin-bottom:20px;border-left:4px solid #E94560}
+.notif-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F0F0F0}
+.notif-item:last-child{border-bottom:none}
+.notif-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--muted);font-size:13px;gap:10px}
 .spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -238,6 +248,14 @@ body{font-family:Arial,sans-serif;background:#F3F4F6;color:var(--text);min-heigh
     <div class="page" id="page-kontakte">
       <div class="page-header"><h1>Kontakte</h1><p>Alle Kunden und Leads</p></div>
       <div class="card">
+        <div class="export-bar">
+          <span style="font-size:12px;color:var(--muted);font-weight:600">Export:</span>
+          <button class="btn-export" onclick="exportCSV('kontakte')"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Kontakte CSV</button>
+          <button class="btn-export" onclick="exportCSV('journey')"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Journey CSV</button>
+          <button class="btn-export" onclick="exportCSV('deals')"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Pipeline CSV</button>
+          <button class="btn-export" onclick="exportCSV('aktivitaeten')"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Aktivitäten CSV</button>
+          <button class="btn-export" onclick="exportAllXLSX()" style="background:var(--accent);color:#fff;border-color:var(--accent)"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Alles exportieren</button>
+        </div>
         <div class="toolbar">
           <input class="search-input" id="kontakte-search" placeholder="Suchen..." oninput="filterKontakte(this.value)">
           <select id="kontakte-status-filter" onchange="filterKontakteStatus(this.value)">
@@ -267,6 +285,13 @@ body{font-family:Arial,sans-serif;background:#F3F4F6;color:var(--text);min-heigh
     <!-- AKTIVITÄTEN -->
     <div class="page" id="page-aktivitaeten">
       <div class="page-header"><h1>Aktivitäten &amp; Follow-ups</h1><p>Aufgaben und nächste Schritte</p></div>
+      <div id="notif-panel" style="display:none" class="notif-panel">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E94560" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <strong style="color:#E94560;font-size:13px">Fällige &amp; überfällige Follow-ups</strong>
+        </div>
+        <div id="notif-list"></div>
+      </div>
       <div class="card">
         <div class="toolbar">
           <input class="search-input" placeholder="Suchen..." oninput="searchAktivitaeten(this.value)">
@@ -456,7 +481,7 @@ function showPage(id, el) {
   if(id==="pipeline") renderPipeline();
   if(id==="aktivitaeten") renderAktivitaeten();
 }
-function renderAll() { renderDashboard(); renderKontakte(); renderJourney(); renderPipeline(); renderAktivitaeten(); }
+function renderAll() { renderDashboard(); renderKontakte(); renderJourney(); renderPipeline(); renderAktivitaeten(); checkNotifications(); }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
 let cStatus=null, cPipe=null, cJourney=null;
@@ -688,7 +713,7 @@ function searchAktivitaeten(v){aSearch=v;renderAktivitaeten();}
 
 async function doneAktivitaet(id) {
   await sb.from("aktivitaeten").update({status:"Erledigt"}).eq("id",id);
-  renderAktivitaeten(); renderDashboard(); showToast("Als erledigt markiert");
+  renderAktivitaeten(); renderDashboard(); checkNotifications(); showToast("Als erledigt markiert");
 }
 
 async function addAktivitaet() {
@@ -708,7 +733,93 @@ async function addAktivitaet() {
   closeModal("modal-aktivitaet"); renderAktivitaeten(); renderDashboard(); showToast("Aktivität gespeichert");
 }
 
-// ── HELPERS ───────────────────────────────────────────────────────────────────
+// ── EXPORT ────────────────────────────────────────────────────────────────────
+const EXPORT_COLS = {
+  kontakte: ["nr","unternehmen","vorname","nachname","ort","email","telefon","kanal","status","branche","dealwert","letzter_kontakt","kommentar"],
+  journey:  ["nr","kunde","datum","phase","touchpoint","kanal","aktivitaet","reaktion","score"],
+  deals:    ["nr","kunde","beschreibung","wert","wahrscheinlichkeit","phase","abschluss_datum","quelle","status"],
+  aktivitaeten: ["nr","kunde","typ","datum","prioritaet","beschreibung","status","ergebnis"]
+};
+const EXPORT_LABELS = {
+  kontakte: "Paironloop_Kontakte",
+  journey:  "Paironloop_CustomerJourney",
+  deals:    "Paironloop_Pipeline",
+  aktivitaeten: "Paironloop_Aktivitaeten"
+};
+
+async function exportCSV(table) {
+  const {data} = await sb.from(table).select("*").order("created_at",{ascending:false});
+  if(!data?.length){showToast("Keine Daten vorhanden");return;}
+  const cols = EXPORT_COLS[table];
+  const header = cols.join(";");
+  const rows = data.map(row =>
+    cols.map(c => {
+      const v = row[c]??""
+      return typeof v==="string"&&v.includes(";") ? `"${v}"` : v;
+    }).join(";")
+  );
+  const csv = "﻿" + [header,...rows].join("\n"); // BOM for Excel UTF-8
+  const blob = new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href=url;
+  a.download=`${EXPORT_LABELS[table]}_${new Date().toISOString().split("T")[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(EXPORT_LABELS[table]+" exportiert");
+}
+
+async function exportAllXLSX() {
+  // Export all tables as separate CSVs in a zip-like multi-download
+  const tables = ["kontakte","journey","deals","aktivitaeten"];
+  for(const t of tables) {
+    await exportCSV(t);
+    await new Promise(r=>setTimeout(r,300));
+  }
+  showToast("Alle Tabellen exportiert (4 Dateien)");
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
+async function checkNotifications() {
+  const today = new Date().toISOString().split("T")[0];
+  const {data} = await sb.from("aktivitaeten")
+    .select("*")
+    .lte("datum", today)
+    .eq("status","Offen")
+    .order("datum");
+
+  const count = data?.length||0;
+  const badge = document.getElementById("nav-badge");
+  const panel = document.getElementById("notif-panel");
+  const list  = document.getElementById("notif-list");
+
+  if(count>0) {
+    badge.style.display="flex";
+    badge.textContent=count>9?"9+":count;
+    panel.style.display="block";
+    const today_str = today;
+    list.innerHTML = (data||[]).map(a=>{
+      const isOverdue = a.datum < today_str;
+      const dotColor = isOverdue ? "#E74C3C" : "#E67E22";
+      const label = isOverdue ? "Überfällig" : "Heute";
+      const labelBg = isOverdue ? "#FDEDEC" : "#FEF9E7";
+      const labelColor = isOverdue ? "#922B21" : "#7D6608";
+      return `<div class="notif-item">
+        <div class="notif-dot" style="background:${dotColor}"></div>
+        <span style="background:${labelBg};color:${labelColor};padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;flex-shrink:0">${label}</span>
+        <strong style="font-size:13px">${a.kunde}</strong>
+        <span style="font-size:12px;color:var(--muted)">${a.typ}</span>
+        <span style="font-size:12px;color:var(--muted);margin-left:auto">${a.datum}</span>
+        <span style="font-size:12px">${a.beschreibung||""}</span>
+      </div>`;
+    }).join("");
+  } else {
+    badge.style.display="none";
+    panel.style.display="none";
+  }
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────────
 async function deleteRow(table, id, refreshFn) {
   if(!confirm("Eintrag wirklich löschen?")) return;
   await sb.from(table).delete().eq("id",id);

@@ -2861,14 +2861,8 @@ async function handleImport(input) {
   showToast("⏳ Wird importiert…");
 
   const text = await file.text();
-  // Remove BOM, normalize line endings
-  const clean = text.replace(/^﻿/, "").replace(/
-/g, "
-").replace(/
-/g, "
-");
-  const lines = clean.split("
-").filter(l=>l.trim());
+  const clean = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\uFEFF/,'');
+  const lines = clean.split('\n').filter(l=>l.trim());
   if(lines.length < 2) { showToast("Datei leer oder kein Header", true); return; }
 
   // Auto-detect separator: semicolon or comma

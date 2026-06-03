@@ -894,6 +894,198 @@ tbody tr:hover td { background: var(--bg3); }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+/* ── MOBILE RESPONSIVE ──────────────────────────────────────────────────────── */
+
+/* Bottom navigation bar for mobile */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  z-index: 200;
+  padding: 0;
+  height: 60px;
+}
+.mobile-nav-inner {
+  display: flex;
+  height: 100%;
+}
+.mobile-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  color: var(--text3);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  border: none;
+  background: none;
+  font-family: var(--font);
+  padding: 6px 2px;
+  transition: var(--transition);
+  position: relative;
+}
+.mobile-nav-item.active { color: var(--accent2); }
+.mobile-nav-item svg { width: 20px; height: 20px; stroke-width: 1.8; fill: none; stroke: currentColor; }
+.mobile-nav-badge {
+  position: absolute; top: 4px; right: calc(50% - 14px);
+  background: var(--red); color: #fff;
+  border-radius: 8px; padding: 1px 4px;
+  font-size: 9px; font-weight: 700;
+  display: none;
+}
+
+/* Mobile top bar */
+.mobile-topbar {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 52px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  z-index: 150;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+.mobile-topbar img { height: 24px; }
+.mobile-topbar-actions { display: flex; gap: 8px; align-items: center; }
+
+@media (max-width: 768px) {
+  /* Hide desktop sidebar + topbar */
+  .sidebar { display: none !important; }
+  .topbar { display: none !important; }
+
+  /* Show mobile elements */
+  .mobile-nav { display: flex; }
+  .mobile-topbar { display: flex; }
+
+  /* Main content adjustments */
+  .main {
+    margin-left: 0 !important;
+    padding-top: 52px;
+    padding-bottom: 68px;
+  }
+
+  /* Page padding */
+  .page { padding: 0 !important; }
+  .page > div[style*="padding:28px"],
+  .page > div[style*="padding: 28px"] {
+    padding: 16px 14px !important;
+  }
+
+  /* Page header */
+  .page-header-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .page-title { font-size: 18px; }
+
+  /* KPI cards — 2 columns on mobile */
+  .kpi-row {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px;
+  }
+  .kpi-card { padding: 14px 14px; }
+  .kpi-value { font-size: 22px; }
+
+  /* Grid layouts — stack on mobile */
+  .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
+
+  /* Charts — smaller height */
+  .chart-wrap[style*="height:200px"] { height: 160px !important; }
+  .chart-wrap[style*="height:180px"] { height: 140px !important; }
+
+  /* Tables — horizontal scroll */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 600px; font-size: 12px; }
+  thead th { padding: 8px 10px; font-size: 9px; }
+  tbody td { padding: 10px; }
+
+  /* Toolbar — wrap nicely */
+  .toolbar { gap: 8px; padding: 10px 14px; }
+  .search-box { min-width: 0; flex: 1; }
+  .filter-select { max-width: 130px; font-size: 12px; }
+
+  /* Export bar */
+  .export-bar { gap: 6px; padding: 8px 14px; flex-wrap: wrap; }
+  .btn-export { font-size: 11px; padding: 5px 8px; }
+
+  /* Cards */
+  .card-header { padding: 12px 14px; flex-wrap: wrap; gap: 8px; }
+  .card-body { padding: 14px; }
+
+  /* Funnel grid — 2 columns */
+  .funnel-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+
+  /* Pipeline board — horizontal scroll */
+  .pipeline-board {
+    display: flex !important;
+    overflow-x: auto;
+    gap: 10px;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+  .pipeline-col {
+    min-width: 240px;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+
+  /* Modals — full screen on mobile */
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal {
+    max-width: 100% !important;
+    border-radius: 16px 16px 0 0;
+    max-height: 92vh;
+  }
+  .modal-body { padding: 16px; }
+  .modal-head { padding: 16px; }
+  .modal-footer { padding: 12px 16px; }
+  .form-grid { grid-template-columns: 1fr !important; gap: 12px; }
+  .form-full { grid-column: 1 !important; }
+
+  /* Settings panel */
+  .settings-panel { width: 100%; border-radius: 16px 16px 0 0; top: auto; bottom: 0; height: 85vh; box-shadow: 0 -4px 32px rgba(0,0,0,.3); }
+
+  /* Buttons */
+  .btn { padding: 9px 14px; font-size: 13px; }
+
+  /* Deal cards */
+  .deal-card { padding: 12px; }
+
+  /* Notif panel */
+  .notif-panel { margin: 0 0 12px; }
+
+  /* Login card */
+  .login-card { width: 100%; max-width: 380px; padding: 36px 24px; margin: 16px; }
+
+  /* Import/export bars */
+  div[style*="Export / Import"] { gap: 6px !important; }
+
+  /* KPI sub text */
+  .kpi-sub { display: none; }
+
+  /* Page button alignment */
+  .page-header-row > .btn { align-self: flex-start; }
+}
+
+/* Extra small screens */
+@media (max-width: 380px) {
+  .kpi-row { grid-template-columns: 1fr 1fr !important; }
+  .kpi-value { font-size: 20px; }
+  .funnel-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .pipeline-col { min-width: 200px; }
+}
+
 </style>
 </head>
 <body>
@@ -927,6 +1119,44 @@ tbody tr:hover td { background: var(--bg3); }
 
 <!-- APP -->
 <div id="app">
+
+  <!-- Mobile Topbar -->
+  <div class="mobile-topbar" id="mobile-topbar">
+    <img class="logo-white" src="" alt="Paironloop" style="height:24px">
+    <img class="logo-dark" src="" alt="Paironloop" style="height:24px;display:none">
+    <div class="mobile-topbar-actions">
+      <button class="icon-btn" onclick="openSettings()" style="width:30px;height:30px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="mobile-nav">
+    <div class="mobile-nav-inner">
+      <button class="mobile-nav-item active" onclick="showPageMobile('dashboard',this)" id="mnav-dashboard">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span data-i18n="dashboard">Dashboard</span>
+      </button>
+      <button class="mobile-nav-item" onclick="showPageMobile('journey',this)" id="mnav-journey">
+        <svg viewBox="0 0 24 24"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+        <span data-i18n="journey">Journey</span>
+      </button>
+      <button class="mobile-nav-item" onclick="showPageMobile('kontakte',this)" id="mnav-kontakte">
+        <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+        <span data-i18n="contacts">Kontakte</span>
+      </button>
+      <button class="mobile-nav-item" onclick="showPageMobile('pipeline',this)" id="mnav-pipeline">
+        <svg viewBox="0 0 24 24"><path d="M22 12H3"/><path d="m15 5 7 7-7 7"/></svg>
+        <span data-i18n="pipeline">Pipeline</span>
+      </button>
+      <button class="mobile-nav-item" onclick="showPageMobile('aktivitaeten',this)" id="mnav-aktivitaeten">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span data-i18n="activities">Tasks</span>
+        <span class="mobile-nav-badge" id="mobile-nav-badge"></span>
+      </button>
+    </div>
+  </nav>
 
   <!-- Sidebar -->
   <div class="sidebar">
@@ -1909,6 +2139,18 @@ async function doLogout() {
 sb.auth.getSession().then(({data:{session}}) => { if(session) onLogin(session.user); });
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
+function showPageMobile(id, el) {
+  // Update mobile nav
+  document.querySelectorAll(".mobile-nav-item").forEach(n => n.classList.remove("active"));
+  if(el) el.classList.add("active");
+  // Also sync desktop nav
+  const desktopMap = {dashboard:0, journey:1, kontakte:2, pipeline:3, aktivitaeten:4};
+  const desktopNavItems = document.querySelectorAll(".nav-item");
+  desktopNavItems.forEach(n => n.classList.remove("active"));
+  if(desktopMap[id] !== undefined) desktopNavItems[desktopMap[id]]?.classList.add("active");
+  showPage(id, null);
+}
+
 function showPage(id, el) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
@@ -2777,6 +3019,9 @@ async function checkNotifications() {
   const list=document.getElementById("notif-list");
   badge.style.display=count>0?"flex":"none";
   badge.textContent=count>9?"9+":count;
+  // Sync mobile badge
+  const mb = document.getElementById("mobile-nav-badge");
+  if(mb) { mb.style.display=count>0?"flex":"none"; mb.textContent=count>9?"9+":count; }
   panel.style.display=count>0?"block":"none";
   if(count>0&&list) {
     list.innerHTML=(data||[]).map(a=>{

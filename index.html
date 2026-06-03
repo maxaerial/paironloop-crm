@@ -828,51 +828,45 @@ tbody tr:hover td { background: var(--bg3); }
 .empty-state p { font-size: 13px; }
 
 /* ── LOGO THEME SWITCHING ── */
+/* Light themes: show dark logo, hide white logo */
 [data-theme="arctic"] .logo-white,
 [data-theme="rose"] .logo-white { display: none !important; }
 [data-theme="arctic"] .logo-dark,
 [data-theme="rose"] .logo-dark { display: block !important; }
+/* Nav badge on light sidebar */
+[data-theme="arctic"] .nav-badge,
+[data-theme="rose"] .nav-badge { background: var(--red); }
 
-/* Light theme sidebar needs different bg */
+/* Light theme sidebar — fully light */
 [data-theme="arctic"] .sidebar,
 [data-theme="rose"] .sidebar {
-  background: #1A1A2E;
-  border-right-color: #2A2A40;
+  background: var(--bg2);
+  border-right-color: var(--border);
 }
 [data-theme="arctic"] .sidebar .nav-item,
-[data-theme="rose"] .sidebar .nav-item {
-  color: #9090B0;
-}
+[data-theme="rose"] .sidebar .nav-item { color: var(--text2); }
 [data-theme="arctic"] .sidebar .nav-item:hover,
-[data-theme="rose"] .sidebar .nav-item:hover {
-  background: rgba(255,255,255,.08);
-  color: #fff;
-}
+[data-theme="rose"] .sidebar .nav-item:hover { background: var(--bg3); color: var(--text); }
 [data-theme="arctic"] .sidebar .nav-item.active,
-[data-theme="rose"] .sidebar .nav-item.active {
-  background: rgba(255,255,255,.12);
-  color: #fff;
-}
+[data-theme="rose"] .sidebar .nav-item.active { background: var(--accent-soft); color: var(--accent); }
 [data-theme="arctic"] .sidebar-logo-wrap,
-[data-theme="rose"] .sidebar-logo-wrap {
-  border-bottom-color: rgba(255,255,255,.1);
-}
+[data-theme="rose"] .sidebar-logo-wrap { border-bottom-color: var(--border); }
 [data-theme="arctic"] .sidebar-section-label,
-[data-theme="rose"] .sidebar-section-label,
+[data-theme="rose"] .sidebar-section-label { color: var(--text3); }
 [data-theme="arctic"] .sidebar .user-role,
-[data-theme="rose"] .sidebar .user-role { color: #606080; }
+[data-theme="rose"] .sidebar .user-role { color: var(--text3); }
 [data-theme="arctic"] .sidebar .user-name,
-[data-theme="rose"] .sidebar .user-name { color: #fff; }
+[data-theme="rose"] .sidebar .user-name { color: var(--text); }
 [data-theme="arctic"] .sidebar-action-btn,
 [data-theme="rose"] .sidebar-action-btn {
-  background: rgba(255,255,255,.06);
-  border-color: rgba(255,255,255,.1);
-  color: #9090B0;
+  background: var(--bg3); border-color: var(--border); color: var(--text2);
 }
 [data-theme="arctic"] .sidebar-action-btn:hover,
-[data-theme="rose"] .sidebar-action-btn:hover { color: #fff; background: rgba(255,255,255,.12); }
+[data-theme="rose"] .sidebar-action-btn:hover { background: var(--bg4); color: var(--text); }
 [data-theme="arctic"] .sidebar-bottom,
-[data-theme="rose"] .sidebar-bottom { border-top-color: rgba(255,255,255,.1); }
+[data-theme="rose"] .sidebar-bottom { border-top-color: var(--border); }
+[data-theme="arctic"] .user-card:hover,
+[data-theme="rose"] .user-card:hover { background: var(--bg3); }
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }

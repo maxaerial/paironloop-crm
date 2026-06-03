@@ -1594,6 +1594,10 @@ tbody tr:hover td { background: var(--bg3); }
   </div>
 </div>
 
+<!-- Hidden file input for CSV import -->
+<input type="file" id="import-file-input" accept=".csv,.xlsx" style="display:none" onchange="handleImport(this)">
+<div id="import-table-target" style="display:none"></div>
+
 <div class="toast" id="toast"><span id="toast-msg"></span></div>
 
 <script>
@@ -2267,6 +2271,21 @@ async function renderKontakte(s,st) {
   let rows=kontakteData;
   if(kSearch) rows=rows.filter(k=>k.unternehmen?.toLowerCase().includes(kSearch.toLowerCase())||k.vorname?.toLowerCase().includes(kSearch.toLowerCase()));
   if(kStatus) rows=rows.filter(k=>k.status===kStatus);
+  // Column sort
+  const kColMap = {
+    "nr_k":      r => r.nr||"",
+    "name_k":    r => (r.unternehmen||"").toLowerCase(),
+    "person_k":  r => ((r.vorname||"")+(r.nachname||"")).toLowerCase(),
+    "ort_k":     r => (r.ort||"").toLowerCase(),
+    "status_k":  r => r.status||"",
+    "kanal_k":   r => (r.kanal||"").toLowerCase(),
+    "kontakt_k": r => r.letzter_kontakt||"",
+  };
+  const kFn = kColMap[kSortCol] || kColMap["kontakt_k"];
+  rows = [...rows].sort((a,b)=>{
+    const av=kFn(a), bv=kFn(b);
+    return kSortDir==="asc" ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
   document.getElementById("kontakte-table-wrap").innerHTML = `<table>
     <thead><tr>
       <th>${thSort("nr_k","nr",kSortCol,kSortDir)}</th>
@@ -2749,6 +2768,105 @@ async function checkNotifications() {
 }
 
 // ── EXPORT ─────────────────────────────────────────────────────────────────────
+// ── TEMPLATES & IMPORT ────────────────────────────────────────────────────────
+const TEMPLATES = {
+  kontakte: {
+    cols: ["nr","unternehmen","vorname","nachname","ort","email","telefon","kanal","status","branche","dealwert","homepage","kommentar"],
+    example: ["001","Muster GmbH","Max","Mustermann","München, Deutschland","info@muster.de","+49 89 123456","Instagram","Lead","Hospitality","5000","https://muster.de","Erstkontakt via Messe"]
+  },
+  journey: {
+    cols: ["nr","kunde","datum","phase","touchpoint","kanal","aktivitaet","reaktion","score"],
+    example: ["J001","Muster GmbH","2026-06-01","Bewusstsein","Instagram-Post","Social Media","Erster Kontakt","Positiv reagiert","7"]
+  },
+  deals: {
+    cols: ["nr","kunde","beschreibung","wert","wahrscheinlichkeit","phase","abschluss_datum","quelle","status","notizen"],
+    example: ["P001","Muster GmbH","Branding Paket",5000,40,"Erstgespräch","2026-07-01","Instagram","Aktiv","Erste Anfrage per DM"]
+  },
+  aktivitaeten: {
+    cols: ["nr","kunde","typ","datum","prioritaet","beschreibung","verantwortlich","status"],
+    example: ["A001","Muster GmbH","Meeting","2026-06-15","Hoch","Erstgespräch führen","Max","Offen"]
+  }
+};
+
+function downloadTemplate(table) {
+  const tmpl = TEMPLATES[table];
+  if(!tmpl) return;
+  const header = tmpl.cols.join(";");
+  const example = tmpl.example.map(v=>String(v).includes(";")?`"${v}"`:v).join(";");
+  const csv = "\uFEFF" + [header, example].join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  a.download = `Paironloop_${table}_Template.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast("✓ Template heruntergeladen");
+}
+
+let importTargetTable = "";
+function triggerImport(table) {
+  importTargetTable = table;
+  const input = document.getElementById("import-file-input");
+  input.value = "";
+  input.click();
+}
+
+async function handleImport(input) {
+  const file = input.files[0];
+  if(!file) return;
+  const table = importTargetTable;
+  const tmpl  = TEMPLATES[table];
+  if(!tmpl) return;
+
+  showToast("⏳ Wird importiert…");
+
+  const text = await file.text();
+  // Remove BOM
+  const clean = text.replace(/^\uFEFF/, "").replace(/\r/g, "");
+  const lines = clean.split("\n").filter(l=>l.trim());
+  if(lines.length < 2) { showToast("Datei leer oder kein Header", true); return; }
+
+  // Parse header
+  const header = lines[0].split(";").map(h=>h.trim().toLowerCase());
+  const colMap  = tmpl.cols.map(c => header.indexOf(c));
+
+  const userId = (await sb.auth.getUser()).data.user?.id;
+  let inserted = 0, errors = 0;
+
+  for(let i=1; i<lines.length; i++) {
+    const vals = lines[i].split(";").map(v=>v.trim().replace(/^"|"$/g,""));
+    if(vals.every(v=>!v)) continue; // skip empty rows
+
+    const row = {};
+    tmpl.cols.forEach((col,ci) => {
+      const vi = colMap[ci];
+      if(vi >= 0 && vals[vi]) row[col] = vals[vi];
+    });
+    row.user_id = userId;
+
+    // Type conversions
+    if(table==="deals") {
+      if(row.wert) row.wert = parseFloat(row.wert)||0;
+      if(row.wahrscheinlichkeit) row.wahrscheinlichkeit = parseInt(row.wahrscheinlichkeit)||0;
+    }
+    if(table==="journey") {
+      if(row.score) row.score = parseInt(row.score)||5;
+    }
+
+    const {error} = await sb.from(table).insert(row);
+    if(error) { console.error("Import row error:", error.message, row); errors++; }
+    else inserted++;
+  }
+
+  // Refresh
+  if(table==="kontakte")    { renderKontakte(); renderDashboard(); }
+  if(table==="journey")     { renderJourney(); }
+  if(table==="deals")       { renderPipeline(); renderDashboard(); }
+  if(table==="aktivitaeten"){ renderAktivitaeten(); renderDashboard(); }
+
+  if(errors===0) showToast(`✓ ${inserted} Einträge importiert`);
+  else showToast(`${inserted} importiert, ${errors} Fehler`, errors>0);
+}
+
 const EXPORT_COLS={
   kontakte:["nr","unternehmen","vorname","nachname","ort","email","telefon","kanal","status","branche","dealwert","letzter_kontakt","kommentar"],
   journey:["nr","kunde","datum","phase","touchpoint","kanal","aktivitaet","reaktion","score"],

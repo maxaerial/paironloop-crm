@@ -2896,6 +2896,15 @@ async function handleImport(input) {
     });
     row.user_id = userId;
 
+    // Convert German date format DD.MM.YYYY → YYYY-MM-DD for all date fields
+    const dateFields = ["datum","abschluss_datum","erster_kontakt","letzter_kontakt"];
+    dateFields.forEach(f => {
+      if(row[f]) {
+        const m = String(row[f]).match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+        if(m) row[f] = `${m[3]}-${m[2]}-${m[1]}`;
+      }
+    });
+
     // Type conversions — handle German number format (1.000,00 → 1000)
     if(table==="deals") {
       if(row.wert !== undefined) {

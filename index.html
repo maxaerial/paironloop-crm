@@ -1910,22 +1910,120 @@ function setPhaseFilter(p) { jPhase=(jPhase===p?"":p); document.getElementById("
 function filterJourney(v) { renderJourney(v,jPhase); }
 function filterJourneyPhase(v) { renderJourney(jSearch,v); }
 
+// Phase → Kontakt Status Mapping
+const PHASE_TO_STATUS = {
+  "Bewusstsein":  "Lead",
+  "Interesse":    "Lead",
+  "Betrachtung":  "Follow-up",
+  "Absicht":      "Follow-up",
+  "Bewertung":    "Follow-up",
+  "Kauf":         "Aktiv",
+  "Bindung":      "Aktiv",
+  "Empfehlung":   "Abgeschlossen",
+  // English
+  "Awareness":    "Lead",
+  "Interest":     "Lead",
+  "Consideration":"Follow-up",
+  "Intent":       "Follow-up",
+  "Evaluation":   "Follow-up",
+  "Purchase":     "Aktiv",
+  "Retention":    "Aktiv",
+  "Advocacy":     "Abgeschlossen",
+  // Spanish
+  "Conciencia":   "Lead",
+  "Interés":      "Lead",
+  "Consideración":"Follow-up",
+  "Intención":    "Follow-up",
+  "Evaluación":   "Follow-up",
+  "Compra":       "Aktiv",
+  "Retención":    "Aktiv",
+  "Recomendación":"Abgeschlossen",
+  // French
+  "Sensibilisation":"Lead",
+  "Intérêt":      "Lead",
+  "Considération":"Follow-up",
+  "Intention":    "Follow-up",
+  "Évaluation":   "Follow-up",
+  "Achat":        "Aktiv",
+  "Rétention":    "Aktiv",
+  "Recommandation":"Abgeschlossen",
+};
+
 async function addJourney() {
   const btn=document.getElementById("btn-save-journey"); btn.disabled=true;
-  const {error}=await sb.from("journey").insert({
-    kunde:document.getElementById("j-kunde").value,
-    datum:document.getElementById("j-datum").value||new Date().toISOString().split("T")[0],
-    phase:document.getElementById("j-phase").value,
-    touchpoint:document.getElementById("j-touchpoint").value,
-    kanal:document.getElementById("j-kanal").value,
-    aktivitaet:document.getElementById("j-aktivitaet").value,
-    reaktion:document.getElementById("j-reaktion").value,
-    score:parseInt(document.getElementById("j-score").value)||5,
-    user_id:(await sb.auth.getUser()).data.user?.id
+  const kunde    = document.getElementById("j-kunde").value.trim();
+  const phase    = document.getElementById("j-phase").value;
+  const datum    = document.getElementById("j-datum").value||new Date().toISOString().split("T")[0];
+  const kanal    = document.getElementById("j-kanal").value;
+  const touchpoint = document.getElementById("j-touchpoint").value;
+  const aktivitaet = document.getElementById("j-aktivitaet").value;
+  const reaktion = document.getElementById("j-reaktion").value;
+  const score    = parseInt(document.getElementById("j-score").value)||5;
+  const userId   = (await sb.auth.getUser()).data.user?.id;
+
+  if(!kunde) { showToast("Bitte Kundenname eingeben", true); btn.disabled=false; return; }
+
+  // 1. Check if contact exists (case-insensitive search)
+  const {data: existing} = await sb.from("kontakte")
+    .select("id,nr,status,unternehmen")
+    .ilike("unternehmen", kunde)
+    .maybeSingle();
+
+  const newStatus = PHASE_TO_STATUS[phase] || "Lead";
+  let kontaktId = existing?.id;
+  let isNewKontakt = false;
+
+  if(!existing) {
+    // Auto-create new contact
+    isNewKontakt = true;
+    const {count} = await sb.from("kontakte").select("*",{count:"exact",head:true});
+    const nr = String((count||0)+1).padStart(3,"0");
+    const {data: newK} = await sb.from("kontakte").insert({
+      nr, unternehmen: kunde,
+      vorname:"–", nachname:"–",
+      kanal: kanal||"–",
+      status: newStatus,
+      letzter_kontakt: datum,
+      kommentar: `Automatisch angelegt via Journey-Touchpoint (${phase})`,
+      user_id: userId
+    }).select("id").single();
+    kontaktId = newK?.id;
+  } else {
+    // Update status if new phase is "further along" in journey
+    const statusOrder = {"Lead":0,"Follow-up":1,"Aktiv":2,"Abgeschlossen":3,"Inaktiv":-1};
+    const currentOrder = statusOrder[existing.status]??0;
+    const newOrder     = statusOrder[newStatus]??0;
+    if(newOrder > currentOrder) {
+      await sb.from("kontakte").update({
+        status: newStatus,
+        letzter_kontakt: datum,
+      }).eq("id", existing.id);
+    } else {
+      await sb.from("kontakte").update({ letzter_kontakt: datum }).eq("id", existing.id);
+    }
+  }
+
+  // 2. Insert journey touchpoint
+  const {error} = await sb.from("journey").insert({
+    kunde, kontakt_id: kontaktId,
+    datum, phase, touchpoint, kanal,
+    aktivitaet, reaktion, score,
+    user_id: userId
   });
+
   btn.disabled=false;
   if(error){showToast(error.message,true);return;}
-  closeModal("modal-journey"); renderJourney(); renderDashboard(); showToast("✓ "+t("add_touchpoint")+" "+t("save"));
+
+  closeModal("modal-journey");
+  renderJourney();
+  renderKontakte();
+  renderDashboard();
+
+  if(isNewKontakt) {
+    showToast(`✓ Touchpoint gespeichert · Neuer Kontakt "${kunde}" angelegt (${newStatus})`);
+  } else {
+    showToast(`✓ Touchpoint gespeichert · Status → ${newStatus}`);
+  }
 }
 
 // ── KONTAKTE ────────────────────────────────────────────────────────────────────

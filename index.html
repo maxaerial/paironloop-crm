@@ -2286,18 +2286,81 @@ async function addKontakt() {
 
 // ── PIPELINE ────────────────────────────────────────────────────────────────────
 let dealsData=[];
+let cPipePhases=null, cPipeDeals2=null;
+
 async function renderPipeline() {
   const {data}=await sb.from("deals").select("*").order("created_at",{ascending:false});
   dealsData=data||[];
-  const t_=dealsData.reduce((s,d)=>s+(d.wert||0),0);
-  const w=Math.round(dealsData.reduce((s,d)=>s+(d.wert||0)*(d.wahrscheinlichkeit||0)/100,0));
-  document.getElementById("pipeline-total").textContent=t_.toLocaleString("de-DE")+"€";
-  document.getElementById("pipeline-weighted").textContent=w.toLocaleString("de-DE")+"€";
-  document.getElementById("pipeline-open").textContent=dealsData.filter(d=>d.status==="Aktiv"||d.status==="Active").length;
+  filterPipeline();
+}
+
+function filterPipeline() {
+  const search=(document.getElementById("pipeline-search")?.value||"").toLowerCase();
+  const statusF=document.getElementById("pipeline-status-filter")?.value||"";
+  const valueF=document.getElementById("pipeline-value-filter")?.value||"";
+  const sortF=document.getElementById("pipeline-sort")?.value||"date_desc";
+
+  let rows=[...dealsData];
+  if(search) rows=rows.filter(d=>d.kunde?.toLowerCase().includes(search)||d.beschreibung?.toLowerCase().includes(search));
+  if(statusF) rows=rows.filter(d=>d.status===statusF);
+  if(valueF){const[min,max]=valueF.split("-").map(Number);rows=rows.filter(d=>(d.wert||0)>=min&&(d.wert||0)<=max);}
+  rows=rows.sort((a,b)=>{
+    switch(sortF){
+      case"date_asc": return (a.abschluss_datum||"").localeCompare(b.abschluss_datum||"");
+      case"value_desc": return (b.wert||0)-(a.wert||0);
+      case"value_asc": return (a.wert||0)-(b.wert||0);
+      case"prob_desc": return (b.wahrscheinlichkeit||0)-(a.wahrscheinlichkeit||0);
+      default: return (b.abschluss_datum||"").localeCompare(a.abschluss_datum||"");
+    }
+  });
+
+  const t_=rows.reduce((s,d)=>s+(d.wert||0),0);
+  const w=Math.round(rows.reduce((s,d)=>s+(d.wert||0)*(d.wahrscheinlichkeit||0)/100,0));
+  if(document.getElementById("pipeline-total")) {
+    document.getElementById("pipeline-total").textContent=t_.toLocaleString("de-DE")+"€";
+    document.getElementById("pipeline-weighted").textContent=w.toLocaleString("de-DE")+"€";
+    document.getElementById("pipeline-open").textContent=rows.filter(d=>d.status==="Aktiv").length;
+  }
+
+  // Charts
+  const cs=getComputedStyle(document.documentElement);
+  const text3=cs.getPropertyValue("--text3").trim();
+  const borderCol=cs.getPropertyValue("--border").trim();
   const phases=["Erstgespräch","Angebot","Verhandlung","Abschluss"];
-  document.getElementById("pipeline-board").innerHTML=`<div class="pipeline-board" id="pipeline-board-inner">${phases.map(ph=>{
+  const phaseColors=["#6EB8F0","#7C6EF0","#F0A86E","#6EF0A0"];
+  const phaseVals=phases.map(p=>rows.filter(d=>d.phase===p).reduce((s,d)=>s+(d.wert||0),0));
+
+  const chartEl=document.getElementById("chart-pipeline-phases");
+  if(chartEl){
+    if(cPipePhases)cPipePhases.destroy();
+    cPipePhases=new Chart(chartEl,{type:"bar",
+      data:{labels:phases,datasets:[{data:phaseVals,backgroundColor:phaseColors,borderRadius:8,borderSkipped:false,borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{family:"DM Mono",size:10}},grid:{color:borderCol},border:{display:false}},
+                x:{ticks:{color:text3,font:{size:10}},grid:{display:false},border:{display:false}}}}});
+  }
+  const chartEl2=document.getElementById("chart-pipeline-deals");
+  if(chartEl2){
+    const topDeals=[...rows].sort((a,b)=>(b.wert||0)-(a.wert||0)).slice(0,6);
+    if(cPipeDeals2)cPipeDeals2.destroy();
+    cPipeDeals2=new Chart(chartEl2,{type:"bar",
+      data:{
+        labels:topDeals.map(d=>d.kunde.length>14?d.kunde.slice(0,14)+"…":d.kunde),
+        datasets:[{data:topDeals.map(d=>d.wert||0),
+          backgroundColor:topDeals.map(d=>d.status==="Gewonnen"?"#6EF0A0":d.status==="Verloren"?"#F06E6E":"#7C6EF0"),
+          borderRadius:6,borderSkipped:false,borderWidth:0}]
+      },
+      options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{x:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{family:"DM Mono",size:10}},grid:{color:borderCol},border:{display:false}},
+                y:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
+  }
+
+  // Board
+  const board=document.getElementById("pipeline-board");
+  if(!board) return;
+  board.innerHTML=`<div class="pipeline-board">${phases.map(ph=>{
     const phDeals=rows.filter(d=>d.phase===ph);
-    const total=phDeals.reduce((s,d)=>s+(d.wert||0),0);
+    const colTotal=phDeals.reduce((s,d)=>s+(d.wert||0),0);
     return `<div class="pipeline-col" data-phase="${ph}"
       ondragover="event.preventDefault();this.querySelector('.pipeline-col-body').style.background='var(--accent-soft)'"
       ondragleave="this.querySelector('.pipeline-col-body').style.background=''"
@@ -2305,7 +2368,7 @@ async function renderPipeline() {
       <div class="pipeline-col-head">
         <div class="pipeline-col-name">${ph}</div>
         <div style="display:flex;align-items:center;gap:6px">
-          <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">${total>0?total.toLocaleString("de-DE")+"€":""}</div>
+          <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">${colTotal>0?colTotal.toLocaleString("de-DE")+"€":""}</div>
           <div class="pipeline-col-count">${phDeals.length}</div>
         </div>
       </div>
@@ -2331,7 +2394,7 @@ async function renderPipeline() {
           </div>
           <div style="margin-top:8px">
             <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden">
-              <div style="height:100%;width:${d.wahrscheinlichkeit||0}%;background:${(d.wahrscheinlichkeit||0)>=75?"var(--green)":(d.wahrscheinlichkeit||0)>=40?"var(--orange)":"var(--red)"};border-radius:2px;transition:width .3s"></div>
+              <div style="height:100%;width:${d.wahrscheinlichkeit||0}%;background:${(d.wahrscheinlichkeit||0)>=75?"var(--green)":(d.wahrscheinlichkeit||0)>=40?"var(--orange)":"var(--red)"};border-radius:2px"></div>
             </div>
           </div>
         </div>`).join("")}
@@ -2339,6 +2402,7 @@ async function renderPipeline() {
     </div>`;
   }).join("")}</div>`;
 }
+
 
 // ── DEAL KUNDE DROPDOWN ───────────────────────────────────────────────────────
 function showDealDropdown() {

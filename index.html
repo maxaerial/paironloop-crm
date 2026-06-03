@@ -1400,7 +1400,8 @@ tbody tr:hover td { background: var(--bg3); }
         <div class="field"><label data-i18n="company">Unternehmen</label><input id="k-unternehmen"></div>
         <div class="field"><label data-i18n="firstname">Vorname</label><input id="k-vorname"></div>
         <div class="field"><label data-i18n="lastname">Nachname</label><input id="k-nachname"></div>
-        <div class="field"><label data-i18n="location">Ort / Land</label><input id="k-ort"></div>
+        <div class="field"><label>Stadt</label><input id="k-ort"></div>
+        <div class="field"><label>Land</label><input id="k-land" placeholder="z.B. Deutschland"></div>
         <div class="field"><label data-i18n="email">E-Mail</label><input id="k-email" type="email"></div>
         <div class="field"><label data-i18n="phone">Telefon</label><input id="k-telefon"></div>
         <div class="field"><label data-i18n="channel">Kanal</label><input id="k-kanal"></div>
@@ -1596,7 +1597,8 @@ tbody tr:hover td { background: var(--bg3); }
         <div class="field"><label>Unternehmen</label><input id="ek-unternehmen"></div>
         <div class="field"><label>Vorname</label><input id="ek-vorname"></div>
         <div class="field"><label>Nachname</label><input id="ek-nachname"></div>
-        <div class="field"><label>Ort / Land</label><input id="ek-ort"></div>
+        <div class="field"><label>Stadt</label><input id="ek-ort"></div>
+        <div class="field"><label>Land</label><input id="ek-land" placeholder="z.B. Deutschland"></div>
         <div class="field"><label>E-Mail</label><input id="ek-email" type="email"></div>
         <div class="field"><label>Telefon</label><input id="ek-telefon"></div>
         <div class="field"><label>Kanal</label><input id="ek-kanal"></div>
@@ -2299,6 +2301,7 @@ async function renderKontakte(s,st) {
     "name_k":    r => (r.unternehmen||"").toLowerCase(),
     "person_k":  r => ((r.vorname||"")+(r.nachname||"")).toLowerCase(),
     "ort_k":     r => (r.ort||"").toLowerCase(),
+    "land_k":    r => (r.land||"").toLowerCase(),
     "status_k":  r => r.status||"",
     "kanal_k":   r => (r.kanal||"").toLowerCase(),
     "kontakt_k": r => r.letzter_kontakt||"",
@@ -2313,7 +2316,7 @@ async function renderKontakte(s,st) {
       <th>${thSort("nr_k","nr",kSortCol,kSortDir)}</th>
       <th>${thSort("name_k",t("company_col"),kSortCol,kSortDir)}</th>
       <th>${thSort("person_k",t("name"),kSortCol,kSortDir)}</th>
-      <th>${thSort("ort_k",t("location_col"),kSortCol,kSortDir)}</th>
+      <th>${thSort("ort_k","Stadt",kSortCol,kSortDir)}</th><th>${thSort("land_k","Land",kSortCol,kSortDir)}</th>
       <th>${thSort("status_k",t("status"),kSortCol,kSortDir)}</th>
       <th>${thSort("kanal_k",t("channel_col"),kSortCol,kSortDir)}</th>
       <th>Homepage</th>
@@ -2327,6 +2330,7 @@ async function renderKontakte(s,st) {
         <td><strong>${k.unternehmen}</strong></td>
         <td style="color:var(--text2)">${k.vorname&&k.vorname!=="–"?k.vorname+" "+(k.nachname||""):"–"}</td>
         <td style="color:var(--text2)">${k.ort||"–"}</td>
+        <td style="color:var(--text2)">${k.land||"–"}</td>
         <td><span class="badge badge-${slug}">${k.status}</span></td>
         <td style="color:var(--text2);font-size:12px">${k.kanal||"–"}</td>
         <td style="font-size:12px">${k.homepage?(()=>{const url=k.homepage.startsWith("http")?k.homepage:"https://"+k.homepage;const display=k.homepage.replace(/https?:\/\//, "").slice(0,25)+(k.homepage.replace(/https?:\/\//, "").length>25?"…":"");return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:var(--accent2);text-decoration:none;font-size:11px;display:flex;align-items:center;gap:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${display}</a>`;})():"–"}</td>
@@ -2350,6 +2354,7 @@ async function addKontakt() {
     vorname:document.getElementById("k-vorname").value||"–",
     nachname:document.getElementById("k-nachname").value||"–",
     ort:document.getElementById("k-ort").value,
+    land:document.getElementById("k-land").value||null,
     email:document.getElementById("k-email").value||"–",
     telefon:document.getElementById("k-telefon").value||"–",
     kanal:document.getElementById("k-kanal").value,
@@ -2794,7 +2799,7 @@ async function checkNotifications() {
 const TEMPLATES = {
   kontakte: {
     cols: ["nr","unternehmen","vorname","nachname","ort","email","telefon","kanal","status","branche","dealwert","homepage","kommentar"],
-    example: ["001","Muster GmbH","Max","Mustermann","München, Deutschland","info@muster.de","+49 89 123456","Instagram","Lead","Hospitality","5000","https://muster.de","Erstkontakt via Messe"]
+    example: ["001","Muster GmbH","Max","Mustermann","München","Deutschland","info@muster.de","+49 89 123456","Instagram","Lead","Hospitality","5000","https://muster.de","Erstkontakt via Messe"]
   },
   journey: {
     cols: ["nr","kunde","datum","phase","touchpoint","kanal","aktivitaet","reaktion","score"],
@@ -2832,6 +2837,20 @@ function triggerImport(table) {
   input.click();
 }
 
+// Parse a CSV line handling quoted fields with commas inside
+function parseCSVLine(line, sep) {
+  const result = [];
+  let cur = "", inQ = false;
+  for(let i=0; i<line.length; i++) {
+    const ch = line[i];
+    if(ch==='"') { inQ=!inQ; continue; }
+    if(ch===sep && !inQ) { result.push(cur.trim()); cur=""; continue; }
+    cur += ch;
+  }
+  result.push(cur.trim());
+  return result;
+}
+
 async function handleImport(input) {
   const file = input.files[0];
   if(!file) return;
@@ -2842,51 +2861,91 @@ async function handleImport(input) {
   showToast("⏳ Wird importiert…");
 
   const text = await file.text();
-  // Remove BOM
-  const clean = text.replace(/^\uFEFF/, "").replace(/\r/g, "");
-  const lines = clean.split("\n").filter(l=>l.trim());
+  // Remove BOM, normalize line endings
+  const clean = text.replace(/^﻿/, "").replace(/
+/g, "
+").replace(/
+/g, "
+");
+  const lines = clean.split("
+").filter(l=>l.trim());
   if(lines.length < 2) { showToast("Datei leer oder kein Header", true); return; }
 
-  // Parse header
-  const header = lines[0].split(";").map(h=>h.trim().toLowerCase());
-  const colMap  = tmpl.cols.map(c => header.indexOf(c));
+  // Auto-detect separator: semicolon or comma
+  const sep = lines[0].includes(";") ? ";" : ",";
+  console.log(`Import: table=${table}, sep="${sep}", rows=${lines.length-1}`);
+
+  // Parse header — normalize: lowercase, trim, remove quotes
+  const header = parseCSVLine(lines[0], sep).map(h=>h.toLowerCase().trim().replace(/^"|"$/g,""));
+  console.log("Header:", header);
+
+  const colMap = tmpl.cols.map(c => header.indexOf(c));
+  console.log("ColMap:", tmpl.cols.map((c,i)=>`${c}→${colMap[i]}`));
 
   const userId = (await sb.auth.getUser()).data.user?.id;
-  let inserted = 0, errors = 0;
+  let inserted = 0, errors = 0, skipped = 0;
 
   for(let i=1; i<lines.length; i++) {
-    const vals = lines[i].split(";").map(v=>v.trim().replace(/^"|"$/g,""));
-    if(vals.every(v=>!v)) continue; // skip empty rows
+    const rawLine = lines[i];
+    if(!rawLine.trim()) { skipped++; continue; }
+
+    const vals = parseCSVLine(rawLine, sep);
+    if(vals.every(v=>!v)) { skipped++; continue; }
 
     const row = {};
-    tmpl.cols.forEach((col,ci) => {
+    tmpl.cols.forEach((col, ci) => {
       const vi = colMap[ci];
-      if(vi >= 0 && vals[vi]) row[col] = vals[vi];
+      if(vi >= 0 && vi < vals.length) {
+        let v = vals[vi].trim().replace(/^"|"$/g, "");
+        if(v) row[col] = v;
+      }
     });
     row.user_id = userId;
 
-    // Type conversions
+    // Type conversions — handle German number format (1.000,00 → 1000)
     if(table==="deals") {
-      if(row.wert) row.wert = parseFloat(row.wert)||0;
-      if(row.wahrscheinlichkeit) row.wahrscheinlichkeit = parseInt(row.wahrscheinlichkeit)||0;
+      if(row.wert !== undefined) {
+        const raw = String(row.wert).replace(/[^0-9,.-]/g,"").replace(",",".");
+        row.wert = parseFloat(raw) || 0;
+      }
+      if(row.wahrscheinlichkeit !== undefined) {
+        row.wahrscheinlichkeit = parseInt(String(row.wahrscheinlichkeit).replace(/[^0-9]/g,"")) || 0;
+      }
     }
     if(table==="journey") {
-      if(row.score) row.score = parseInt(row.score)||5;
+      if(row.score !== undefined) row.score = parseInt(row.score) || 5;
+    }
+    if(table==="kontakte") {
+      if(row.dealwert !== undefined) {
+        const raw = String(row.dealwert).replace(/[^0-9,.-]/g,"").replace(",",".");
+        row.dealwert = parseFloat(raw) || 0;
+      }
     }
 
+    // Skip rows with no meaningful content
+    const meaningfulKeys = Object.keys(row).filter(k=>k!=="user_id"&&row[k]);
+    if(meaningfulKeys.length === 0) { skipped++; continue; }
+
+    console.log(`Row ${i}:`, row);
     const {error} = await sb.from(table).insert(row);
-    if(error) { console.error("Import row error:", error.message, row); errors++; }
-    else inserted++;
+    if(error) {
+      console.error(`Import error row ${i}:`, error.message, row);
+      errors++;
+    } else {
+      inserted++;
+    }
   }
 
-  // Refresh
-  if(table==="kontakte")    { renderKontakte(); renderDashboard(); }
-  if(table==="journey")     { renderJourney(); }
-  if(table==="deals")       { renderPipeline(); renderDashboard(); }
-  if(table==="aktivitaeten"){ renderAktivitaeten(); renderDashboard(); }
+  // Refresh views
+  if(table==="kontakte")    { await renderKontakte(); renderDashboard(); }
+  if(table==="journey")     { await renderJourney(); }
+  if(table==="deals")       { await renderPipeline(); renderDashboard(); }
+  if(table==="aktivitaeten"){ await renderAktivitaeten(); renderDashboard(); }
 
-  if(errors===0) showToast(`✓ ${inserted} Einträge importiert`);
-  else showToast(`${inserted} importiert, ${errors} Fehler`, errors>0);
+  let msg = `✓ ${inserted} Einträge importiert`;
+  if(skipped > 0) msg += ` (${skipped} übersprungen)`;
+  if(errors > 0)  msg += ` · ${errors} Fehler`;
+  showToast(msg, errors > 0);
 }
 
 const EXPORT_COLS={
@@ -3220,6 +3279,7 @@ function editKontakt(id) {
   document.getElementById("ek-vorname").value = k.vorname||"";
   document.getElementById("ek-nachname").value = k.nachname||"";
   document.getElementById("ek-ort").value = k.ort||"";
+  document.getElementById("ek-land").value = k.land||"";
   document.getElementById("ek-email").value = k.email||"";
   document.getElementById("ek-telefon").value = k.telefon||"";
   document.getElementById("ek-kanal").value = k.kanal||"";
@@ -3240,6 +3300,7 @@ async function updateKontakt() {
     vorname:document.getElementById("ek-vorname").value||"–",
     nachname:document.getElementById("ek-nachname").value||"–",
     ort:document.getElementById("ek-ort").value,
+    land:document.getElementById("ek-land").value||null,
     email:document.getElementById("ek-email").value||"–",
     telefon:document.getElementById("ek-telefon").value||"–",
     kanal:document.getElementById("ek-kanal").value,

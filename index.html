@@ -1105,6 +1105,12 @@ tbody tr:hover td { background: var(--bg3); }
 
         <div class="card">
           <div class="card-header"><div class="card-title" data-i18n="all_touchpoints">Alle Touchpoints</div></div>
+<div style="display:flex;align-items:center;gap:8px;padding:10px 20px;border-bottom:1px solid var(--border);background:var(--bg3);flex-wrap:wrap">
+            <span style="font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text3);text-transform:uppercase">Export / Import</span>
+            <button class="btn-export" onclick="downloadTemplate('journey')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Template</button>
+            <button class="btn-export" onclick="triggerImport('journey')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Importieren</button>
+            <button class="btn-export" onclick="exportCSV('journey')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Exportieren</button>
+          </div>
           <div class="toolbar">
             <div class="search-box">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -1138,8 +1144,12 @@ tbody tr:hover td { background: var(--bg3); }
         </div>
         <div class="card">
           <div class="export-bar">
-            <span class="export-label" data-i18n="export">Export</span>
-            <button class="btn-export" onclick="exportCSV('kontakte')"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span data-i18n="contacts">Kontakte</span> CSV</button>
+            <span class="export-label" data-i18n="export">Export / Import</span>
+            <button class="btn-export" onclick="downloadTemplate('kontakte')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Template</button>
+            <button class="btn-export" onclick="triggerImport('kontakte')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Importieren</button>
+            <button class="btn-export" onclick="exportCSV('kontakte')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Exportieren</button>
+          </div>
+          <div style="display:none"><!-- old export removed --><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span data-i18n="contacts">Kontakte</span> CSV</button>
           </div>
           <div class="toolbar">
             <div class="search-box" style="flex:1">
@@ -1185,6 +1195,12 @@ tbody tr:hover td { background: var(--bg3); }
             <div class="kpi-label" data-i18n="open_deals">Offene Deals</div>
             <div class="kpi-value" id="pipeline-open">–</div>
           </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;padding:10px 0;flex-wrap:wrap;margin-bottom:16px">
+          <span style="font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text3);text-transform:uppercase">Export / Import</span>
+          <button class="btn-export" onclick="downloadTemplate('deals')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Template</button>
+          <button class="btn-export" onclick="triggerImport('deals')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Importieren</button>
+          <button class="btn-export" onclick="exportCSV('deals')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Exportieren</button>
         </div>
         <div id="pipeline-board">
           <div class="loading-row"><div class="spinner"></div><span data-i18n="loading">Laden...</span></div>
@@ -1251,7 +1267,13 @@ tbody tr:hover td { background: var(--bg3); }
         </div>
 
         <div class="card">
-          <div class="toolbar">
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 20px;border-bottom:1px solid var(--border);background:var(--bg3);flex-wrap:wrap">
+            <span style="font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text3);text-transform:uppercase">Export / Import</span>
+            <button class="btn-export" onclick="downloadTemplate('aktivitaeten')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Template</button>
+            <button class="btn-export" onclick="triggerImport('aktivitaeten')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Importieren</button>
+            <button class="btn-export" onclick="exportCSV('aktivitaeten')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Exportieren</button>
+          </div>
+        <div class="toolbar">
             <div class="search-box" style="flex:1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
               <input oninput="searchAktivitaeten(this.value)" data-i18n-placeholder="search">

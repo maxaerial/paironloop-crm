@@ -1433,6 +1433,36 @@ tbody tr:hover td { background: var(--bg3); }
   </div>
 </div>
 
+<!-- EDIT KONTAKT MODAL -->
+<div class="modal-overlay" id="modal-edit-kontakt">
+  <div class="modal">
+    <div class="modal-head"><h3 id="edit-modal-title">Kontakt bearbeiten</h3><button class="modal-close" onclick="closeModal('modal-edit-kontakt')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="ek-id">
+      <div class="form-grid">
+        <div class="field"><label>Unternehmen</label><input id="ek-unternehmen"></div>
+        <div class="field"><label>Vorname</label><input id="ek-vorname"></div>
+        <div class="field"><label>Nachname</label><input id="ek-nachname"></div>
+        <div class="field"><label>Ort / Land</label><input id="ek-ort"></div>
+        <div class="field"><label>E-Mail</label><input id="ek-email" type="email"></div>
+        <div class="field"><label>Telefon</label><input id="ek-telefon"></div>
+        <div class="field"><label>Kanal</label><input id="ek-kanal"></div>
+        <div class="field"><label>Status</label>
+          <select id="ek-status"><option>Lead</option><option>Aktiv</option><option>Follow-up</option><option>Inaktiv</option><option>Abgeschlossen</option></select>
+        </div>
+        <div class="field"><label>Branche</label><input id="ek-branche"></div>
+        <div class="field"><label>Deal-Wert (€)</label><input id="ek-dealwert" type="number"></div>
+        <div class="field form-full"><label>Homepage / Website</label><input id="ek-homepage" type="url" placeholder="https://..."></div>
+        <div class="field form-full"><label>Kommentar</label><textarea id="ek-kommentar" rows="2" style="resize:vertical"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="btn-update-kontakt" onclick="updateKontakt()">Speichern</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-edit-kontakt')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"><span id="toast-msg"></span></div>
 
 <script>
@@ -1911,7 +1941,7 @@ async function renderKontakte(s,st) {
     <thead><tr>
       <th>${t("nr")}</th><th>${t("company_col")}</th><th>${t("name")}</th>
       <th>${t("location_col")}</th><th>${t("status")}</th><th>${t("channel_col")}</th>
-      <th>${t("last_contact")}</th><th></th>
+      <th>Homepage</th><th>${t("last_contact")}</th><th></th>
     </tr></thead>
     <tbody>${rows.map(k=>{
       const slug=(k.status||"").toLowerCase().replace(/[^a-z]/g,"-");
@@ -1922,8 +1952,12 @@ async function renderKontakte(s,st) {
         <td style="color:var(--text2)">${k.ort||"–"}</td>
         <td><span class="badge badge-${slug}">${k.status}</span></td>
         <td style="color:var(--text2);font-size:12px">${k.kanal||"–"}</td>
+        <td style="font-size:12px">${k.homepage?`<a href="${k.homepage}" target="_blank" style="color:var(--accent2);text-decoration:none;font-size:11px">${k.homepage.replace(/https?:\/\//, "").slice(0,25)}${k.homepage.length>30?"…":""}</a>`:"–"}</td>
         <td style="font-family:var(--font-mono);font-size:12px;color:var(--text3)">${k.letzter_kontakt||"–"}</td>
-        <td><button class="btn btn-danger-ghost" onclick="deleteRow('kontakte','${k.id}',()=>renderKontakte())">${t("delete")}</button></td>
+        <td style="display:flex;gap:6px;align-items:center">
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editKontakt('${k.id}')">${t("edit")||"Bearbeiten"}</button>
+          <button class="btn btn-danger-ghost" onclick="deleteRow('kontakte','${k.id}',()=>renderKontakte())">${t("delete")}</button>
+        </td>
       </tr>`;
     }).join("")}</tbody>
   </table>`;
@@ -1946,6 +1980,7 @@ async function addKontakt() {
     branche:document.getElementById("k-branche").value,
     dealwert:parseFloat(document.getElementById("k-dealwert").value)||0,
     letzter_kontakt:new Date().toISOString().split("T")[0],
+    homepage:document.getElementById("k-homepage").value||null,
     kommentar:document.getElementById("k-kommentar").value,
     user_id:(await sb.auth.getUser()).data.user?.id
   });
@@ -2107,6 +2142,53 @@ async function exportCSV(table) {
 async function exportAll() {
   for(const t_ of ["kontakte","journey","deals","aktivitaeten"]) { await exportCSV(t_); await new Promise(r=>setTimeout(r,400)); }
   showToast("✓ "+t("export_all"));
+}
+
+// ── EDIT KONTAKT ──────────────────────────────────────────────────────────────
+function editKontakt(id) {
+  const k = kontakteData.find(x=>x.id===id);
+  if(!k) return;
+  document.getElementById("ek-id").value = k.id;
+  document.getElementById("ek-unternehmen").value = k.unternehmen||"";
+  document.getElementById("ek-vorname").value = k.vorname||"";
+  document.getElementById("ek-nachname").value = k.nachname||"";
+  document.getElementById("ek-ort").value = k.ort||"";
+  document.getElementById("ek-email").value = k.email||"";
+  document.getElementById("ek-telefon").value = k.telefon||"";
+  document.getElementById("ek-kanal").value = k.kanal||"";
+  document.getElementById("ek-status").value = k.status||"Lead";
+  document.getElementById("ek-branche").value = k.branche||"";
+  document.getElementById("ek-dealwert").value = k.dealwert||"";
+  document.getElementById("ek-homepage").value = k.homepage||"";
+  document.getElementById("ek-kommentar").value = k.kommentar||"";
+  document.getElementById("edit-modal-title").textContent = k.unternehmen + " bearbeiten";
+  openModal("modal-edit-kontakt");
+}
+
+async function updateKontakt() {
+  const btn=document.getElementById("btn-update-kontakt"); btn.disabled=true;
+  const id=document.getElementById("ek-id").value;
+  const {error}=await sb.from("kontakte").update({
+    unternehmen:document.getElementById("ek-unternehmen").value,
+    vorname:document.getElementById("ek-vorname").value||"–",
+    nachname:document.getElementById("ek-nachname").value||"–",
+    ort:document.getElementById("ek-ort").value,
+    email:document.getElementById("ek-email").value||"–",
+    telefon:document.getElementById("ek-telefon").value||"–",
+    kanal:document.getElementById("ek-kanal").value,
+    status:document.getElementById("ek-status").value,
+    branche:document.getElementById("ek-branche").value,
+    dealwert:parseFloat(document.getElementById("ek-dealwert").value)||0,
+    homepage:document.getElementById("ek-homepage").value||null,
+    kommentar:document.getElementById("ek-kommentar").value,
+    letzter_kontakt:new Date().toISOString().split("T")[0],
+  }).eq("id",id);
+  btn.disabled=false;
+  if(error){showToast(error.message,true);return;}
+  closeModal("modal-edit-kontakt");
+  renderKontakte();
+  renderDashboard();
+  showToast("✓ Kontakt aktualisiert");
 }
 
 // ── HELPERS ─────────────────────────────────────────────────────────────────────

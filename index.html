@@ -2031,23 +2031,30 @@ function renderJourneyTable() {
       return match || j.phase===jPhase;
     });
   }
-  // Sort
+  // Column sort
+  const jColMap = {
+    "datum_j":     r => r.datum||"",
+    "kunde_j":     r => r.kunde||"",
+    "phase_j":     r => r.phase||"",
+    "touchpoint_j":r => r.touchpoint||"",
+    "kanal_j":     r => r.kanal||"",
+    "score_j":     r => String(r.score||0).padStart(3,"0"),
+  };
+  const jFn = jColMap[jSortCol] || jColMap["datum_j"];
   rows = [...rows].sort((a,b)=>{
-    switch(jSort) {
-      case "date_asc":   return (a.datum||"").localeCompare(b.datum||"");
-      case "date_desc":  return (b.datum||"").localeCompare(a.datum||"");
-      case "kunde_asc":  return (a.kunde||"").localeCompare(b.kunde||"");
-      case "kunde_desc": return (b.kunde||"").localeCompare(a.kunde||"");
-      case "score_desc": return (b.score||0)-(a.score||0);
-      case "score_asc":  return (a.score||0)-(b.score||0);
-      default:           return 0;
-    }
+    const av=jFn(a), bv=jFn(b);
+    return jSortDir==="asc" ? av.localeCompare(bv) : bv.localeCompare(av);
   });
   document.getElementById("journey-table-wrap").innerHTML = rows.length ? `<table>
     <thead><tr>
-      <th>${t("date")}</th><th>${t("client")}</th><th>${t("phase")}</th>
-      <th>${t("touchpoint_col")}</th><th>${t("channel")}</th><th>${t("reaction")}</th>
-      <th>${t("score")}</th><th></th>
+      <th>${thSort("datum_j",t("date"),jSortCol,jSortDir)}</th>
+      <th>${thSort("kunde_j",t("client"),jSortCol,jSortDir)}</th>
+      <th>${thSort("phase_j",t("phase"),jSortCol,jSortDir)}</th>
+      <th>${thSort("touchpoint_j",t("touchpoint_col"),jSortCol,jSortDir)}</th>
+      <th>${thSort("kanal_j",t("channel"),jSortCol,jSortDir)}</th>
+      <th>${t("reaction")}</th>
+      <th>${thSort("score_j",t("score"),jSortCol,jSortDir)}</th>
+      <th></th>
     </tr></thead>
     <tbody>${rows.map(j=>{
       const slug=(j.phase||"").toLowerCase().replace(/[éèêëàâäîïôöùûü\s]/g,c=>({é:"e",è:"e",ê:"e",ë:"e",à:"a",â:"a",ä:"a",î:"i",ï:"i",ô:"o",ö:"o",ù:"u",û:"u",ü:"u"," ":"-"}[c]||c));
@@ -2104,7 +2111,6 @@ function filterJourneyPhase(v) {
   }
   renderJourney(jSearch,v);
 }
-function sortJourney(v) { jSort=v; renderJourney(); }
 
 // Phase → Kontakt Status Mapping
 const PHASE_TO_STATUS = {
@@ -2223,7 +2229,37 @@ async function addJourney() {
 }
 
 // ── KONTAKTE ────────────────────────────────────────────────────────────────────
-let kSearch="", kStatus="", kSort="date_desc", kontakteData=[];
+let kSearch="", kStatus="", kSort="date_desc", kSortCol="kontakt_k", kSortDir="desc", kontakteData=[];
+let jSortCol="datum_j", jSortDir="desc";
+let aSortCol="datum_a", aSortDir="desc";
+
+// ── SORT HELPER ───────────────────────────────────────────────────────────────
+const SORT_ICONS = { asc:"↑", desc:"↓", none:"↕" };
+function thSort(col, label, activeCol, activeDir) {
+  const isActive = col === activeCol;
+  const icon = isActive ? SORT_ICONS[activeDir] : SORT_ICONS.none;
+  const color = isActive ? "var(--accent2)" : "var(--text3)";
+  const fn = col.endsWith("_k") ? "clickSortK" :
+             col.endsWith("_j") ? "clickSortJ" : "clickSortA";
+  return `<span onclick="${fn}('${col}')" style="cursor:pointer;user-select:none;display:inline-flex;align-items:center;gap:4px">
+    ${label}<span style="color:${color};font-size:10px">${icon}</span></span>`;
+}
+
+function clickSortK(col) {
+  kSortDir = (kSortCol===col && kSortDir==="asc") ? "desc" : "asc";
+  kSortCol = col;
+  renderKontakte();
+}
+function clickSortJ(col) {
+  jSortDir = (jSortCol===col && jSortDir==="asc") ? "desc" : "asc";
+  jSortCol = col;
+  renderJourneyTable();
+}
+function clickSortA(col) {
+  aSortDir = (aSortCol===col && aSortDir==="asc") ? "desc" : "asc";
+  aSortCol = col;
+  renderAktivitaeten();
+}
 async function renderKontakte(s,st) {
   if(s!==undefined) kSearch=s; if(st!==undefined) kStatus=st;
   const {data}=await sb.from("kontakte").select("*").order("created_at",{ascending:false});
@@ -2233,9 +2269,15 @@ async function renderKontakte(s,st) {
   if(kStatus) rows=rows.filter(k=>k.status===kStatus);
   document.getElementById("kontakte-table-wrap").innerHTML = `<table>
     <thead><tr>
-      <th>${t("nr")}</th><th>${t("company_col")}</th><th>${t("name")}</th>
-      <th>${t("location_col")}</th><th>${t("status")}</th><th>${t("channel_col")}</th>
-      <th>Homepage</th><th>${t("last_contact")}</th><th></th>
+      <th>${thSort("nr_k","nr",kSortCol,kSortDir)}</th>
+      <th>${thSort("name_k",t("company_col"),kSortCol,kSortDir)}</th>
+      <th>${thSort("person_k",t("name"),kSortCol,kSortDir)}</th>
+      <th>${thSort("ort_k",t("location_col"),kSortCol,kSortDir)}</th>
+      <th>${thSort("status_k",t("status"),kSortCol,kSortDir)}</th>
+      <th>${thSort("kanal_k",t("channel_col"),kSortCol,kSortDir)}</th>
+      <th>Homepage</th>
+      <th>${thSort("kontakt_k",t("last_contact"),kSortCol,kSortDir)}</th>
+      <th></th>
     </tr></thead>
     <tbody>${rows.map(k=>{
       const slug=(k.status||"").toLowerCase().replace(/[^a-z]/g,"-");
@@ -2258,7 +2300,6 @@ async function renderKontakte(s,st) {
 }
 function filterKontakte(v) { renderKontakte(v,kStatus); }
 function filterKontakteStatus(v) { renderKontakte(kSearch,v); }
-function sortKontakte(v) { kSort=v; renderKontakte(); }
 
 async function addKontakt() {
   const btn=document.getElementById("btn-save-kontakt"); btn.disabled=true;
@@ -2589,13 +2630,33 @@ async function renderAktivitaeten(f) {
   let rows=aktivData;
   if(aFilter) rows=rows.filter(a=>a.status===aFilter);
   if(aSearch) rows=rows.filter(a=>a.kunde?.toLowerCase().includes(aSearch.toLowerCase()));
+  // Column sort
+  const aColMap = {
+    "nr_a":     r => r.nr||"",
+    "kunde_a":  r => r.kunde||"",
+    "typ_a":    r => r.typ||"",
+    "datum_a":  r => r.datum||"",
+    "prio_a":   r => ({Hoch:"0",Mittel:"1",Niedrig:"2"}[r.prioritaet]||"9"),
+    "status_a": r => r.status||"",
+  };
+  const aFn = aColMap[aSortCol] || aColMap["datum_a"];
+  rows = [...rows].sort((a,b)=>{
+    const av=aFn(a), bv=aFn(b);
+    return aSortDir==="asc" ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
   const pBg={"Hoch":"rgba(240,110,110,.1)","Mittel":"rgba(240,168,110,.1)","Niedrig":"rgba(110,240,160,.1)"};
   const pC={"Hoch":"var(--red)","Mittel":"var(--orange)","Niedrig":"var(--green)"};
   document.getElementById("aktivitaeten-table-wrap").innerHTML=`<table>
     <thead><tr>
-      <th>${t("nr")}</th><th>${t("client")}</th><th>${t("type")}</th>
-      <th>${t("due_date")}</th><th>${t("priority")}</th>
-      <th>${t("description")}</th><th>Verantwortlich</th><th>${t("status")}</th><th></th>
+      <th>${thSort("nr_a","Nr",aSortCol,aSortDir)}</th>
+      <th>${thSort("kunde_a",t("client"),aSortCol,aSortDir)}</th>
+      <th>${thSort("typ_a",t("type"),aSortCol,aSortDir)}</th>
+      <th>${thSort("datum_a",t("due_date"),aSortCol,aSortDir)}</th>
+      <th>${thSort("prio_a",t("priority"),aSortCol,aSortDir)}</th>
+      <th>${t("description")}</th>
+      <th>Verantwortlich</th>
+      <th>${thSort("status_a",t("status"),aSortCol,aSortDir)}</th>
+      <th></th>
     </tr></thead>
     <tbody>${rows.map(a=>`<tr>
       <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${a.nr||"–"}</td>

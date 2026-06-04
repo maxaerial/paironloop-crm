@@ -1320,6 +1320,10 @@ tbody td { font-feature-settings: "zero" 0; }
               <div class="page-subtitle" id="dash-subtitle"></div>
             </div>
             <div style="display:flex;align-items:center;gap:8px">
+            <div id="bulk-btns-journey" style="display:none;align-items:center;gap:6px">
+            <button class="btn-export" onclick="bulkDeleteJourney()" style="color:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg> Löschen (<span class="bulk-cnt-j">0</span>)</button>
+          </div>
+            <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>
               <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(110,240,160,.08);border:1px solid rgba(110,240,160,.2);border-radius:20px">
                 <div style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite"></div>
                 <span style="font-size:11px;font-weight:600;color:var(--green)" data-i18n="live">Live</span>
@@ -1401,10 +1405,7 @@ tbody td { font-feature-settings: "zero" 0; }
               <div class="page-title" data-i18n="journey">Customer Journey</div>
               <div class="page-subtitle" data-i18n="journey_subtitle">Leads nach Phase – klick zum Filtern</div>
             </div>
-<button class="btn btn-ghost" id="bulk-btn-j-delete" style="display:none;color:var(--red);border-color:rgba(240,110,110,.3)" onclick="bulkDeleteJourney()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-              Löschen <span id="bulk-j-cnt" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px">0</span>
-            </button>
+
             <button class="btn btn-primary" onclick="openModal('modal-journey')">
               <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               <span data-i18n="add_touchpoint">Touchpoint</span>
@@ -1425,7 +1426,12 @@ tbody td { font-feature-settings: "zero" 0; }
 
         <div class="card">
           <div class="card-header"><div class="card-title" data-i18n="all_touchpoints">Alle Touchpoints</div></div>
-<div style="display:flex;align-items:center;gap:6px;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--bg3);flex-wrap:nowrap;overflow-x:auto"><button class="btn-export" onclick="downloadTemplate('journey')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Template</button>
+<div style="display:flex;align-items:center;gap:6px;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--bg3);flex-wrap:nowrap;overflow-x:auto">
+          <div id="bulk-btns-deals" style="display:none;align-items:center;gap:6px">
+            <button class="btn-export" onclick="bulkEditDeals()" style="color:var(--accent2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Ändern (<span class="bulk-cnt-d">0</span>)</button>
+            <button class="btn-export" onclick="bulkDeleteDeals()" style="color:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg> Löschen</button>
+          </div>
+          <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div><button class="btn-export" onclick="downloadTemplate('journey')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Template</button>
             <button class="btn-export" onclick="triggerImport('journey')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Importieren</button>
             <button class="btn-export" onclick="exportCSV('journey')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Exportieren</button></div>
           <div class="toolbar">
@@ -1453,14 +1459,8 @@ tbody td { font-feature-settings: "zero" 0; }
               <div class="page-title" data-i18n="contacts">Kontakte</div>
               <div class="page-subtitle" data-i18n="contacts_subtitle">Alle Kunden und Leads</div>
             </div>
-<button class="btn btn-ghost" id="bulk-btn-k-change" style="display:none" onclick="bulkEditKontakte()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              Ändern <span id="bulk-k-cnt" style="background:var(--accent);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px">0</span>
-            </button>
-            <button class="btn btn-ghost" id="bulk-btn-k-delete" style="display:none;color:var(--red);border-color:rgba(240,110,110,.3)" onclick="bulkDeleteKontakte()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-              Löschen
-            </button>
+
+            
             <button class="btn btn-primary" onclick="openModal('modal-kontakt')">
               <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               <span data-i18n="add_contact">Kontakt</span>
@@ -1469,6 +1469,11 @@ tbody td { font-feature-settings: "zero" 0; }
         </div>
         <div class="card">
           <div class="export-bar">
+            <div id="bulk-btns-kontakte" style="display:none;align-items:center;gap:6px">
+            <button class="btn-export" onclick="bulkEditKontakte()" style="color:var(--accent2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Ändern (<span class="bulk-cnt-k">0</span>)</button>
+            <button class="btn-export" onclick="bulkDeleteKontakte()" style="color:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg> Löschen</button>
+          </div>
+            <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>
             <button class="btn-export" onclick="downloadTemplate('kontakte')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Template</button>
             <button class="btn-export" onclick="triggerImport('kontakte')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Importieren</button>
             <button class="btn-export" onclick="exportCSV('kontakte')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Exportieren</button>
@@ -1521,6 +1526,11 @@ tbody td { font-feature-settings: "zero" 0; }
           </div>
         </div>
 <div style="display:flex;align-items:center;gap:8px;padding:10px 0;flex-wrap:wrap;margin-bottom:16px">
+            <div id="bulk-btns-aktiv" style="display:none;align-items:center;gap:6px">
+            <button class="btn-export" onclick="bulkDoneAktivitaeten()" style="color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Erledigt (<span class="bulk-cnt-a">0</span>)</button>
+            <button class="btn-export" onclick="bulkDeleteAktivitaeten()" style="color:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg> Löschen</button>
+          </div>
+            <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>
           <button class="btn-export" onclick="downloadTemplate('deals')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Template</button>
           <button class="btn-export" onclick="triggerImport('deals')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Importieren</button>
           <button class="btn-export" onclick="exportCSV('deals')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Exportieren</button>
@@ -1540,14 +1550,8 @@ tbody td { font-feature-settings: "zero" 0; }
               <div class="page-title" data-i18n="activities">Aktivitäten</div>
               <div class="page-subtitle" data-i18n="activities_subtitle">Aktivitäten und Aufgaben</div>
             </div>
-<button class="btn btn-ghost" id="bulk-btn-a-done" style="display:none;color:var(--green);border-color:rgba(110,240,160,.3)" onclick="bulkDoneAktivitaeten()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-              Erledigt <span id="bulk-a-cnt" style="background:var(--green);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px">0</span>
-            </button>
-            <button class="btn btn-ghost" id="bulk-btn-a-delete" style="display:none;color:var(--red);border-color:rgba(240,110,110,.3)" onclick="bulkDeleteAktivitaeten()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-              Löschen
-            </button>
+
+            
             <button class="btn btn-primary" onclick="openModal('modal-aktivitaet')">
               <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               <span data-i18n="add_activity">Aktivität</span>
@@ -2538,7 +2542,6 @@ function renderJourneyTable() {
       <th>${thSort("kanal_j",t("channel"),jSortCol,jSortDir)}</th>
       <th>${t("reaction")}</th>
       <th>${thSort("score_j",t("score"),jSortCol,jSortDir)}</th>
-      <th></th>
     </tr></thead>
     <tbody>${rows.map(j=>{
       const slug=(j.phase||"").toLowerCase().replace(/[éèêëàâäîïôöùûü\s]/g,c=>({é:"e",è:"e",ê:"e",ë:"e",à:"a",â:"a",ä:"a",î:"i",ï:"i",ô:"o",ö:"o",ù:"u",û:"u",ü:"u"," ":"-"}[c]||c));
@@ -2550,10 +2553,7 @@ function renderJourneyTable() {
         <td>${j.touchpoint||"–"}</td><td style="color:var(--text2)">${j.kanal||"–"}</td>
         <td style="color:var(--text2);font-size:12px">${j.reaktion||"–"}</td>
         <td><span style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-weight:600">${j.score}/10</span></td>
-        <td style="display:flex;gap:6px">
-          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editJourney('${j.id}')">${t("edit")||"Ändern"}</button>
-          <button class="btn btn-danger-ghost" onclick="deleteRow('journey','${j.id}',renderJourney)">${t("delete")}</button>
-        </td>
+
       </tr>`;
     }).join("")}</tbody>
   </table>` : `<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg><p>${t("loading")}</p></div>`;
@@ -2794,8 +2794,7 @@ async function renderKontakte(s,st) {
       <th>${thSort("kanal_k",t("channel_col"),kSortCol,kSortDir)}</th>
       <th>Homepage</th>
       <th>${thSort("kontakt_k",t("last_contact"),kSortCol,kSortDir)}</th>
-      <th></th>
-    </tr></thead>
+      </tr></thead>
     <tbody>${rows.map(k=>{
       const slug=(k.status||"").toLowerCase().replace(/[^a-z]/g,"-");
       return `<tr>
@@ -2809,10 +2808,7 @@ async function renderKontakte(s,st) {
         <td style="color:var(--text2);font-size:12px">${k.kanal||"–"}</td>
         <td style="font-size:12px">${k.homepage?(()=>{const url=k.homepage.startsWith("http")?k.homepage:"https://"+k.homepage;const display=k.homepage.replace(/https?:\/\//, "").slice(0,25)+(k.homepage.replace(/https?:\/\//, "").length>25?"…":"");return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:var(--accent2);text-decoration:none;font-size:11px;display:flex;align-items:center;gap:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${display}</a>`;})():"–"}</td>
         <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(k.letzter_kontakt)}</td>
-        <td style="display:flex;gap:6px;align-items:center">
-          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editKontakt('${k.id}')">${t("edit")||"Ändern"}</button>
-          <button class="btn btn-danger-ghost" onclick="deleteRow('kontakte','${k.id}',()=>renderKontakte())">${t("delete")}</button>
-        </td>
+
       </tr>`;
     }).join("")}</tbody>
   </table>`;
@@ -3187,8 +3183,7 @@ async function renderAktivitaeten(f) {
       <th>${t("description")}</th>
       <th>Verantwortlich</th>
       <th>${thSort("status_a",t("status"),aSortCol,aSortDir)}</th>
-      <th></th>
-    </tr></thead>
+      </tr></thead>
     <tbody>${rows.map(a=>`<tr>
       <td><input type="checkbox" class="row-checkbox bulk-check-aktivitaeten" data-id="${a.id}" onchange="updateBulk('aktivitaeten')"></td>
       <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:11px;color:var(--text3)">${a.nr||"–"}</td>

@@ -3125,7 +3125,10 @@ function renderJourneyTable() {
         <td><input type="checkbox" class="row-checkbox bulk-check-journey" data-id="${j.id}" onchange="updateBulk('journey')"></td>
         <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(j.datum)}</td>
         <td><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${j.kunde}')">${j.kunde}</strong></td>
-        <td><span class="badge badge-${slug}">${j.phase}</span></td>
+        <td><span style="
+        background:${(()=>{const c={'Bewusstsein':'rgba(110,184,240,.15)','Interesse':'rgba(124,110,240,.15)','Angebot':'rgba(240,168,110,.15)','Kauf':'rgba(110,240,160,.15)','Empfehlung':'rgba(240,196,78,.18)'};return c[j.phase]||'rgba(144,144,168,.12)';})()};
+        color:${(()=>{const c={'Bewusstsein':'#6EB8F0','Interesse':'#7C6EF0','Angebot':'#c47a1e','Kauf':'#1e8a4a','Empfehlung':'#b87c00'};return c[j.phase]||'var(--text3)';})()};
+        padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap">${j.phase}</span></td>
         <td>${j.touchpoint||"–"}</td><td style="color:var(--text2)">${j.kanal||"–"}</td>
         <td style="color:var(--text2);font-size:12px">${j.reaktion||"–"}</td>
         <td><span style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-weight:600">${j.score}/10</span></td>

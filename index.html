@@ -1562,25 +1562,24 @@ tbody td { font-feature-settings: "zero" 0; }
             
           </div>
         </div>
-        <!-- KPI 5 cards -->
-        <div class="kpi-row" style="margin-bottom:16px;grid-template-columns:repeat(5,1fr)">
+        <!-- KPI 4 cards -->
+        <div class="kpi-row" style="margin-bottom:16px;grid-template-columns:repeat(4,1fr)">
           <div class="kpi-card" style="--kpi-color:rgba(110,184,240,.15)">
             <div class="kpi-label">Gesamtwert</div>
-            <div class="kpi-value" id="pipeline-total" style="font-size:20px">–</div>
-          </div>
-          <div class="kpi-card" style="--kpi-color:rgba(110,240,160,.15)">
-            <div class="kpi-label">Gewichteter Wert</div>
-            <div class="kpi-value" id="pipeline-weighted" style="font-size:20px">–</div>
+            <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+              <div class="kpi-value" id="pipeline-total" style="font-size:20px">–</div>
+              <div id="pipeline-weighted" style="font-size:12px;color:var(--text3);font-weight:500;white-space:nowrap">– gewichtet</div>
+            </div>
           </div>
           <div class="kpi-card" style="--kpi-color:rgba(240,168,110,.15)">
             <div class="kpi-label">Offene Deals</div>
             <div class="kpi-value" id="pipeline-open" style="font-size:20px">–</div>
           </div>
-          <div class="kpi-card" style="--kpi-color:rgba(110,240,160,.15)">
+          <div class="kpi-card" style="--kpi-color:rgba(240,196,78,.15)">
             <div class="kpi-label">Gewonnen</div>
-            <div class="kpi-value" id="pipeline-won" style="font-size:20px;color:var(--green)">–</div>
+            <div class="kpi-value" id="pipeline-won" style="font-size:20px;color:#F0C44E">–</div>
           </div>
-          <div class="kpi-card" style="--kpi-color:rgba(240,110,110,.15)">
+          <div class="kpi-card" style="--kpi-color:rgba(110,240,160,.15)">
             <div class="kpi-label">Abschlussquote</div>
             <div class="kpi-value" id="pipeline-rate" style="font-size:20px">–</div>
           </div>
@@ -2652,7 +2651,7 @@ function filterPipelineDemo() {
   const total=won+rows.filter(d=>d.status==="Verloren").length;
   if(document.getElementById("pipeline-total")){
     document.getElementById("pipeline-total").textContent=t_.toLocaleString("de-DE")+"€";
-    document.getElementById("pipeline-weighted").textContent=w.toLocaleString("de-DE")+"€";
+    document.getElementById("pipeline-weighted").textContent=w.toLocaleString("de-DE")+"€ gew.";
     document.getElementById("pipeline-open").textContent=rows.filter(d=>d.status==="Aktiv").length;
     document.getElementById("pipeline-won").textContent=won;
     document.getElementById("pipeline-rate").textContent=(total>0?Math.round(won/total*100):0)+"%";
@@ -3563,7 +3562,7 @@ function filterPipeline() {
   const w=Math.round(rows.reduce((s,d)=>s+(d.wert||0)*(d.wahrscheinlichkeit||0)/100,0));
   if(document.getElementById("pipeline-total")) {
     document.getElementById("pipeline-total").textContent=t_.toLocaleString("de-DE")+"€";
-    document.getElementById("pipeline-weighted").textContent=w.toLocaleString("de-DE")+"€";
+    document.getElementById("pipeline-weighted").textContent=w.toLocaleString("de-DE")+"€ gew.";
     const openDeals = rows.filter(d=>d.status==="Aktiv").length;
     const wonDeals  = rows.filter(d=>d.status==="Gewonnen").length;
     const totalClosed = wonDeals + rows.filter(d=>d.status==="Verloren").length;

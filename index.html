@@ -1540,18 +1540,45 @@ tbody td { font-feature-settings: "zero" 0; }
             
           </div>
         </div>
-        <div class="kpi-row kpi-row-3" style="margin-bottom:20px">
+        <!-- KPI 5 cards -->
+        <div class="kpi-row" style="margin-bottom:16px;grid-template-columns:repeat(5,1fr)">
           <div class="kpi-card" style="--kpi-color:rgba(110,184,240,.15)">
-            <div class="kpi-label" data-i18n="total_value">Gesamtwert</div>
-            <div class="kpi-value" id="pipeline-total">–</div>
+            <div class="kpi-label">Gesamtwert</div>
+            <div class="kpi-value" id="pipeline-total" style="font-size:20px">–</div>
           </div>
           <div class="kpi-card" style="--kpi-color:rgba(110,240,160,.15)">
-            <div class="kpi-label" data-i18n="weighted_value">Gewichteter Wert</div>
-            <div class="kpi-value" id="pipeline-weighted">–</div>
+            <div class="kpi-label">Gewichteter Wert</div>
+            <div class="kpi-value" id="pipeline-weighted" style="font-size:20px">–</div>
           </div>
           <div class="kpi-card" style="--kpi-color:rgba(240,168,110,.15)">
-            <div class="kpi-label" data-i18n="open_deals">Offene Deals</div>
-            <div class="kpi-value" id="pipeline-open">–</div>
+            <div class="kpi-label">Offene Deals</div>
+            <div class="kpi-value" id="pipeline-open" style="font-size:20px">–</div>
+          </div>
+          <div class="kpi-card" style="--kpi-color:rgba(110,240,160,.15)">
+            <div class="kpi-label">Gewonnen</div>
+            <div class="kpi-value" id="pipeline-won" style="font-size:20px;color:var(--green)">–</div>
+          </div>
+          <div class="kpi-card" style="--kpi-color:rgba(240,110,110,.15)">
+            <div class="kpi-label">Abschlussquote</div>
+            <div class="kpi-value" id="pipeline-rate" style="font-size:20px">–</div>
+          </div>
+        </div>
+
+        <!-- 3 Charts in one row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+          <div class="card">
+            <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Pipeline nach Phase (€)</div></div>
+            <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:150px"><canvas id="chart-pipeline-phases"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Top Deals</div></div>
+            <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:150px"><canvas id="chart-pipeline-deals"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Funnel</div></div>
+            <div class="card-body" style="padding:10px 14px">
+              <div id="pipeline-funnel" style="height:150px;display:flex;align-items:flex-end;gap:4px;justify-content:space-around"></div>
+            </div>
           </div>
         </div>
 <div style="display:flex;align-items:center;gap:8px;padding:10px 0;flex-wrap:wrap;margin-bottom:16px">
@@ -3365,8 +3392,8 @@ function filterPipeline() {
     const totalClosed = wonDeals + rows.filter(d=>d.status==="Verloren").length;
     const rate = totalClosed > 0 ? Math.round(wonDeals/totalClosed*100) : 0;
     document.getElementById("pipeline-open").textContent=openDeals;
-    document.getElementById("pipeline-won").textContent=wonDeals;
-    document.getElementById("pipeline-rate").textContent=rate+"%";
+    if(document.getElementById("pipeline-won")) document.getElementById("pipeline-won").textContent=wonDeals;
+    if(document.getElementById("pipeline-rate")) document.getElementById("pipeline-rate").textContent=rate+"%";
   }
 
   // Funnel chart

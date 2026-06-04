@@ -3680,13 +3680,15 @@ function filterPipeline() {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
-            <div class="deal-card-company" onclick="goToKontakt('${d.kunde}')" style="cursor:pointer">${d.kunde}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:nowrap">
-            <span style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-weight:600;color:var(--text);font-size:12px">${(d.wert||0).toLocaleString("de-DE")}€</span>
-            <span style="color:var(--text3);font-size:11px">·  ${d.wahrscheinlichkeit||0}%</span>
-            ${d.abschluss_datum?`<span style="margin-left:auto;font-size:10px;color:var(--text3);font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0">${fmtDate(d.abschluss_datum)}</span>`:""}
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-top:6px">
+            <div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-weight:600;color:var(--text);font-size:12px">${(d.wert||0).toLocaleString("de-DE")}€</span>
+                <span style="color:var(--text3);font-size:11px">· ${d.wahrscheinlichkeit||0}%</span>
+              </div>
+              <div class="deal-card-company" onclick="goToKontakt('${d.kunde}')" style="cursor:pointer;margin-top:3px">${d.kunde}</div>
+            </div>
+            ${d.abschluss_datum?`<div style="font-size:10px;color:var(--text3);font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0;flex-shrink:0;padding-top:2px">${fmtDate(d.abschluss_datum)}</div>`:""}
           </div>
           <div style="margin-top:8px">
             <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden">
@@ -4492,7 +4494,7 @@ const STATUS_COLORS = {
   "Abgeschlossen": "#B06EF0",  // purple
   "Inaktiv":       "#9090A8",  // grey
   // Deal Status
-  "Gewonnen":      "#6EF0A0",  // green
+  "Gewonnen":      "#F0C44E",  // gold
   "Verloren":      "#F06E6E",  // red
   "Pausiert":      "#9090A8",  // grey
   // Aktivitäten Status

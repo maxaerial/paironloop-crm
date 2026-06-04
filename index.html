@@ -3165,6 +3165,67 @@ const PHASE_TO_STATUS = {
   "Recommandation":"Abgeschlossen",
 };
 
+
+// ── JOURNEY → PIPELINE SYNC ───────────────────────────────────────────────────
+// Maps journey phase to pipeline phase (null = no deal needed)
+const JOURNEY_TO_PIPELINE = {
+  "Bewusstsein": null,           // too early for a deal
+  "Interesse":   "Erstgespräch", // create deal at Erstgespräch
+  "Angebot":     "Angebot",      // move/create deal at Angebot
+  "Kauf":        "Abschluss",    // move deal to Abschluss + mark Gewonnen
+  "Empfehlung":  null,           // already closed, no pipeline change
+};
+
+async function syncJourneyToPipeline(kunde, phase, datum, userId) {
+  const pipelinePhase = JOURNEY_TO_PIPELINE[phase];
+  if(!pipelinePhase) return null;
+
+  // Check if an active deal for this customer already exists
+  const {data: existingDeals} = await sb.from("deals")
+    .select("id,phase,status,beschreibung,wert")
+    .ilike("kunde", kunde)
+    .neq("status","Verloren")
+    .neq("status","Gewonnen")
+    .order("created_at", {ascending:false})
+    .limit(1);
+
+  const pipelineOrder = {"Erstgespräch":0,"Angebot":1,"Verhandlung":2,"Abschluss":3};
+  const existing = existingDeals?.[0];
+
+  if(existing) {
+    const currentOrder = pipelineOrder[existing.phase] ?? -1;
+    const newOrder     = pipelineOrder[pipelinePhase] ?? -1;
+
+    if(newOrder > currentOrder) {
+      // Move deal forward
+      const updates = {phase: pipelinePhase};
+      if(phase === "Kauf") { updates.status = "Gewonnen"; }
+      await sb.from("deals").update(updates).eq("id", existing.id);
+      return {action:"moved", from:existing.phase, to:pipelinePhase, deal:existing.beschreibung||kunde};
+    }
+    return null; // already at same or further phase
+  } else {
+    // Create new deal
+    const {data: dealCount} = await sb.from("deals").select("*",{count:"exact",head:true});
+    const nr = "P" + String((dealCount?.count||0)+1).padStart(3,"0");
+    const dealStatus = phase === "Kauf" ? "Gewonnen" : "Aktiv";
+    await sb.from("deals").insert({
+      nr,
+      kunde,
+      beschreibung: kunde + " – " + phase,
+      wert: 0,
+      wahrscheinlichkeit: phase==="Interesse"?25 : phase==="Angebot"?50 : 90,
+      phase: pipelinePhase,
+      abschluss_datum: null,
+      quelle: "Customer Journey",
+      status: dealStatus,
+      notizen: "Automatisch erstellt via Journey-Touchpoint (" + phase + ")",
+      user_id: userId
+    });
+    return {action:"created", phase:pipelinePhase, deal:kunde};
+  }
+}
+
 async function addJourney() {
   const btn=document.getElementById("btn-save-journey"); btn.disabled=true;
   const kunde    = document.getElementById("j-kunde").value.trim();
@@ -3245,16 +3306,27 @@ async function addJourney() {
   btn.disabled=false;
   if(error){showToast(error.message,true);return;}
 
+  // Sync to Pipeline
+  const pipelineResult = await syncJourneyToPipeline(kunde, phase, datum, userId);
+
   closeModal("modal-journey");
   renderJourney();
   renderKontakte();
+  renderPipeline();
   renderDashboard();
 
-  if(isNewKontakt) {
-    showToast(`✓ Touchpoint gespeichert · Neuer Kontakt "${kunde}" angelegt (${newStatus})`);
-  } else {
-    showToast(`✓ Touchpoint gespeichert · Status → ${newStatus}`);
+  let msg = isNewKontakt
+    ? `✓ Touchpoint gespeichert · Neuer Kontakt "${kunde}" angelegt`
+    : `✓ Touchpoint gespeichert`;
+
+  if(pipelineResult) {
+    if(pipelineResult.action === "created") {
+      msg += ` · 🆕 Deal angelegt: ${pipelineResult.phase}`;
+    } else if(pipelineResult.action === "moved") {
+      msg += ` · ➜ Deal: ${pipelineResult.from} → ${pipelineResult.to}`;
+    }
   }
+  showToast(msg);
 }
 
 // ── KONTAKTE ────────────────────────────────────────────────────────────────────

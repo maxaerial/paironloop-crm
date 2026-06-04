@@ -1173,6 +1173,13 @@ tbody td { font-feature-settings: "zero" 0; }
       <button class="login-tab active" id="tab-login" onclick="switchTab('login')" data-i18n="login"></button>
       <button class="login-tab" id="tab-register" onclick="switchTab('register')" data-i18n="register"></button>
     </div>
+    <div style="margin-bottom:16px;padding:10px 14px;background:rgba(124,110,240,.08);border:1px solid rgba(124,110,240,.2);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent2);letter-spacing:.5px">DEMO ACCOUNT</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">Unverbindlich testen mit Beispieldaten</div>
+      </div>
+      <button onclick="loginDemo()" style="padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;font-family:var(--font);font-weight:600;cursor:pointer;white-space:nowrap;transition:var(--transition)" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">Demo testen →</button>
+    </div>
     <div class="form-field">
       <label data-i18n="email">E-Mail</label>
       <input type="email" id="login-email" autocomplete="email">
@@ -2371,6 +2378,315 @@ function updateTopbarTitle() {
 }
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
+function loginDemo() {
+  document.getElementById("login-email").value = "demo@paironloop.com";
+  document.getElementById("login-pw").value = "Demo1234!";
+  doAuth();
+}
+
+// ── DEMO MODE ─────────────────────────────────────────────────────────────────
+const DEMO_DATA = {
+  kontakte: [
+    {id:"d-k1",nr:"001",unternehmen:"Weingut Loacker",vorname:"Markus",nachname:"Loacker",ort:"Bozen",land:"Italien",email:"markus@loacker.it",telefon:"+39 0471 123456",kanal:"Instagram",status:"Aktiv",branche:"Weingut",dealwert:3500,letzter_kontakt:"2026-05-28",kommentar:"Drohnenfilm für Weinberge im Herbst"},
+    {id:"d-k2",nr:"002",unternehmen:"Hotel Adler Resort",vorname:"Sandra",nachname:"Mayr",ort:"Ortisei",land:"Italien",email:"info@adler-resort.com",telefon:"+39 0471 234567",kanal:"Empfehlung",status:"Aktiv",branche:"Hospitality",dealwert:8500,letzter_kontakt:"2026-05-30",kommentar:"Imagefilm für Website und Instagram"},
+    {id:"d-k3",nr:"003",unternehmen:"Restaurant Tantris",vorname:"Hans",nachname:"Haas",ort:"München",land:"Deutschland",email:"haas@tantris.de",telefon:"+49 89 361959",kanal:"Instagram",status:"Lead",branche:"Restaurant",dealwert:2200,letzter_kontakt:"2026-05-15",kommentar:"Anfrage via DM — Termin ausstehend"},
+    {id:"d-k4",nr:"004",unternehmen:"Alpin Wellness Spa",vorname:"Julia",nachname:"Huber",ort:"Kitzbühel",land:"Österreich",email:"julia@alpinwellness.at",telefon:"+43 5356 71000",kanal:"Website",status:"Aktiv",branche:"Hospitality",dealwert:6000,letzter_kontakt:"2026-06-01",kommentar:"Jahresvertrag besprochen"},
+    {id:"d-k5",nr:"005",unternehmen:"Weingut Dönnhoff",vorname:"Cornelia",nachname:"Dönnhoff",ort:"Oberhausen",land:"Deutschland",email:"info@doennhoff.com",telefon:"+49 6755 263",kanal:"Messe",status:"Lead",branche:"Weingut",dealwert:2800,letzter_kontakt:"2026-04-20",kommentar:"Kontakt auf Prowein Messe"},
+    {id:"d-k6",nr:"006",unternehmen:"Freizeit Arena GmbH",vorname:"Thomas",nachname:"Bauer",ort:"Salzburg",land:"Österreich",email:"thomas@freizeit-arena.at",telefon:"+43 662 450000",kanal:"Instagram",status:"Abgeschlossen",branche:"Freizeitaktivität",dealwert:4200,letzter_kontakt:"2026-04-10",kommentar:"Sommersaison Clip geliefert"},
+    {id:"d-k7",nr:"007",unternehmen:"Café Central Wien",vorname:"Marie",nachname:"Fischer",ort:"Wien",land:"Österreich",email:"office@cafecentralwien.at",telefon:"+43 1 533 3763",kanal:"Empfehlung",status:"Lead",branche:"Café",dealwert:1500,letzter_kontakt:"2026-05-25",kommentar:"Interesse an Saisonfilm"},
+    {id:"d-k8",nr:"008",unternehmen:"Bar Centrale Milano",vorname:"Lorenzo",nachname:"Rossi",ort:"Mailand",land:"Italien",email:"info@barcentrale.it",telefon:"+39 02 8645",kanal:"Instagram",status:"Inaktiv",branche:"Bar",dealwert:1800,letzter_kontakt:"2026-03-15",kommentar:"Budget zu niedrig"},
+    {id:"d-k9",nr:"009",unternehmen:"Schloss Schönbrunn",vorname:"Eva",nachname:"Kreuzinger",ort:"Wien",land:"Österreich",email:"events@schoenbrunn.at",telefon:"+43 1 811 130",kanal:"Website",status:"Aktiv",branche:"Freizeitaktivität",dealwert:12000,letzter_kontakt:"2026-06-02",kommentar:"Großprojekt — Saisonfilm + Social"},
+    {id:"d-k10",nr:"010",unternehmen:"Boutique Hotel Florhof",vorname:"Stefan",nachname:"König",ort:"München",land:"Deutschland",email:"info@florhof.de",telefon:"+49 89 284084",kanal:"Empfehlung",status:"Lead",branche:"Hospitality",dealwert:3200,letzter_kontakt:"2026-05-20",kommentar:"Neues Hotel — Eröffnungsfilm geplant"}
+  ],
+  journey: [
+    {id:"d-j1",nr:"J001",kunde:"Weingut Loacker",datum:"2026-03-10",phase:"Bewusstsein",touchpoint:"Instagram Post",kanal:"Instagram",aktivitaet:"Post über Weinberge gesehen",reaktion:"Like + Kommentar",score:6},
+    {id:"d-j2",nr:"J002",kunde:"Weingut Loacker",datum:"2026-03-18",phase:"Interesse",touchpoint:"Instagram DM",kanal:"Instagram",aktivitaet:"Anfrage nach Preisliste",reaktion:"Positiv, schnelle Antwort",score:8},
+    {id:"d-j3",nr:"J003",kunde:"Weingut Loacker",datum:"2026-04-05",phase:"Bewertung",touchpoint:"Angebot verschickt",kanal:"E-Mail",aktivitaet:"Angebot 3.500€ für Herbstfilm",reaktion:"Angebot gefällt, Fragen",score:7},
+    {id:"d-j4",nr:"J004",kunde:"Weingut Loacker",datum:"2026-04-20",phase:"Kauf",touchpoint:"Vertrag unterschrieben",kanal:"E-Mail",aktivitaet:"Auftrag bestätigt",reaktion:"Sehr zufrieden",score:10},
+    {id:"d-j5",nr:"J005",kunde:"Hotel Adler Resort",datum:"2026-04-01",phase:"Bewusstsein",touchpoint:"Instagram Post",kanal:"Instagram",aktivitaet:"Story über Hotelfilm geteilt",reaktion:"DM mit Interesse",score:7},
+    {id:"d-j6",nr:"J006",kunde:"Hotel Adler Resort",datum:"2026-04-15",phase:"Interesse",touchpoint:"Erstgespräch",kanal:"Telefon",aktivitaet:"Briefing für Imagefilm",reaktion:"Sehr engagiert",score:9},
+    {id:"d-j7",nr:"J007",kunde:"Hotel Adler Resort",datum:"2026-05-02",phase:"Bewertung",touchpoint:"Angebot verschickt",kanal:"E-Mail",aktivitaet:"Angebot 8.500€",reaktion:"In Prüfung",score:8},
+    {id:"d-j8",nr:"J008",kunde:"Hotel Adler Resort",datum:"2026-05-20",phase:"Kauf",touchpoint:"Auftrag bestätigt",kanal:"E-Mail",aktivitaet:"Produktionsplanung gestartet",reaktion:"Begeistert",score:10},
+    {id:"d-j9",nr:"J009",kunde:"Restaurant Tantris",datum:"2026-05-01",phase:"Bewusstsein",touchpoint:"Instagram Story",kanal:"Instagram",aktivitaet:"Story liked",reaktion:"Kein Kommentar",score:5},
+    {id:"d-j10",nr:"J010",kunde:"Restaurant Tantris",datum:"2026-05-10",phase:"Interesse",touchpoint:"Instagram DM",kanal:"Instagram",aktivitaet:"Fragt nach Verfügbarkeit",reaktion:"Wartet auf Angebot",score:7},
+    {id:"d-j11",nr:"J011",kunde:"Alpin Wellness Spa",datum:"2026-02-15",phase:"Interesse",touchpoint:"Website Kontaktform",kanal:"Website",aktivitaet:"Interesse an Jahrespaket",reaktion:"Detaillierte Anfrage",score:8},
+    {id:"d-j12",nr:"J012",kunde:"Alpin Wellness Spa",datum:"2026-03-01",phase:"Bewertung",touchpoint:"Meeting vor Ort",kanal:"Meeting",aktivitaet:"Drehplanung für 4 Jahreszeiten",reaktion:"Sehr positiv",score:9},
+    {id:"d-j13",nr:"J013",kunde:"Alpin Wellness Spa",datum:"2026-04-01",phase:"Kauf",touchpoint:"Jahresvertrag",kanal:"E-Mail",aktivitaet:"Vertrag für 4 Saisonfilme",reaktion:"Partnerschaft langfristig",score:10},
+    {id:"d-j14",nr:"J014",kunde:"Schloss Schönbrunn",datum:"2026-05-15",phase:"Interesse",touchpoint:"Website Anfrage",kanal:"Website",aktivitaet:"Anfrage Saisonfilm + Social",reaktion:"Sehr professionell",score:9},
+    {id:"d-j15",nr:"J015",kunde:"Schloss Schönbrunn",datum:"2026-05-28",phase:"Bewertung",touchpoint:"Präsentation",kanal:"Meeting",aktivitaet:"Portfolio präsentiert",reaktion:"Beeindruckt",score:9},
+    {id:"d-j16",nr:"J016",kunde:"Freizeit Arena GmbH",datum:"2026-01-20",phase:"Kauf",touchpoint:"Auftrag erteilt",kanal:"E-Mail",aktivitaet:"Sommersaison Clip produziert",reaktion:"Sehr zufrieden",score:9},
+    {id:"d-j17",nr:"J017",kunde:"Freizeit Arena GmbH",datum:"2026-04-05",phase:"Empfehlung",touchpoint:"Weiterempfehlung",kanal:"Instagram",aktivitaet:"Hat Café Central empfohlen",reaktion:"Treuer Kunde",score:10},
+    {id:"d-j18",nr:"J018",kunde:"Café Central Wien",datum:"2026-05-20",phase:"Interesse",touchpoint:"Empfehlung erhalten",kanal:"Empfehlung",aktivitaet:"Freizeit Arena hat empfohlen",reaktion:"Positiv überrascht",score:8}
+  ],
+  deals: [
+    {id:"d-d1",nr:"P001",kunde:"Hotel Adler Resort",beschreibung:"Imagefilm + Social Content Paket",wert:8500,wahrscheinlichkeit:90,phase:"Abschluss",abschluss_datum:"2026-06-15",quelle:"Instagram",status:"Aktiv",notizen:"Drehstart 20. Juni geplant"},
+    {id:"d-d2",nr:"P002",kunde:"Schloss Schönbrunn",beschreibung:"Jahressaison Dokumentation",wert:12000,wahrscheinlichkeit:75,phase:"Verhandlung",abschluss_datum:"2026-07-01",quelle:"Website",status:"Aktiv",notizen:"4 Drehtage, alle Jahreszeiten"},
+    {id:"d-d3",nr:"P003",kunde:"Alpin Wellness Spa",beschreibung:"Q3 Saisonfilm Sommer",wert:1500,wahrscheinlichkeit:100,phase:"Abschluss",abschluss_datum:"2026-07-15",quelle:"Empfehlung",status:"Gewonnen",notizen:"Teil des Jahresvertrags"},
+    {id:"d-d4",nr:"P004",kunde:"Weingut Loacker",beschreibung:"Herbst Weinlese Film",wert:3500,wahrscheinlichkeit:85,phase:"Verhandlung",abschluss_datum:"2026-09-01",quelle:"Instagram",status:"Aktiv",notizen:"Drehtermin Mitte September"},
+    {id:"d-d5",nr:"P005",kunde:"Restaurant Tantris",beschreibung:"Abendstimmung Imagefilm",wert:2200,wahrscheinlichkeit:40,phase:"Angebot",abschluss_datum:"2026-07-30",quelle:"Instagram",status:"Aktiv",notizen:"Angebot verschickt, warte auf Feedback"},
+    {id:"d-d6",nr:"P006",kunde:"Boutique Hotel Florhof",beschreibung:"Eröffnungsfilm",wert:3200,wahrscheinlichkeit:50,phase:"Erstgespräch",abschluss_datum:"2026-08-01",quelle:"Empfehlung",status:"Aktiv",notizen:"Erstes Gespräch sehr positiv"},
+    {id:"d-d7",nr:"P007",kunde:"Café Central Wien",beschreibung:"Herbst & Winter Stimmungsfilm",wert:1500,wahrscheinlichkeit:30,phase:"Erstgespräch",abschluss_datum:"2026-09-15",quelle:"Empfehlung",status:"Aktiv",notizen:"Budget noch offen"},
+    {id:"d-d8",nr:"P008",kunde:"Weingut Dönnhoff",beschreibung:"Weinbergs Dokumentation",wert:2800,wahrscheinlichkeit:20,phase:"Angebot",abschluss_datum:"2026-08-15",quelle:"Messe",status:"Aktiv",notizen:"Konkurrenz auch im Rennen"},
+    {id:"d-d9",nr:"P009",kunde:"Freizeit Arena GmbH",beschreibung:"Sommer Highlights 2026",wert:2000,wahrscheinlichkeit:100,phase:"Abschluss",abschluss_datum:"2026-05-01",quelle:"Empfehlung",status:"Gewonnen",notizen:"Bereits geliefert und bezahlt"},
+    {id:"d-d10",nr:"P010",kunde:"Bar Centrale Milano",beschreibung:"Aperitivo Atmosphäre Film",wert:1800,wahrscheinlichkeit:0,phase:"Angebot",abschluss_datum:"2026-04-01",quelle:"Instagram",status:"Verloren",notizen:"Budget zu knapp"}
+  ],
+  aktivitaeten: [
+    {id:"d-a1",nr:"A001",kunde:"Schloss Schönbrunn",typ:"Meeting",datum:"2026-06-08",prioritaet:"Hoch",beschreibung:"Finales Briefing vor Vertragsunterzeichnung",verantwortlich:"Max",status:"Offen"},
+    {id:"d-a2",nr:"A002",kunde:"Restaurant Tantris",typ:"Nachfassen",datum:"2026-06-06",prioritaet:"Hoch",beschreibung:"Angebot nachfassen — 3 Wochen ohne Rückmeldung",verantwortlich:"Max",status:"Offen"},
+    {id:"d-a3",nr:"A003",kunde:"Hotel Adler Resort",typ:"Meeting",datum:"2026-06-10",prioritaet:"Hoch",beschreibung:"Drehplanung vor Ort besprechen",verantwortlich:"Max",status:"Offen"},
+    {id:"d-a4",nr:"A004",kunde:"Weingut Loacker",typ:"Angebot",datum:"2026-06-12",prioritaet:"Mittel",beschreibung:"Finales Angebot mit Drehplan verschicken",verantwortlich:"Elena",status:"Offen"},
+    {id:"d-a5",nr:"A005",kunde:"Boutique Hotel Florhof",typ:"E-Mail",datum:"2026-06-07",prioritaet:"Mittel",beschreibung:"Portfolio und Referenzen zusenden",verantwortlich:"Max",status:"Offen"},
+    {id:"d-a6",nr:"A006",kunde:"Weingut Dönnhoff",typ:"Nachfassen",datum:"2026-06-05",prioritaet:"Mittel",beschreibung:"Messe-Follow-up — Interesse bestätigen",verantwortlich:"Elena",status:"In Bearbeitung"},
+    {id:"d-a7",nr:"A007",kunde:"Café Central Wien",typ:"Anruf",datum:"2026-06-09",prioritaet:"Niedrig",beschreibung:"Budget klären und Konzept vorstellen",verantwortlich:"Max",status:"Offen"},
+    {id:"d-a8",nr:"A008",kunde:"Alpin Wellness Spa",typ:"Meeting",datum:"2026-05-15",prioritaet:"Hoch",beschreibung:"Q2 Review und Q3 Planung",verantwortlich:"Max",status:"Erledigt"},
+    {id:"d-a9",nr:"A009",kunde:"Freizeit Arena GmbH",typ:"E-Mail",datum:"2026-04-10",prioritaet:"Mittel",beschreibung:"Finales Video zur Freigabe geschickt",verantwortlich:"Elena",status:"Erledigt"},
+    {id:"d-a10",nr:"A010",kunde:"Hotel Adler Resort",typ:"E-Mail",datum:"2026-05-25",prioritaet:"Hoch",beschreibung:"Vertrag zur Unterschrift geschickt",verantwortlich:"Max",status:"Erledigt"}
+  ]
+};
+
+let isDemoMode = false;
+
+function loginDemo() {
+  isDemoMode = true;
+  // Load demo data into memory
+  kontakteData = JSON.parse(JSON.stringify(DEMO_DATA.kontakte));
+  journeyData  = JSON.parse(JSON.stringify(DEMO_DATA.journey));
+  dealsData    = JSON.parse(JSON.stringify(DEMO_DATA.deals));
+  aktivData    = JSON.parse(JSON.stringify(DEMO_DATA.aktivitaeten));
+
+  // Fake user
+  document.getElementById("user-name").textContent = "Demo User";
+  document.getElementById("user-initials").textContent = "DU";
+  document.getElementById("settings-email").textContent = "demo@paironloop.com";
+
+  // Copy logos to mobile topbar
+  const sw=document.querySelector('.sidebar .logo-white');
+  const sd=document.querySelector('.sidebar .logo-dark');
+  const mw=document.querySelector('.mobile-topbar .logo-white');
+  const md=document.querySelector('.mobile-topbar .logo-dark');
+  if(sw&&mw) mw.src=sw.src;
+  if(sd&&md) md.src=sd.src;
+
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  applyI18n();
+
+  // Apply saved lang/theme
+  document.querySelectorAll(".lang-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("lang-"+lang)?.classList.add("active");
+  document.querySelectorAll(".theme-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("theme-"+theme)?.classList.add("active");
+  if(theme!=="midnight") document.documentElement.setAttribute("data-theme",theme);
+
+  // Render all with demo data
+  renderDemoDashboard();
+  renderKontakteDemo();
+  renderJourneyDemo();
+  renderPipelineDemo();
+  renderAktivitaetenDemo();
+  checkNotificationsDemo();
+  showToast("🎬 Demo-Modus aktiv — Änderungen werden nicht gespeichert");
+}
+
+// Demo render functions — use in-memory data instead of Supabase
+function renderDemoDashboard() {
+  applyI18n();
+  const k=kontakteData, d=dealsData, a=aktivData;
+  document.getElementById("kpi-kunden").textContent=k.length;
+  document.getElementById("kpi-leads").textContent=k.filter(x=>x.status==="Lead").length;
+  document.getElementById("kpi-deals").textContent=d.filter(x=>x.status==="Aktiv").length;
+  document.getElementById("kpi-followups").textContent=a.filter(x=>x.status==="Offen").length;
+
+  const cs=getComputedStyle(document.documentElement);
+  const accent=cs.getPropertyValue("--accent").trim();
+  const blue=cs.getPropertyValue("--blue").trim();
+  const green=cs.getPropertyValue("--green").trim();
+  const orange=cs.getPropertyValue("--orange").trim();
+  const purple=cs.getPropertyValue("--purple").trim();
+  const text3=cs.getPropertyValue("--text3").trim();
+  const textColor=cs.getPropertyValue("--text2").trim();
+  const borderCol=cs.getPropertyValue("--border").trim();
+
+  const sc={Lead:0,Aktiv:0,"Inaktiv":0,"Abgeschlossen":0};
+  k.forEach(x=>{if(sc[x.status]!==undefined)sc[x.status]++;});
+  if(cStatus)cStatus.destroy();
+  cStatus=new Chart(document.getElementById("chart-status"),{type:"doughnut",
+    data:{labels:Object.keys(sc),datasets:[{data:Object.values(sc),backgroundColor:[blue,green,text3,purple],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{display:true,position:"bottom",labels:{color:textColor,font:{size:11,family:"DM Sans"},padding:12,usePointStyle:true}}}}});
+
+  const phases=["Erstgespräch","Angebot","Verhandlung","Abschluss"];
+  const pv=phases.map(p=>d.filter(x=>x.phase===p).reduce((s,x)=>s+(x.wert||0),0));
+  if(cPipe)cPipe.destroy();
+  cPipe=new Chart(document.getElementById("chart-pipeline"),{type:"bar",
+    data:{labels:phases,datasets:[{data:pv,backgroundColor:accent+"CC",borderRadius:8,borderSkipped:false,borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{size:11}},grid:{color:borderCol},border:{display:false}},
+              x:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
+
+  const pBg={"Hoch":"rgba(240,110,110,.1)","Mittel":"rgba(240,168,110,.1)","Niedrig":"rgba(110,240,160,.1)"};
+  const pC={"Hoch":"var(--red)","Mittel":"var(--orange)","Niedrig":"var(--green)"};
+  document.getElementById("recent-activity-body").innerHTML=a.slice(0,5).map(x=>`<tr>
+    <td style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text3)">${fmtDate(x.datum)}</td>
+    <td><strong>${x.kunde}</strong></td>
+    <td style="color:var(--text2)">${x.typ}</td>
+    <td><span style="background:${pBg[x.prioritaet]};color:${pC[x.prioritaet]};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600">${x.prioritaet}</span></td>
+    <td><span class="badge badge-${(x.status||"").toLowerCase().replace(/\s+/g,"-")}">${x.status}</span></td>
+  </tr>`).join("");
+  document.getElementById("dash-subtitle").textContent=new Date().toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+}
+
+function renderKontakteDemo() {
+  let rows=[...kontakteData];
+  if(kSearch) rows=rows.filter(k=>k.unternehmen?.toLowerCase().includes(kSearch.toLowerCase())||k.vorname?.toLowerCase().includes(kSearch.toLowerCase()));
+  if(kStatus) rows=rows.filter(k=>k.status===kStatus);
+  if(kBranche) rows=rows.filter(k=>k.branche===kBranche);
+  const kFn={nr_k:r=>r.nr||"",name_k:r=>(r.unternehmen||"").toLowerCase(),person_k:r=>((r.vorname||"")+(r.nachname||"")).toLowerCase(),ort_k:r=>(r.ort||"").toLowerCase(),status_k:r=>r.status||"",kanal_k:r=>(r.kanal||"").toLowerCase(),kontakt_k:r=>r.letzter_kontakt||"",branche_k:r=>(r.branche||"").toLowerCase(),land_k:r=>(r.land||"").toLowerCase()}[kSortCol]||((r)=>r.nr||"");
+  rows=[...rows].sort((a,b)=>kSortDir==="asc"?kFn(a).localeCompare(kFn(b)):kFn(b).localeCompare(kFn(a)));
+  renderKontakteCharts(kontakteData);
+  document.getElementById("kontakte-table-wrap").innerHTML=`<table><thead><tr>
+    <th><input type="checkbox" class="row-checkbox" id="check-all-k" onchange="toggleAllBulk('kontakte',this.checked)"></th>
+    <th>${thSort("nr_k","nr",kSortCol,kSortDir)}</th><th>${thSort("name_k",t("company_col"),kSortCol,kSortDir)}</th>
+    <th>${thSort("person_k",t("name"),kSortCol,kSortDir)}</th><th>${thSort("ort_k","Stadt",kSortCol,kSortDir)}</th>
+    <th>${thSort("land_k","Land",kSortCol,kSortDir)}</th><th>${thSort("status_k",t("status"),kSortCol,kSortDir)}</th>
+    <th>${thSort("kanal_k",t("channel_col"),kSortCol,kSortDir)}</th><th>${thSort("branche_k","Branche",kSortCol,kSortDir)}</th>
+    <th>Homepage</th><th>${thSort("kontakt_k",t("last_contact"),kSortCol,kSortDir)}</th>
+    </tr></thead><tbody>${rows.map(k=>{
+      const slug=(k.status||"").toLowerCase().replace(/[^a-z]/g,"-");
+      return`<tr>
+        <td><input type="checkbox" class="row-checkbox bulk-check-kontakte" data-id="${k.id}" onchange="updateBulk('kontakte')"></td>
+        <td style="font-size:11px;color:var(--text3)">${k.nr||"–"}</td>
+        <td><strong style="cursor:pointer;color:var(--accent2)" onclick="editKontaktDemo('${k.id}')">${k.unternehmen}</strong></td>
+        <td style="color:var(--text2)">${k.vorname&&k.vorname!=="–"?k.vorname+" "+(k.nachname||""):"–"}</td>
+        <td style="color:var(--text2)">${k.ort||"–"}</td>
+        <td style="color:var(--text2)">${k.land||"–"}</td>
+        <td><span class="badge badge-${slug}">${k.status}</span></td>
+        <td style="color:var(--text2);font-size:12px">${k.kanal||"–"}</td>
+        <td style="color:var(--text2);font-size:12px">${k.branche||"–"}</td>
+        <td>–</td>
+        <td style="font-size:12px;color:var(--text3)">${fmtDate(k.letzter_kontakt)}</td>
+      </tr>`;}).join("")}</tbody></table>`;
+}
+
+function editKontaktDemo(id) {
+  const k=kontakteData.find(x=>x.id===id); if(!k) return;
+  document.getElementById("ek-id").value=k.id;
+  document.getElementById("ek-unternehmen").value=k.unternehmen||"";
+  document.getElementById("ek-vorname").value=k.vorname||"";
+  document.getElementById("ek-nachname").value=k.nachname||"";
+  document.getElementById("ek-ort").value=k.ort||"";
+  document.getElementById("ek-land").value=k.land||"";
+  document.getElementById("ek-email").value=k.email||"";
+  document.getElementById("ek-telefon").value=k.telefon||"";
+  document.getElementById("ek-kanal").value=k.kanal||"";
+  document.getElementById("ek-status").value=k.status||"Lead";
+  document.getElementById("ek-branche").value=k.branche||"";
+  document.getElementById("ek-dealwert").value=k.dealwert||"";
+  document.getElementById("ek-homepage").value=k.homepage||"";
+  document.getElementById("ek-kommentar").value=k.kommentar||"";
+  document.getElementById("edit-modal-title").textContent=k.unternehmen+" ändern";
+  openModal("modal-edit-kontakt");
+}
+
+function renderJourneyDemo() {
+  journeyData=JSON.parse(JSON.stringify(DEMO_DATA.journey));
+  renderJourneyCharts(); renderJourneyTable();
+}
+
+function renderPipelineDemo() {
+  dealsData=JSON.parse(JSON.stringify(DEMO_DATA.deals));
+  filterPipelineDemo();
+}
+
+function filterPipelineDemo() {
+  const rows=[...dealsData];
+  const t_=rows.reduce((s,d)=>s+(d.wert||0),0);
+  const w=Math.round(rows.reduce((s,d)=>s+(d.wert||0)*(d.wahrscheinlichkeit||0)/100,0));
+  const won=rows.filter(d=>d.status==="Gewonnen").length;
+  const total=won+rows.filter(d=>d.status==="Verloren").length;
+  if(document.getElementById("pipeline-total")){
+    document.getElementById("pipeline-total").textContent=t_.toLocaleString("de-DE")+"€";
+    document.getElementById("pipeline-weighted").textContent=w.toLocaleString("de-DE")+"€";
+    document.getElementById("pipeline-open").textContent=rows.filter(d=>d.status==="Aktiv").length;
+    document.getElementById("pipeline-won").textContent=won;
+    document.getElementById("pipeline-rate").textContent=(total>0?Math.round(won/total*100):0)+"%";
+  }
+  const cs=getComputedStyle(document.documentElement);
+  const text3=cs.getPropertyValue("--text3").trim();
+  const borderCol=cs.getPropertyValue("--border").trim();
+  const phases=["Erstgespräch","Angebot","Verhandlung","Abschluss"];
+  const phaseColors=["#6EB8F0","#7C6EF0","#F0A86E","#6EF0A0"];
+  const phaseVals=phases.map(p=>rows.filter(d=>d.phase===p).reduce((s,d)=>s+(d.wert||0),0));
+  if(cPipePhases)cPipePhases.destroy();
+  const el1=document.getElementById("chart-pipeline-phases");
+  if(el1)cPipePhases=new Chart(el1,{type:"bar",data:{labels:phases,datasets:[{data:phaseVals,backgroundColor:phaseColors,borderRadius:8,borderSkipped:false,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{size:10}},grid:{color:borderCol},border:{display:false}},x:{ticks:{color:text3,font:{size:10}},grid:{display:false},border:{display:false}}}}});
+  const topDeals=[...rows].sort((a,b)=>(b.wert||0)-(a.wert||0)).slice(0,6);
+  if(cPipeDeals2)cPipeDeals2.destroy();
+  const el2=document.getElementById("chart-pipeline-deals");
+  if(el2)cPipeDeals2=new Chart(el2,{type:"bar",data:{labels:topDeals.map(d=>d.kunde.length>14?d.kunde.slice(0,14)+"…":d.kunde),datasets:[{data:topDeals.map(d=>d.wert||0),backgroundColor:topDeals.map(d=>d.status==="Gewonnen"?"#6EF0A0":d.status==="Verloren"?"#F06E6E":"#7C6EF0"),borderRadius:6,borderSkipped:false,borderWidth:0}]},options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{size:10}},grid:{color:borderCol},border:{display:false}},y:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
+  const fEl=document.getElementById("pipeline-funnel");
+  if(fEl){const cnts=phases.map(p=>rows.filter(d=>d.phase===p).length);const mx=Math.max(...cnts,1);fEl.innerHTML=phases.map((p,i)=>{const h=Math.max(20,Math.round(150*cnts[i]/mx));return`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1"><div style="font-size:11px;font-weight:700;color:${phaseColors[i]}">${cnts[i]}</div><div style="width:100%;height:${h}px;background:${phaseColors[i]};border-radius:6px 6px 0 0;opacity:.85"></div><div style="font-size:9px;color:var(--text3);text-align:center">${p}</div></div>`;}).join("");}
+  renderPipelineBoard(rows);
+}
+
+function renderAktivitaetenDemo() {
+  aktivData=JSON.parse(JSON.stringify(DEMO_DATA.aktivitaeten));
+  let rows=[...aktivData];
+  const cs=getComputedStyle(document.documentElement);
+  const text3=cs.getPropertyValue("--text3").trim();
+  const COLORS=["#7C6EF0","#6EB8F0","#6EF0A0","#F0A86E","#F06E6E","#B06EF0","#38A0E8","#F0804A","#9090A8"];
+  const donutOpts=()=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:8}}}}});
+  const statusCnt={};rows.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
+  if(cAktivTyp)cAktivTyp.destroy();
+  const elS=document.getElementById("chart-aktiv-status");
+  if(elS){const o=donutOpts();o.data={labels:Object.keys(statusCnt),datasets:[{data:Object.values(statusCnt),backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]};cAktivTyp=new Chart(elS,o);}
+  const prioCnt={};rows.forEach(a=>{const p=a.prioritaet||"–";prioCnt[p]=(prioCnt[p]||0)+1;});
+  if(cAktivPrio)cAktivPrio.destroy();
+  const elP=document.getElementById("chart-aktiv-prio2");
+  if(elP){const o=donutOpts();o.data={labels:Object.keys(prioCnt),datasets:[{data:Object.values(prioCnt),backgroundColor:["#F06E6E","#F0A86E","#6EF0A0"],borderWidth:0,hoverOffset:4}]};cAktivPrio=new Chart(elP,o);}
+  const typCnt={};rows.forEach(a=>{const t=a.typ||"–";typCnt[t]=(typCnt[t]||0)+1;});
+  const elT=document.getElementById("chart-aktiv-typ2");
+  if(elT){if(window._cAktivTyp2)window._cAktivTyp2.destroy();const o=donutOpts();o.data={labels:Object.keys(typCnt),datasets:[{data:Object.values(typCnt),backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]};window._cAktivTyp2=new Chart(elT,o);}
+  const vCnt={};rows.forEach(a=>{const v=a.verantwortlich||"–";vCnt[v]=(vCnt[v]||0)+1;});
+  const elV=document.getElementById("chart-aktiv-verantw");
+  if(elV){if(window._cAktivV)window._cAktivV.destroy();const o=donutOpts();o.data={labels:Object.keys(vCnt),datasets:[{data:Object.values(vCnt),backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]};window._cAktivV=new Chart(elV,o);}
+  const pBg={"Hoch":"rgba(240,110,110,.1)","Mittel":"rgba(240,168,110,.1)","Niedrig":"rgba(110,240,160,.1)"};
+  const pC={"Hoch":"var(--red)","Mittel":"var(--orange)","Niedrig":"var(--green)"};
+  document.getElementById("aktivitaeten-table-wrap").innerHTML=`<table><thead><tr>
+    <th><input type="checkbox" class="row-checkbox" id="check-all-a" onchange="toggleAllBulk('aktivitaeten',this.checked)"></th>
+    <th>${thSort("nr_a","Nr",aSortCol,aSortDir)}</th><th>${thSort("kunde_a",t("client"),aSortCol,aSortDir)}</th>
+    <th>${thSort("typ_a",t("type"),aSortCol,aSortDir)}</th><th>${thSort("datum_a",t("due_date"),aSortCol,aSortDir)}</th>
+    <th>${thSort("prio_a",t("priority"),aSortCol,aSortDir)}</th><th>${t("description")}</th>
+    <th>Verantwortlich</th><th>${thSort("status_a",t("status"),aSortCol,aSortDir)}</th>
+    </tr></thead><tbody>${rows.map(a=>`<tr>
+      <td><input type="checkbox" class="row-checkbox bulk-check-aktivitaeten" data-id="${a.id}" onchange="updateBulk('aktivitaeten')"></td>
+      <td style="font-size:11px;color:var(--text3)">${a.nr||"–"}</td>
+      <td><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${a.kunde}')">${a.kunde}</strong></td>
+      <td style="color:var(--text2)">${a.typ}</td>
+      <td style="font-size:12px;color:var(--text3)">${fmtDate(a.datum)}</td>
+      <td><span style="background:${pBg[a.prioritaet]};color:${pC[a.prioritaet]};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600">${a.prioritaet}</span></td>
+      <td style="color:var(--text2);font-size:12px;max-width:180px">${a.beschreibung||"–"}</td>
+      <td style="font-size:12px;color:var(--text3)">${a.verantwortlich||"–"}</td>
+      <td><span class="badge badge-${(a.status||"").toLowerCase().replace(/\s+/g,"-")}">${a.status}</span></td>
+    </tr>`).join("")}</tbody></table>`;
+}
+
+function checkNotificationsDemo() {
+  const today=new Date().toISOString().split("T")[0];
+  const due=aktivData.filter(a=>a.status==="Offen"&&a.datum&&a.datum<=today);
+  const count=due.length;
+  const badge=document.getElementById("nav-badge");
+  const panel=document.getElementById("notif-panel");
+  const mb=document.getElementById("mobile-nav-badge");
+  if(badge){badge.style.display=count>0?"flex":"none";badge.textContent=count>9?"9+":count;}
+  if(mb){mb.style.display=count>0?"flex":"none";mb.textContent=count>9?"9+":count;}
+  if(panel){panel.style.display=count>0?"block":"none";
+    const list=document.getElementById("notif-list");
+    if(list)list.innerHTML=due.map(a=>`<div class="notif-item"><div class="notif-dot" style="background:var(--red)"></div><strong>${a.kunde}</strong><span style="color:var(--text3)">${a.typ}</span><span style="margin-left:auto;font-size:11px;color:var(--text3)">${fmtDate(a.datum)}</span></div>`).join("");
+  }
+}
+
+function showPageMobileDemo(id, el) { showPageMobile(id, el); }
+
 function showResetPw() {
   const wrap = document.getElementById("reset-pw-wrap");
   const link = document.getElementById("forgot-link");
@@ -2461,7 +2777,12 @@ function onLogin(user) {
 }
 
 async function doLogout() {
-  await sb.auth.signOut();
+  if(isDemoMode) {
+    isDemoMode = false;
+    kontakteData=[]; journeyData=[]; dealsData=[]; aktivData=[];
+  } else {
+    await sb.auth.signOut();
+  }
   document.getElementById("app").style.display = "none";
   document.getElementById("login-screen").style.display = "flex";
   closeSettings();
@@ -2488,11 +2809,19 @@ function showPage(id, el) {
   document.getElementById("page-"+id)?.classList.add("active");
   if(el) el.classList.add("active");
   updateTopbarTitle();
-  if(id==="dashboard") renderDashboard();
-  if(id==="journey") renderJourney();
-  if(id==="kontakte") renderKontakte();
-  if(id==="pipeline") renderPipeline();
-  if(id==="aktivitaeten") renderAktivitaeten();
+  if(isDemoMode) {
+    if(id==="dashboard")    renderDemoDashboard();
+    if(id==="journey")      renderJourneyDemo();
+    if(id==="kontakte")     renderKontakteDemo();
+    if(id==="pipeline")     renderPipelineDemo();
+    if(id==="aktivitaeten") renderAktivitaetenDemo();
+  } else {
+    if(id==="dashboard")    renderDashboard();
+    if(id==="journey")      renderJourney();
+    if(id==="kontakte")     renderKontakte();
+    if(id==="pipeline")     renderPipeline();
+    if(id==="aktivitaeten") renderAktivitaeten();
+  }
 }
 function renderAll() { renderDashboard(); renderKontakte(); renderJourney(); renderPipeline(); renderAktivitaeten(); checkNotifications(); }
 

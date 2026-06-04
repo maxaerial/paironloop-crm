@@ -1063,6 +1063,7 @@ tbody td { font-feature-settings: "zero" 0; }
 
   /* Grid layouts — stack on mobile */
   .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
+  div[style*="grid-template-columns:repeat(4"] { grid-template-columns: repeat(2,1fr) !important; }
 
   /* Charts — smaller height */
   .chart-wrap[style*="height:200px"] { height: 160px !important; }
@@ -1585,22 +1586,22 @@ tbody td { font-feature-settings: "zero" 0; }
         </div>
 
         <!-- Aktivitäten Charts -->
-      <div class="grid-2" style="margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
         <div class="card">
-          <div class="card-header"><div class="card-title">Nach Status</div></div>
-          <div class="card-body"><div class="chart-wrap" style="height:180px"><canvas id="chart-aktiv-status"></canvas></div></div>
+          <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Nach Status</div></div>
+          <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:160px"><canvas id="chart-aktiv-status"></canvas></div></div>
         </div>
         <div class="card">
-          <div class="card-header"><div class="card-title">Nach Priorität</div></div>
-          <div class="card-body"><div class="chart-wrap" style="height:180px"><canvas id="chart-aktiv-prio2"></canvas></div></div>
+          <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Nach Priorität</div></div>
+          <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:160px"><canvas id="chart-aktiv-prio2"></canvas></div></div>
         </div>
         <div class="card">
-          <div class="card-header"><div class="card-title">Nach Typ</div></div>
-          <div class="card-body"><div class="chart-wrap" style="height:180px"><canvas id="chart-aktiv-typ2"></canvas></div></div>
+          <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Nach Typ</div></div>
+          <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:160px"><canvas id="chart-aktiv-typ2"></canvas></div></div>
         </div>
         <div class="card">
-          <div class="card-header"><div class="card-title">Nach Verantwortlich</div></div>
-          <div class="card-body"><div class="chart-wrap" style="height:180px"><canvas id="chart-aktiv-verantw"></canvas></div></div>
+          <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Nach Verantwortlich</div></div>
+          <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:160px"><canvas id="chart-aktiv-verantw"></canvas></div></div>
         </div>
       </div>
 
@@ -3270,7 +3271,7 @@ async function renderAktivitaeten(f) {
   const cs=getComputedStyle(document.documentElement);
   const text3=cs.getPropertyValue("--text3").trim();
   const COLORS=["#7C6EF0","#6EB8F0","#6EF0A0","#F0A86E","#F06E6E","#B06EF0","#38A0E8","#F0804A","#9090A8"];
-  const donutOpts=(el)=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:10},padding:6,usePointStyle:true}}}}});
+  const donutOpts=(el)=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:8}}}}});
 
   // Status
   const statusCnt={};aktivData.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});

@@ -655,16 +655,16 @@ tbody tr:hover td { background: var(--bg3); }
 }
 .deal-ribbon {
   position: absolute;
-  top: 8px;
-  right: -22px;
-  width: 80px;
+  bottom: 8px;
+  right: -20px;
+  width: 76px;
   padding: 3px 0;
   text-align: center;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: .5px;
   text-transform: uppercase;
-  transform: rotate(45deg);
+  transform: rotate(-45deg);
   transform-origin: center;
   pointer-events: none;
   z-index: 2;
@@ -2668,7 +2668,34 @@ function filterPipelineDemo() {
   const topDeals=[...rows].sort((a,b)=>(b.wert||0)-(a.wert||0)).slice(0,6);
   if(cPipeDeals2)cPipeDeals2.destroy();
   const el2=document.getElementById("chart-pipeline-deals");
-  if(el2)cPipeDeals2=new Chart(el2,{type:"bar",data:{labels:topDeals.map(d=>d.kunde.length>14?d.kunde.slice(0,14)+"…":d.kunde),datasets:[{data:topDeals.map(d=>d.wert||0),backgroundColor:topDeals.map(d=>getColor(d.status,0)),borderRadius:6,borderSkipped:false,borderWidth:0}]},options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{size:10}},grid:{color:borderCol},border:{display:false}},y:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
+  if(el2)cPipeDeals2=new Chart(el2,{type:"bar",data:{labels:topDeals.map(d=>d.kunde.length>14?d.kunde.slice(0,14)+"…":d.kunde),datasets:[{data:topDeals.map(d=>d.wert||0),backgroundColor:topDeals.map(d=>getColor(d.status,0)),borderRadius:6,borderSkipped:false,borderWidth:0}]},options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(item)=>` ${item.raw.toLocaleString("de-DE")} €`}}},scales:{x:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{size:10}},grid:{color:borderCol},border:{display:false}},y:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
+
+  // Chart 3: Status donut — uses ALL dealsData for full picture
+  const allDeals = dealsData;
+  const statusCnt={};
+  allDeals.forEach(d=>{ const s=d.status||"Aktiv"; statusCnt[s]=(statusCnt[s]||0)+1; });
+  if(window._cPipeStatus) window._cPipeStatus.destroy();
+  const elS=document.getElementById("chart-pipeline-status");
+  if(elS && Object.keys(statusCnt).length > 0) {
+    window._cPipeStatus = new Chart(elS, {
+      type:"doughnut",
+      data:{
+        labels: Object.keys(statusCnt),
+        datasets:[{
+          data: Object.values(statusCnt),
+          backgroundColor: getColors(Object.keys(statusCnt)),
+          borderWidth: 0,
+          hoverOffset: 4
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        cutout:"62%",
+        plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:10},padding:8,usePointStyle:true}}}
+      }
+    });
+  }
   const fEl=document.getElementById("pipeline-funnel");
   if(fEl){const cnts=phases.map(p=>rows.filter(d=>d.phase===p).length);const mx=Math.max(...cnts,1);fEl.innerHTML=phases.map((p,i)=>{const h=Math.max(20,Math.round(150*cnts[i]/mx));return`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1"><div style="font-size:11px;font-weight:700;color:${phaseColors[i]}">${cnts[i]}</div><div style="width:100%;height:${h}px;background:${phaseColors[i]};border-radius:6px 6px 0 0;opacity:.85"></div><div style="font-size:9px;color:var(--text3);text-align:center">${p}</div></div>`;}).join("");}
   renderPipelineBoard(rows);

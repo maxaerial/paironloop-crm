@@ -3663,11 +3663,16 @@ function renderKontakteCharts(data) {
     options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:7}}}}
   });
 
-  const statusCount = {};
-  data.forEach(k => { const s=k.status||"–"; statusCount[s]=(statusCount[s]||0)+1; });
+  const statusCountRaw = {};
+  data.forEach(k => { const s=k.status||"–"; statusCountRaw[s]=(statusCountRaw[s]||0)+1; });
+  // Fixed order: Lead, Aktiv, Abgeschlossen, Inaktiv
+  const statusOrderK = ["Lead","Aktiv","Abgeschlossen","Inaktiv"];
+  const statusLabelsK = statusOrderK.filter(s=>statusCountRaw[s]>0);
+  const statusValsK   = statusLabelsK.map(s=>statusCountRaw[s]);
+  const statusColorsK = {"Lead":"#6EB8F0","Aktiv":"#6EF0A0","Abgeschlossen":"#B06EF0","Inaktiv":"#9090A8"};
   if(cKStatus) cKStatus.destroy();
   const elS = document.getElementById("chart-k-status");
-  if(elS) cKStatus = new Chart(elS, donut(Object.keys(statusCount), Object.values(statusCount)));
+  if(elS) cKStatus = new Chart(elS, {type:"doughnut",data:{labels:statusLabelsK,datasets:[{data:statusValsK,backgroundColor:statusLabelsK.map(s=>statusColorsK[s]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:7}}}}});
 
   const landCount = {};
   data.forEach(k => { const l=k.land||"–"; landCount[l]=(landCount[l]||0)+1; });
@@ -3754,6 +3759,12 @@ function filterPipeline() {
     document.getElementById("pipeline-open").textContent=openDeals;
     if(document.getElementById("pipeline-won")) document.getElementById("pipeline-won").textContent=wonDeals;
     if(document.getElementById("pipeline-rate")) document.getElementById("pipeline-rate").textContent=rate+"%";
+    const openVal = rows.filter(d=>d.status==="Aktiv").reduce((s,d)=>s+(d.wert||0),0);
+    const wonVal  = rows.filter(d=>d.status==="Gewonnen").reduce((s,d)=>s+(d.wert||0),0);
+    const elOV=document.getElementById("pipeline-open-val");
+    const elWV=document.getElementById("pipeline-won-val");
+    if(elOV) elOV.textContent=openVal>0?openVal.toLocaleString("de-DE")+"€":"–";
+    if(elWV) elWV.textContent=wonVal>0?wonVal.toLocaleString("de-DE")+"€":"–";
   }
 
   // Funnel chart

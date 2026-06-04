@@ -2944,12 +2944,9 @@ function filterPipeline() {
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
             <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
               <input type="checkbox" class="row-checkbox bulk-check-deals" data-id="${d.id}" onchange="updateBulk('deals')" style="flex-shrink:0">
-              <div class="deal-card-name">${d.beschreibung||"–"}</div>
+              <div class="deal-card-name" onclick="editDeal('${d.id}')" style="cursor:pointer">${d.beschreibung||"–"}</div>
             </div>
-            <div style="display:flex;gap:4px;flex-shrink:0">
-              <button class="btn btn-ghost" style="padding:3px 8px;font-size:10px" onclick="editDeal('${d.id}')">${t("edit")||"Ändern"}</button>
-              <button class="btn btn-danger-ghost" style="padding:3px 8px;font-size:10px" onclick="deleteRow('deals','${d.id}',renderPipeline)">${t("delete")}</button>
-            </div>
+
           </div>
           <div class="deal-card-value" style="margin-top:6px">
             <span style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-weight:600;color:var(--text)">${(d.wert||0).toLocaleString("de-DE")}€</span>
@@ -3201,10 +3198,7 @@ async function renderAktivitaeten(f) {
       <td style="color:var(--text2);font-size:12px;max-width:180px">${a.beschreibung||"–"}</td>
       <td style="font-size:12px;color:var(--text3)">${a.verantwortlich||"–"}</td>
       <td><span class="badge badge-${(a.status||"").toLowerCase().replace(/\s+/g,"-")}">${a.status}</span></td>
-      <td style="display:flex;gap:6px;flex-wrap:wrap">
-        <button class="btn btn-primary" style="font-size:11px;padding:4px 10px" onclick="doneAktivitaet('${a.id}')">${t("mark_done")}</button>
-        <button class="btn btn-danger-ghost" onclick="deleteRow('aktivitaeten','${a.id}',renderAktivitaeten)">${t("delete")}</button>
-      </td>
+      
     </tr>`).join("")}</tbody>
   </table>`;
 }

@@ -618,7 +618,7 @@ tbody tr:hover td { background: var(--bg3); }
 .funnel-bar-fill { height: 100%; border-radius: 2px; transition: width .5s cubic-bezier(.4,0,.2,1); }
 
 /* ── PIPELINE BOARD ── */
-.pipeline-board { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.pipeline-board { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
 .pipeline-col {
   background: var(--bg3);
   border: 1px solid var(--border);
@@ -646,8 +646,8 @@ tbody tr:hover td { background: var(--bg3); }
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
-  margin-bottom: 8px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
   transition: var(--transition);
   cursor: default;
 }
@@ -1095,13 +1095,13 @@ tbody td { font-feature-settings: "zero" 0; }
   .pipeline-board {
     display: flex !important;
     overflow-x: auto;
-    gap: 10px;
+    gap: 8px;
     padding-bottom: 8px;
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x mandatory;
   }
   .pipeline-col {
-    min-width: 240px;
+    min-width: 200px;
     scroll-snap-align: start;
     flex-shrink: 0;
   }
@@ -1523,7 +1523,7 @@ tbody td { font-feature-settings: "zero" 0; }
 
     <!-- PIPELINE -->
     <div class="page" id="page-pipeline">
-      <div style="padding:28px">
+      <div style="padding:20px 24px">
         <div class="page-header">
           <div class="page-header-row">
             <div>
@@ -3031,7 +3031,33 @@ function filterPipeline() {
   if(document.getElementById("pipeline-total")) {
     document.getElementById("pipeline-total").textContent=t_.toLocaleString("de-DE")+"€";
     document.getElementById("pipeline-weighted").textContent=w.toLocaleString("de-DE")+"€";
-    document.getElementById("pipeline-open").textContent=rows.filter(d=>d.status==="Aktiv").length;
+    const openDeals = rows.filter(d=>d.status==="Aktiv").length;
+    const wonDeals  = rows.filter(d=>d.status==="Gewonnen").length;
+    const totalClosed = wonDeals + rows.filter(d=>d.status==="Verloren").length;
+    const rate = totalClosed > 0 ? Math.round(wonDeals/totalClosed*100) : 0;
+    document.getElementById("pipeline-open").textContent=openDeals;
+    document.getElementById("pipeline-won").textContent=wonDeals;
+    document.getElementById("pipeline-rate").textContent=rate+"%";
+  }
+
+  // Funnel chart
+  const funnelEl = document.getElementById("pipeline-funnel");
+  if(funnelEl) {
+    const phases=["Erstgespräch","Angebot","Verhandlung","Abschluss"];
+    const phColors=["#6EB8F0","#7C6EF0","#F0A86E","#6EF0A0"];
+    const phaseCounts=phases.map(p=>rows.filter(d=>d.phase===p).length);
+    const maxCount=Math.max(...phaseCounts,1);
+    funnelEl.innerHTML=phases.map((p,i)=>{
+      const cnt=phaseCounts[i];
+      const pct=Math.round(cnt/maxCount*100);
+      const h=Math.max(20,Math.round(150*cnt/maxCount));
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
+        <div style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:${phColors[i]}">${cnt}</div>
+        <div style="width:100%;height:${h}px;background:${phColors[i]};border-radius:6px 6px 0 0;opacity:.85;transition:height .4s;cursor:default;position:relative" title="${p}: ${cnt} Deals">
+        </div>
+        <div style="font-size:9px;color:var(--text3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%">${p}</div>
+      </div>`;
+    }).join("");
   }
 
   // Charts
@@ -3089,12 +3115,23 @@ function filterPipeline() {
           ondragstart="dragDeal(event,'${d.id}')"
           ondragend="document.querySelectorAll('.pipeline-col-body').forEach(c=>c.style.background='')"
           style="cursor:grab">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
-            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:4px">
+            <button onclick="moveDeal('${d.id}',-1)" ${phases.indexOf(ph)===0?'style="visibility:hidden"':''} 
+              style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;width:24px;height:24px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);transition:var(--transition);padding:0"
+              onmouseover="this.style.background='var(--bg4)';this.style.color='var(--accent2)'"
+              onmouseout="this.style.background='var(--bg3)';this.style.color='var(--text3)'">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">
               <input type="checkbox" class="row-checkbox bulk-check-deals" data-id="${d.id}" onchange="updateBulk('deals')" style="flex-shrink:0">
-              <div class="deal-card-name" onclick="editDeal('${d.id}')" style="cursor:pointer">${d.beschreibung||"–"}</div>
+              <div class="deal-card-name" onclick="editDeal('${d.id}')" style="cursor:pointer;font-size:12px;font-weight:600;flex:1;min-width:0">${d.beschreibung||"–"}</div>
             </div>
-
+            <button onclick="moveDeal('${d.id}',1)" ${phases.indexOf(ph)===phases.length-1?'style="visibility:hidden"':''}
+              style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;width:24px;height:24px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);transition:var(--transition);padding:0"
+              onmouseover="this.style.background='var(--bg4)';this.style.color='var(--accent2)'"
+              onmouseout="this.style.background='var(--bg3)';this.style.color='var(--text3)'">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
           </div>
           <div class="deal-card-value" style="margin-top:6px">
             <span style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-weight:600;color:var(--text)">${(d.wert||0).toLocaleString("de-DE")}€</span>
@@ -4276,6 +4313,22 @@ async function bulkDeleteAktivitaeten() {
   clearBulk("aktivitaeten");
   renderAktivitaeten(); renderDashboard(); checkNotifications();
   showToast("✓ Aktivitäten gelöscht");
+}
+
+// ── MOVE DEAL BETWEEN PHASES ─────────────────────────────────────────────
+const PIPELINE_PHASES = ["Erstgespräch","Angebot","Verhandlung","Abschluss"];
+
+async function moveDeal(id, direction) {
+  const deal = dealsData.find(d=>d.id===id);
+  if(!deal) return;
+  const idx = PIPELINE_PHASES.indexOf(deal.phase);
+  const newIdx = idx + direction;
+  if(newIdx < 0 || newIdx >= PIPELINE_PHASES.length) return;
+  const newPhase = PIPELINE_PHASES[newIdx];
+  await sb.from("deals").update({phase:newPhase}).eq("id",id);
+  const ns = await syncDealToKontakt(deal.kunde, newPhase, deal.status, deal.phase, deal.status);
+  renderPipeline(); renderKontakte(); renderJourney(); renderDashboard();
+  showToast(`✓ ${deal.beschreibung||deal.kunde} → ${newPhase}`);
 }
 
 function openModal(id) { document.getElementById(id).classList.add("open"); }

@@ -2515,7 +2515,7 @@ async function addJourney() {
 }
 
 // ── KONTAKTE ────────────────────────────────────────────────────────────────────
-let kSearch="", kStatus="", kSort="date_desc", kSortCol="kontakt_k", kSortDir="desc", kontakteData=[];
+let kSearch="", kStatus="", kSort="nr_asc", kSortCol="nr_k", kSortDir="asc", kontakteData=[];
 let jSortCol="datum_j", jSortDir="desc";
 let aSortCol="datum_a", aSortDir="desc";
 
@@ -2746,8 +2746,15 @@ function filterPipeline() {
       </div>
     </div>`;
   }).join("")}</div>`;
+  // Init touch drag on mobile
+  setTimeout(function(){
+    document.querySelectorAll("#pipeline-board .deal-card[draggable]").forEach(function(card){
+      var m=card.getAttribute("ondragstart");
+      var id=m&&m.match(/dragDeal\(event,'([^']+)'\)/);
+      if(id&&id[1]) initTouchDrag(card,id[1]);
+    });
+  },50);
 }
-
 
 // ── DEAL KUNDE DROPDOWN ───────────────────────────────────────────────────────
 function showDealDropdown() {
@@ -3237,8 +3244,58 @@ let draggedDealId = null;
 
 function dragDeal(event, id) {
   draggedDealId = id;
-  event.dataTransfer.effectAllowed = "move";
+  if(event.dataTransfer) event.dataTransfer.effectAllowed = "move";
   event.target.style.opacity = "0.5";
+}
+
+// ── TOUCH DRAG & DROP FOR PIPELINE ──────────────────────────────────────
+let touchDragId=null, touchDragEl=null, touchClone=null;
+
+function initTouchDrag(el, dealId) {
+  el.addEventListener("touchstart", function(e) {
+    touchDragId=dealId; touchDragEl=el;
+    el.style.opacity="0.5";
+    touchClone=el.cloneNode(true);
+    touchClone.style.cssText="position:fixed;z-index:9999;pointer-events:none;opacity:0.85;width:"+el.offsetWidth+"px;transform:scale(1.03);box-shadow:0 8px 32px rgba(0,0,0,.35);border-radius:10px;transition:none";
+    document.body.appendChild(touchClone);
+    var t=e.touches[0];
+    touchClone.style.left=(t.clientX-el.offsetWidth/2)+"px";
+    touchClone.style.top=(t.clientY-el.offsetHeight/2)+"px";
+  },{passive:true});
+
+  el.addEventListener("touchmove", function(e) {
+    if(!touchDragId) return;
+    e.preventDefault();
+    var t=e.touches[0];
+    if(touchClone){touchClone.style.left=(t.clientX-touchClone.offsetWidth/2)+"px";touchClone.style.top=(t.clientY-touchClone.offsetHeight/2)+"px";}
+    document.querySelectorAll(".pipeline-col").forEach(function(c){c.querySelector(".pipeline-col-body").style.background="";});
+    var el2=document.elementFromPoint(t.clientX,t.clientY);
+    var col=el2&&el2.closest(".pipeline-col");
+    if(col) col.querySelector(".pipeline-col-body").style.background="var(--accent-soft)";
+  },{passive:false});
+
+  el.addEventListener("touchend", async function(e) {
+    if(!touchDragId) return;
+    var t=e.changedTouches[0];
+    var el2=document.elementFromPoint(t.clientX,t.clientY);
+    var col=el2&&el2.closest(".pipeline-col");
+    var newPhase=col&&col.dataset.phase;
+    if(touchClone){touchClone.remove();touchClone=null;}
+    if(touchDragEl){touchDragEl.style.opacity="1";}
+    document.querySelectorAll(".pipeline-col-body").forEach(function(c){c.style.background="";});
+    if(newPhase&&touchDragId){
+      var deal=dealsData.find(function(d){return d.id===touchDragId;});
+      if(deal&&deal.phase!==newPhase){
+        await sb.from("deals").update({phase:newPhase}).eq("id",touchDragId);
+        var ns=await syncDealToKontakt(deal.kunde,newPhase,deal.status,deal.phase,deal.status);
+        touchDragId=null; touchDragEl=null;
+        renderPipeline();renderKontakte();renderJourney();renderDashboard();
+        showToast("✓ Deal → "+newPhase+(ns?" · Kunde → "+ns:""));
+        return;
+      }
+    }
+    touchDragId=null; touchDragEl=null;
+  });
 }
 
 async function dropDeal(event, newPhase) {

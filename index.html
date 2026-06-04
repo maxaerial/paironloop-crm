@@ -2,8 +2,13 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Paironloop CRM</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Paironloop CRM">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -90,14 +95,20 @@
   --shadow:0 4px 24px rgba(0,0,0,.6);--shadow-sm:0 2px 8px rgba(0,0,0,.4);
 }
 
+html {
+  height: -webkit-fill-available;
+}
 body {
   font-family: var(--font);
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  min-height: -webkit-fill-available;
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
 }
 
 /* ── LOGIN ── */
@@ -906,18 +917,16 @@ tbody tr:hover td { background: var(--bg3); }
   border-top: 1px solid var(--border);
   z-index: 200;
   padding: 0;
+  padding-bottom: env(safe-area-inset-bottom);
   height: 60px;
 }
 .mobile-nav-inner {
-  display: flex;
-  height: 100%;
-  justify-content: space-around;
-  align-items: center;
-  padding: 0 8px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  height: 60px;
+  width: 100%;
 }
 .mobile-nav-item {
-  flex: 0 0 auto;
-  width: 20%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -935,6 +944,7 @@ tbody tr:hover td { background: var(--bg3); }
   padding: 6px 0;
   transition: var(--transition);
   position: relative;
+  width: 100%;
 }
 .mobile-nav-item.active { color: var(--accent2); }
 .mobile-nav-item svg { width: 20px; height: 20px; stroke-width: 1.8; fill: none; stroke: currentColor; }
@@ -2002,7 +2012,7 @@ const PHASES = {
 const PHASE_COLORS = ["#6EB8F0","#7C6EF0","#6EF0A0","#F0A86E","#F0804A","#F06E6E","#B06EF0","#6EB8F0"];
 
 let lang = localStorage.getItem("crm_lang") || "de";
-let theme = localStorage.getItem("crm_theme") || "midnight";
+let theme = localStorage.getItem("crm_theme") || "arctic";
 let authMode = "login";
 
 // Apply saved theme immediately

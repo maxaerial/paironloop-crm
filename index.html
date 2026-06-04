@@ -2538,14 +2538,14 @@ function renderDemoDashboard() {
   k.forEach(x=>{if(sc[x.status]!==undefined)sc[x.status]++;});
   if(cStatus)cStatus.destroy();
   cStatus=new Chart(document.getElementById("chart-status"),{type:"doughnut",
-    data:{labels:Object.keys(sc),datasets:[{data:Object.values(sc),backgroundColor:[blue,green,text3,purple],borderWidth:0,hoverOffset:4}]},
+    data:{labels:Object.keys(sc),datasets:[{data:Object.values(sc),backgroundColor:getColors(Object.keys(sc)),borderWidth:0,hoverOffset:4}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{display:true,position:"bottom",labels:{color:textColor,font:{size:11,family:"DM Sans"},padding:12,usePointStyle:true}}}}});
 
   const phases=["Erstgespräch","Angebot","Verhandlung","Abschluss"];
   const pv=phases.map(p=>d.filter(x=>x.phase===p).reduce((s,x)=>s+(x.wert||0),0));
   if(cPipe)cPipe.destroy();
   cPipe=new Chart(document.getElementById("chart-pipeline"),{type:"bar",
-    data:{labels:phases,datasets:[{data:pv,backgroundColor:accent+"CC",borderRadius:8,borderSkipped:false,borderWidth:0}]},
+    data:{labels:phases,datasets:[{data:pv,backgroundColor:phases.map(p=>getColor(p,0)+"CC"),borderRadius:8,borderSkipped:false,borderWidth:0}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{size:11}},grid:{color:borderCol},border:{display:false}},
               x:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
@@ -2641,15 +2641,15 @@ function filterPipelineDemo() {
   const text3=cs.getPropertyValue("--text3").trim();
   const borderCol=cs.getPropertyValue("--border").trim();
   const phases=["Erstgespräch","Angebot","Verhandlung","Abschluss"];
-  const phaseColors=["#6EB8F0","#7C6EF0","#F0A86E","#6EF0A0"];
+  const phaseColors=phases.map((p,i)=>getColor(p,i));
   const phaseVals=phases.map(p=>rows.filter(d=>d.phase===p).reduce((s,d)=>s+(d.wert||0),0));
   if(cPipePhases)cPipePhases.destroy();
   const el1=document.getElementById("chart-pipeline-phases");
-  if(el1)cPipePhases=new Chart(el1,{type:"bar",data:{labels:phases,datasets:[{data:phaseVals,backgroundColor:phaseColors,borderRadius:8,borderSkipped:false,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{size:10}},grid:{color:borderCol},border:{display:false}},x:{ticks:{color:text3,font:{size:10}},grid:{display:false},border:{display:false}}}}});
+  if(el1)cPipePhases=new Chart(el1,{type:"bar",data:{labels:phases,datasets:[{data:phaseVals,backgroundColor:getColors(phases),borderRadius:8,borderSkipped:false,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{size:10}},grid:{color:borderCol},border:{display:false}},x:{ticks:{color:text3,font:{size:10}},grid:{display:false},border:{display:false}}}}});
   const topDeals=[...rows].sort((a,b)=>(b.wert||0)-(a.wert||0)).slice(0,6);
   if(cPipeDeals2)cPipeDeals2.destroy();
   const el2=document.getElementById("chart-pipeline-deals");
-  if(el2)cPipeDeals2=new Chart(el2,{type:"bar",data:{labels:topDeals.map(d=>d.kunde.length>14?d.kunde.slice(0,14)+"…":d.kunde),datasets:[{data:topDeals.map(d=>d.wert||0),backgroundColor:topDeals.map(d=>d.status==="Gewonnen"?"#6EF0A0":d.status==="Verloren"?"#F06E6E":"#7C6EF0"),borderRadius:6,borderSkipped:false,borderWidth:0}]},options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{size:10}},grid:{color:borderCol},border:{display:false}},y:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
+  if(el2)cPipeDeals2=new Chart(el2,{type:"bar",data:{labels:topDeals.map(d=>d.kunde.length>14?d.kunde.slice(0,14)+"…":d.kunde),datasets:[{data:topDeals.map(d=>d.wert||0),backgroundColor:topDeals.map(d=>getColor(d.status,0)),borderRadius:6,borderSkipped:false,borderWidth:0}]},options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{size:10}},grid:{color:borderCol},border:{display:false}},y:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
   const fEl=document.getElementById("pipeline-funnel");
   if(fEl){const cnts=phases.map(p=>rows.filter(d=>d.phase===p).length);const mx=Math.max(...cnts,1);fEl.innerHTML=phases.map((p,i)=>{const h=Math.max(20,Math.round(150*cnts[i]/mx));return`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1"><div style="font-size:11px;font-weight:700;color:${phaseColors[i]}">${cnts[i]}</div><div style="width:100%;height:${h}px;background:${phaseColors[i]};border-radius:6px 6px 0 0;opacity:.85"></div><div style="font-size:9px;color:var(--text3);text-align:center">${p}</div></div>`;}).join("");}
   renderPipelineBoard(rows);
@@ -2665,17 +2665,17 @@ function renderAktivitaetenDemo() {
   const statusCnt={};rows.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
   if(cAktivTyp)cAktivTyp.destroy();
   const elS=document.getElementById("chart-aktiv-status");
-  if(elS){const o=donutOpts();o.data={labels:Object.keys(statusCnt),datasets:[{data:Object.values(statusCnt),backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]};cAktivTyp=new Chart(elS,o);}
+  if(elS){const o=donutOpts();o.data={labels:Object.keys(statusCnt),datasets:[{data:Object.values(statusCnt),backgroundColor:getColors(Object.keys(statusCnt)),borderWidth:0,hoverOffset:4}]};cAktivTyp=new Chart(elS,o);}
   const prioCnt={};rows.forEach(a=>{const p=a.prioritaet||"–";prioCnt[p]=(prioCnt[p]||0)+1;});
   if(cAktivPrio)cAktivPrio.destroy();
   const elP=document.getElementById("chart-aktiv-prio2");
-  if(elP){const o=donutOpts();o.data={labels:Object.keys(prioCnt),datasets:[{data:Object.values(prioCnt),backgroundColor:["#F06E6E","#F0A86E","#6EF0A0"],borderWidth:0,hoverOffset:4}]};cAktivPrio=new Chart(elP,o);}
+  if(elP){const o=donutOpts();o.data={labels:Object.keys(prioCnt),datasets:[{data:Object.values(prioCnt),backgroundColor:getColors(Object.keys(prioCnt)),borderWidth:0,hoverOffset:4}]};cAktivPrio=new Chart(elP,o);}
   const typCnt={};rows.forEach(a=>{const t=a.typ||"–";typCnt[t]=(typCnt[t]||0)+1;});
   const elT=document.getElementById("chart-aktiv-typ2");
-  if(elT){if(window._cAktivTyp2)window._cAktivTyp2.destroy();const o=donutOpts();o.data={labels:Object.keys(typCnt),datasets:[{data:Object.values(typCnt),backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]};window._cAktivTyp2=new Chart(elT,o);}
+  if(elT){if(window._cAktivTyp2)window._cAktivTyp2.destroy();const o=donutOpts();o.data={labels:Object.keys(typCnt),datasets:[{data:Object.values(typCnt),backgroundColor:getColors(Object.keys(typCnt)),borderWidth:0,hoverOffset:4}]};window._cAktivTyp2=new Chart(elT,o);}
   const vCnt={};rows.forEach(a=>{const v=a.verantwortlich||"–";vCnt[v]=(vCnt[v]||0)+1;});
   const elV=document.getElementById("chart-aktiv-verantw");
-  if(elV){if(window._cAktivV)window._cAktivV.destroy();const o=donutOpts();o.data={labels:Object.keys(vCnt),datasets:[{data:Object.values(vCnt),backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]};window._cAktivV=new Chart(elV,o);}
+  if(elV){if(window._cAktivV)window._cAktivV.destroy();const o=donutOpts();o.data={labels:Object.keys(vCnt),datasets:[{data:Object.values(vCnt),backgroundColor:getColors(Object.keys(vCnt)),borderWidth:0,hoverOffset:4}]};window._cAktivV=new Chart(elV,o);}
   const pBg={"Hoch":"rgba(240,110,110,.1)","Mittel":"rgba(240,168,110,.1)","Niedrig":"rgba(110,240,160,.1)"};
   const pC={"Hoch":"var(--red)","Mittel":"var(--orange)","Niedrig":"var(--green)"};
   document.getElementById("aktivitaeten-table-wrap").innerHTML=`<table><thead><tr>
@@ -2894,7 +2894,7 @@ async function renderDashboard() {
   const pv=phases.map(p=>deals.filter(d=>d.phase===p||d.phase==="First talk"||d.phase===p).reduce((s,d)=>s+(d.wert||0),0));
   if(cPipe) cPipe.destroy();
   cPipe = new Chart(document.getElementById("chart-pipeline"), {type:"bar",
-    data:{labels:phases,datasets:[{data:pv,backgroundColor:accent+"CC",borderRadius:8,borderSkipped:false,borderWidth:0}]},
+    data:{labels:phases,datasets:[{data:pv,backgroundColor:phases.map(p=>getColor(p,0)+"CC"),borderRadius:8,borderSkipped:false,borderWidth:0}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{family:"DM Sans",size:11}},grid:{color:borderCol},border:{display:false}},
               x:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
@@ -3292,35 +3292,30 @@ async function renderKontakte(s,st) {
 function renderKontakteCharts(data) {
   const cs = getComputedStyle(document.documentElement);
   const text3 = cs.getPropertyValue("--text3").trim();
-  const COLORS = ["#7C6EF0","#6EB8F0","#6EF0A0","#F0A86E","#F06E6E","#B06EF0","#38A0E8","#F0804A","#9090A8"];
+  const donut = (labels, vals) => ({
+    type:"doughnut",
+    data:{labels, datasets:[{data:vals, backgroundColor:getColors(labels), borderWidth:0, hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:10},padding:8,usePointStyle:true}}}}
+  });
 
-  // Status chart
   const statusCount = {};
-  data.forEach(k => { statusCount[k.status||"–"] = (statusCount[k.status||"–"]||0)+1; });
+  data.forEach(k => { const s=k.status||"–"; statusCount[s]=(statusCount[s]||0)+1; });
   if(cKStatus) cKStatus.destroy();
   const elS = document.getElementById("chart-k-status");
-  if(elS) cKStatus = new Chart(elS, {type:"doughnut",
-    data:{labels:Object.keys(statusCount),datasets:[{data:Object.values(statusCount),backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:"60%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:10},padding:8,usePointStyle:true}}}}});
+  if(elS) cKStatus = new Chart(elS, donut(Object.keys(statusCount), Object.values(statusCount)));
 
-  // Land chart
   const landCount = {};
   data.forEach(k => { const l=k.land||"–"; landCount[l]=(landCount[l]||0)+1; });
   const topLand = Object.entries(landCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
   if(cKLand) cKLand.destroy();
   const elL = document.getElementById("chart-k-land");
-  if(elL) cKLand = new Chart(elL, {type:"doughnut",
-    data:{labels:topLand.map(e=>e[0]),datasets:[{data:topLand.map(e=>e[1]),backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:"60%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:10},padding:8,usePointStyle:true}}}}});
+  if(elL) cKLand = new Chart(elL, donut(topLand.map(e=>e[0]), topLand.map(e=>e[1])));
 
-  // Branche chart
   const brancheCount = {};
   data.forEach(k => { const b=k.branche||"–"; brancheCount[b]=(brancheCount[b]||0)+1; });
   if(cKBranche) cKBranche.destroy();
   const elB = document.getElementById("chart-k-branche");
-  if(elB) cKBranche = new Chart(elB, {type:"doughnut",
-    data:{labels:Object.keys(brancheCount),datasets:[{data:Object.values(brancheCount),backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:"60%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:10},padding:8,usePointStyle:true}}}}});
+  if(elB) cKBranche = new Chart(elB, donut(Object.keys(brancheCount), Object.values(brancheCount)));
 }
 
 function filterKontakte(v) { renderKontakte(v,kStatus); }
@@ -3421,14 +3416,14 @@ function filterPipeline() {
   const text3=cs.getPropertyValue("--text3").trim();
   const borderCol=cs.getPropertyValue("--border").trim();
   const phases=["Erstgespräch","Angebot","Verhandlung","Abschluss"];
-  const phaseColors=["#6EB8F0","#7C6EF0","#F0A86E","#6EF0A0"];
+  const phaseColors=phases.map((p,i)=>getColor(p,i));
   const phaseVals=phases.map(p=>rows.filter(d=>d.phase===p).reduce((s,d)=>s+(d.wert||0),0));
 
   const chartEl=document.getElementById("chart-pipeline-phases");
   if(chartEl){
     if(cPipePhases)cPipePhases.destroy();
     cPipePhases=new Chart(chartEl,{type:"bar",
-      data:{labels:phases,datasets:[{data:phaseVals,backgroundColor:phaseColors,borderRadius:8,borderSkipped:false,borderWidth:0}]},
+      data:{labels:phases,datasets:[{data:phaseVals,backgroundColor:getColors(phases),borderRadius:8,borderSkipped:false,borderWidth:0}]},
       options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
         scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{family:"DM Sans",size:10}},grid:{color:borderCol},border:{display:false}},
                 x:{ticks:{color:text3,font:{size:10}},grid:{display:false},border:{display:false}}}}});
@@ -3441,7 +3436,7 @@ function filterPipeline() {
       data:{
         labels:topDeals.map(d=>d.kunde.length>14?d.kunde.slice(0,14)+"…":d.kunde),
         datasets:[{data:topDeals.map(d=>d.wert||0),
-          backgroundColor:topDeals.map(d=>d.status==="Gewonnen"?"#6EF0A0":d.status==="Verloren"?"#F06E6E":"#7C6EF0"),
+          backgroundColor:topDeals.map(d=>getColor(d.status,0)),
           borderRadius:6,borderSkipped:false,borderWidth:0}]
       },
       options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
@@ -3663,31 +3658,30 @@ async function renderAktivitaeten(f) {
   // Charts
   const cs=getComputedStyle(document.documentElement);
   const text3=cs.getPropertyValue("--text3").trim();
-  const COLORS=["#7C6EF0","#6EB8F0","#6EF0A0","#F0A86E","#F06E6E","#B06EF0","#38A0E8","#F0804A","#9090A8"];
-  const donutOpts=(el)=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:8}}}}});
+  const mkDonut=(labels,vals)=>({type:"doughnut",data:{labels,datasets:[{data:vals,backgroundColor:getColors(labels),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:8}}}}});
 
   // Status
   const statusCnt={};aktivData.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
   if(cAktivTyp)cAktivTyp.destroy();
   const elS=document.getElementById("chart-aktiv-status");
-  if(elS){const o=donutOpts(elS);o.data={labels:Object.keys(statusCnt),datasets:[{data:Object.values(statusCnt),backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]};cAktivTyp=new Chart(elS,o);}
+  if(elS) cAktivTyp=new Chart(elS,mkDonut(Object.keys(statusCnt),Object.values(statusCnt)));
 
   // Priorität
   const prioCnt={};aktivData.forEach(a=>{const p=a.prioritaet||"–";prioCnt[p]=(prioCnt[p]||0)+1;});
   if(cAktivPrio)cAktivPrio.destroy();
   const elP=document.getElementById("chart-aktiv-prio2");
-  if(elP){const o=donutOpts(elP);o.data={labels:Object.keys(prioCnt),datasets:[{data:Object.values(prioCnt),backgroundColor:["#F06E6E","#F0A86E","#6EF0A0"],borderWidth:0,hoverOffset:4}]};cAktivPrio=new Chart(elP,o);}
+  if(elP) cAktivPrio=new Chart(elP,mkDonut(Object.keys(prioCnt),Object.values(prioCnt)));
 
   // Typ
   const typCnt={};aktivData.forEach(a=>{const t=a.typ||"–";typCnt[t]=(typCnt[t]||0)+1;});
   let cAktivTyp2=null;
   const elT=document.getElementById("chart-aktiv-typ2");
-  if(elT){if(window._cAktivTyp2)window._cAktivTyp2.destroy();const o=donutOpts(elT);o.data={labels:Object.keys(typCnt),datasets:[{data:Object.values(typCnt),backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]};window._cAktivTyp2=new Chart(elT,o);}
+  if(elT){if(window._cAktivTyp2)window._cAktivTyp2.destroy(); window._cAktivTyp2=new Chart(elT,mkDonut(Object.keys(typCnt),Object.values(typCnt)));}
 
   // Verantwortlich
   const vCnt={};aktivData.forEach(a=>{const v=a.verantwortlich||"–";vCnt[v]=(vCnt[v]||0)+1;});
   const elV=document.getElementById("chart-aktiv-verantw");
-  if(elV){if(window._cAktivV)window._cAktivV.destroy();const o=donutOpts(elV);o.data={labels:Object.keys(vCnt),datasets:[{data:Object.values(vCnt),backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]};window._cAktivV=new Chart(elV,o);}
+  if(elV){if(window._cAktivV)window._cAktivV.destroy(); window._cAktivV=new Chart(elV,mkDonut(Object.keys(vCnt),Object.values(vCnt)));}
 
   let rows=aktivData;
   if(aFilter) rows=rows.filter(a=>a.status===aFilter);
@@ -4292,6 +4286,57 @@ async function updateAktivitaet() {
   renderAktivitaeten(); renderDashboard(); checkNotifications();
   showToast("✓ Aktivität aktualisiert");
 }
+
+
+// ── UNIFIED COLOR PALETTE (matches badge colors) ─────────────────────────
+const STATUS_COLORS = {
+  // Kontakt Status
+  "Lead":          "#6EB8F0",  // blue
+  "Aktiv":         "#6EF0A0",  // green
+  "Abgeschlossen": "#B06EF0",  // purple
+  "Inaktiv":       "#9090A8",  // grey
+  // Deal Status
+  "Gewonnen":      "#6EF0A0",  // green
+  "Verloren":      "#F06E6E",  // red
+  "Pausiert":      "#9090A8",  // grey
+  // Aktivitäten Status
+  "Offen":         "#F0A86E",  // orange
+  "In Bearbeitung":"#7C6EF0",  // accent
+  "Erledigt":      "#6EF0A0",  // green
+  "Verschoben":    "#9090A8",  // grey
+  "Abgebrochen":   "#F06E6E",  // red
+  // Priorität
+  "Hoch":          "#F06E6E",  // red
+  "Mittel":        "#F0A86E",  // orange
+  "Niedrig":       "#6EF0A0",  // green
+  // Pipeline Phasen
+  "Erstgespräch":  "#6EB8F0",  // blue
+  "Angebot":       "#7C6EF0",  // accent
+  "Verhandlung":   "#F0A86E",  // orange
+  "Abschluss":     "#6EF0A0",  // green
+  // Journey Phasen
+  "Bewusstsein":   "#6EB8F0",
+  "Interesse":     "#7C6EF0",
+  "Betrachtung":   "#6EF0A0",
+  "Absicht":       "#F0A86E",
+  "Bewertung":     "#B06EF0",
+  "Kauf":          "#F06E6E",
+  "Bindung":       "#6EF0A0",
+  "Empfehlung":    "#6EB8F0",
+  // Branche
+  "Hospitality":   "#6EB8F0",
+  "Restaurant":    "#F0A86E",
+  "Weingut":       "#B06EF0",
+  "Freizeitaktivität": "#6EF0A0",
+  "Café":          "#F0C46E",
+  "Bar":           "#F06E6E",
+  "Sonstiges":     "#9090A8",
+};
+
+function getColor(label, fallbackIndex) {
+  return STATUS_COLORS[label] || ["#7C6EF0","#6EB8F0","#6EF0A0","#F0A86E","#F06E6E","#B06EF0","#F0C46E","#9090A8"][fallbackIndex % 8];
+}
+function getColors(labels) { return labels.map((l,i)=>getColor(l,i)); }
 
 // ── JOURNEY KUNDE DROPDOWN ──────────────────────────────────────────────────
 function showJourneyKundeDD() { filterJourneyKunde(document.getElementById("j-kunde").value); }

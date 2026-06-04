@@ -2782,7 +2782,7 @@ function renderAktivitaetenDemo() {
   const cs=getComputedStyle(document.documentElement);
   const text3=cs.getPropertyValue("--text3").trim();
   const COLORS=["#7C6EF0","#6EB8F0","#6EF0A0","#F0A86E","#F06E6E","#B06EF0","#38A0E8","#F0804A","#9090A8"];
-  const donutOpts=()=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:aLegPos,labels:{color:text3,font:{size:aLegSize},padding:aLegPad,usePointStyle:true,boxWidth:6}}}}}});
+  const donutOpts=()=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:aLegPos,labels:{color:text3,font:{size:aLegSize},padding:aLegPad,usePointStyle:true,boxWidth:6}}}}});
   const statusCnt={};rows.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
   if(cAktivTyp)cAktivTyp.destroy();
   const elS=document.getElementById("chart-aktiv-status");
@@ -4069,7 +4069,7 @@ async function renderAktivitaeten(f) {
   const prioClrD={"Niedrig":"#6EF0A0","Mittel":"#F0A86E","Hoch":"#F06E6E"};
   if(cAktivPrio)cAktivPrio.destroy();
   const elP=document.getElementById("chart-aktiv-prio2");
-  if(elP) cAktivPrio=new Chart(elP,{type:"doughnut",data:{labels:prioLblD,datasets:[{data:prioLblD.map(p=>prioCntD[p]),backgroundColor:prioLblD.map(p=>prioClrD[p]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:aLegPos,labels:{color:text3,font:{size:aLegSize},padding:aLegPad,usePointStyle:true,boxWidth:6}}}}}});
+  if(elP) cAktivPrio=new Chart(elP,{type:"doughnut",data:{labels:prioLblD,datasets:[{data:prioLblD.map(p=>prioCntD[p]),backgroundColor:prioLblD.map(p=>prioClrD[p]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:7}}}}});
 
   // Typ
   const typCnt={};aktivData.forEach(a=>{const t=a.typ||"–";typCnt[t]=(typCnt[t]||0)+1;});
@@ -4745,18 +4745,22 @@ function filterJourneyKunde(val) {
     ? kontakteData.filter(k=>k.unternehmen?.toLowerCase().includes(v)).slice(0,8)
     : kontakteData.slice(0,8);
   const exactMatch = kontakteData.some(k=>k.unternehmen.toLowerCase()===v);
-  dd.innerHTML = matches.map(k=>`
-    <div onclick="selectJourneyKunde('${k.unternehmen.replace(/'/g,"\'")}')"
+  dd.innerHTML = matches.map((k,i)=>`
+    <div data-idx="${i}" data-new="0"
       style="padding:9px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border)"
-      onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-      <div style="font-weight:600">${k.unternehmen}</div>
+      onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''"
+      onclick="selectJourneyKundeByIdx(this)">
+      <div style="font-weight:600">${(k.unternehmen||'').split('<').join('&lt;')}</div>
       <div style="font-size:11px;color:var(--text3)">${k.status} · ${k.ort||"–"}</div>
     </div>`).join("")
-  + (val && !exactMatch ? `<div onclick="selectJourneyKunde('${val}',true)"
+  + (val && !exactMatch ? `<div data-new="1"
       style="padding:9px 14px;cursor:pointer;font-size:13px;color:var(--orange);display:flex;align-items:center;gap:8px;border-top:1px solid var(--border)"
-      onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+      onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''"
+      onclick="selectJourneyKundeByIdx(this)">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      "${val}" neu anlegen</div>` : "");
+      "${(val||'').split('<').join('&lt;')}" neu anlegen</div>` : "");
+  // Store matches for index lookup
+  dd._matches = matches; dd._val = val;
   dd.style.display = (matches.length || (val && !exactMatch)) ? "block" : "none";
   const hint = document.getElementById("j-neue-kunde-hint");
   if(hint) hint.style.display = (val && !exactMatch) ? "block" : "none";
@@ -4769,6 +4773,12 @@ function selectJourneyKunde(name, isNew=false) {
   const hint = document.getElementById("j-neue-kunde-hint");
   if(hint) hint.style.display = isNew ? "block" : "none";
   journeyKundeIsNew = isNew;
+}
+function selectJourneyKundeByIdx(el) {
+  const dd = document.getElementById("j-kunde-dropdown");
+  const isNew = el.dataset.new === "1";
+  const name = isNew ? (dd._val||"") : (dd._matches?.[parseInt(el.dataset.idx)]?.unternehmen || "");
+  selectJourneyKunde(name, isNew);
 }
 
 document.addEventListener("click", e => {

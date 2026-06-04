@@ -506,7 +506,7 @@ tbody tr:hover td { background: var(--bg3); }
 .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 .badge-lead { background: rgba(110,184,240,.12); color: var(--blue); }
 .badge-aktiv,.badge-active,.badge-actif,.badge-activo { background: rgba(110,240,160,.12); color: var(--green); }
-.badge-follow-up { background: rgba(240,168,110,.12); color: var(--orange); }
+.badge-in-kontakt { background: rgba(240,168,110,.12); color: var(--orange); }
 .badge-inaktiv,.badge-inactive,.badge-inactif,.badge-inactivo { background: rgba(144,144,168,.12); color: var(--text3); }
 .badge-abgeschlossen,.badge-closed,.badge-fermé,.badge-cerrado { background: rgba(176,110,240,.12); color: var(--purple); }
 .badge-gewonnen,.badge-won,.badge-gagné,.badge-ganado { background: rgba(110,240,160,.12); color: var(--green); }
@@ -1302,7 +1302,7 @@ tbody td { font-feature-settings: "zero" 0; }
           </div>
           <div class="kpi-card" style="--kpi-color:rgba(176,110,240,.15)">
             <div class="kpi-icon" style="background:rgba(176,110,240,.15)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-            <div class="kpi-label" data-i18n="open_followups">Offene Follow-ups</div>
+            <div class="kpi-label" data-i18n="open_followups">Offene Aktivitäten</div>
             <div class="kpi-value" id="kpi-followups">–</div>
           </div>
         </div>
@@ -1481,7 +1481,7 @@ tbody td { font-feature-settings: "zero" 0; }
           <div class="page-header-row">
             <div>
               <div class="page-title" data-i18n="activities">Aktivitäten</div>
-              <div class="page-subtitle" data-i18n="activities_subtitle">Follow-ups und Aufgaben</div>
+              <div class="page-subtitle" data-i18n="activities_subtitle">Aktivitäten und Aufgaben</div>
             </div>
             <button class="btn btn-primary" onclick="openModal('modal-aktivitaet')">
               <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -1527,7 +1527,7 @@ tbody td { font-feature-settings: "zero" 0; }
       <div class="notif-panel" id="notif-panel">
           <div class="notif-panel-title">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <span id="notif-title" data-i18n="due_followups">Fällige Follow-ups</span>
+            <span id="notif-title" data-i18n="due_followups">Fällige Aktivitäten</span>
           </div>
           <div id="notif-list"></div>
         </div>
@@ -1670,8 +1670,7 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="field"><label data-i18n="channel">Kanal</label><input id="k-kanal"></div>
         <div class="field"><label data-i18n="status">Status</label>
           <select id="k-status" class="status-select-de">
-            <option>Lead</option><option data-i18n="active">Aktiv</option><option>Follow-up</option>
-            <option data-i18n="inactive">Inaktiv</option><option data-i18n="closed">Abgeschlossen</option>
+            <option>Lead</option><option data-i18n="active">Aktiv</option>            <option data-i18n="inactive">Inaktiv</option><option data-i18n="closed">Abgeschlossen</option>
           </select>
         </div>
         <div class="field"><label data-i18n="industry">Branche</label><input id="k-branche"></div>
@@ -1867,7 +1866,7 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="field"><label>Telefon</label><input id="ek-telefon"></div>
         <div class="field"><label>Kanal</label><input id="ek-kanal"></div>
         <div class="field"><label>Status</label>
-          <select id="ek-status"><option>Lead</option><option>Aktiv</option><option>Follow-up</option><option>Inaktiv</option><option>Abgeschlossen</option></select>
+          <select id="ek-status"><option>Lead</option><option>Aktiv</option><option>Inaktiv</option><option>Abgeschlossen</option></select>
         </div>
         <div class="field"><label>Branche</label><input id="ek-branche"></div>
         <div class="field"><label>Deal-Wert (€)</label><input id="ek-dealwert" type="number"></div>
@@ -1904,16 +1903,16 @@ const LANGS = {
     register:"Registrieren",email:"E-Mail",password:"Passwort",fullname:"Vollständiger Name",
     navigation:"Navigation",live:"Live",language:"Sprache",color_theme:"Farbschema",account:"Account",
     save:"Speichern",cancel:"Abbrechen",search:"Suchen…",loading:"Laden…",
-    total_clients:"Kunden gesamt",leads:"Leads",active_deals:"Aktive Deals",open_followups:"Offene Follow-ups",
+    total_clients:"Kunden gesamt",leads:"Leads",active_deals:"Aktive Deals",open_followups:"Offene Aktivitäten",
     contacts_by_status:"Kontakte nach Status",pipeline_by_phase:"Pipeline nach Phase (€)",
     recent_activities:"Letzte Aktivitäten",date:"Datum",client:"Kunde",type:"Typ",
     priority:"Priorität",status:"Status",all_status:"Alle Status",all_phases:"Alle Phasen",
     leads_by_phase:"Leads nach Phase",all_touchpoints:"Alle Touchpoints",
     journey_subtitle:"Leads nach Phase – klick zum Filtern",
     contacts_subtitle:"Alle Kunden und Leads",pipeline_subtitle:"Aktuelle Deals im Überblick",
-    activities_subtitle:"Follow-ups und Aufgaben",
+    activities_subtitle:"Aktivitäten und Aufgaben",
     add_touchpoint:"Touchpoint",add_contact:"Kontakt",add_deal:"Deal",add_activity:"Aktivität",
-    due_followups:"Fällige Follow-ups",export:"Export",export_all:"Alles exportieren",
+    due_followups:"Fällige Aktivitäten",export:"Export",export_all:"Alles exportieren",
     company:"Unternehmen",firstname:"Vorname",lastname:"Nachname",location:"Ort / Land",
     phone:"Telefon",channel:"Kanal",industry:"Branche",deal_value:"Deal-Wert (€)",comment:"Kommentar",
     description:"Beschreibung",phase:"Phase",activity:"Aktivität",client_reaction:"Kundenreaktion",
@@ -1935,16 +1934,16 @@ const LANGS = {
     register:"Register",email:"Email",password:"Password",fullname:"Full name",
     navigation:"Navigation",live:"Live",language:"Language",color_theme:"Color theme",account:"Account",
     save:"Save",cancel:"Cancel",search:"Search…",loading:"Loading…",
-    total_clients:"Total clients",leads:"Leads",active_deals:"Active deals",open_followups:"Open follow-ups",
+    total_clients:"Total clients",leads:"Leads",active_deals:"Active deals",open_followups:"Open in-kontakts",
     contacts_by_status:"Contacts by status",pipeline_by_phase:"Pipeline by phase (€)",
     recent_activities:"Recent activities",date:"Date",client:"Client",type:"Type",
     priority:"Priority",status:"Status",all_status:"All statuses",all_phases:"All phases",
     leads_by_phase:"Leads by phase",all_touchpoints:"All touchpoints",
     journey_subtitle:"Leads by phase – click to filter",
     contacts_subtitle:"All clients and leads",pipeline_subtitle:"Current deals overview",
-    activities_subtitle:"Follow-ups and tasks",
+    activities_subtitle:"Activities and tasks",
     add_touchpoint:"Touchpoint",add_contact:"Contact",add_deal:"Deal",add_activity:"Activity",
-    due_followups:"Due follow-ups",export:"Export",export_all:"Export all",
+    due_followups:"Due in-kontakts",export:"Export",export_all:"Export all",
     company:"Company",firstname:"First name",lastname:"Last name",location:"City / Country",
     phone:"Phone",channel:"Channel",industry:"Industry",deal_value:"Deal value (€)",comment:"Comment",
     description:"Description",phase:"Phase",activity:"Activity",client_reaction:"Client reaction",
@@ -2064,7 +2063,7 @@ function applyI18n() {
   if(ksf) {
     const cur = ksf.value;
     ksf.innerHTML = `<option value="">${t("all_status")}</option>` +
-      ["Lead",t("active"),"Follow-up",t("inactive"),t("closed")].map(s=>`<option>${s}</option>`).join("");
+      ["Lead",t("active"),"Lead",t("inactive"),t("closed")].map(s=>`<option>${s}</option>`).join("");
   }
   // Login button
   const lb = document.getElementById("login-btn");
@@ -2222,7 +2221,7 @@ async function renderDashboard() {
   document.getElementById("kpi-deals").textContent = deals.filter(x=>x.status==="Aktiv"||x.status==="Active"||x.status==="Activo"||x.status==="Actif").length;
   document.getElementById("kpi-followups").textContent = allActs.filter(x=>x.status==="Offen"||x.status==="Open"||x.status==="Abierto"||x.status==="Ouvert").length;
 
-  const sc={}; ["Lead","Aktiv","Follow-up","Inaktiv","Abgeschlossen"].forEach(s=>sc[s]=0);
+  const sc={}; ["Lead","Aktiv","Lead","Inaktiv","Abgeschlossen"].forEach(s=>sc[s]=0);
   kontakte.forEach(x=>{if(sc[x.status]!==undefined)sc[x.status]++;else sc["Lead"]++;});
 
   const cs = getComputedStyle(document.documentElement);
@@ -2423,36 +2422,36 @@ function filterJourneyPhase(v) {
 const PHASE_TO_STATUS = {
   "Bewusstsein":  "Lead",
   "Interesse":    "Lead",
-  "Betrachtung":  "Follow-up",
-  "Absicht":      "Follow-up",
-  "Bewertung":    "Follow-up",
+  "Betrachtung":  "Lead",
+  "Absicht":      "Lead",
+  "Bewertung":    "Lead",
   "Kauf":         "Aktiv",
   "Bindung":      "Aktiv",
   "Empfehlung":   "Abgeschlossen",
   // English
   "Awareness":    "Lead",
   "Interest":     "Lead",
-  "Consideration":"Follow-up",
-  "Intent":       "Follow-up",
-  "Evaluation":   "Follow-up",
+  "Consideration":"Lead",
+  "Intent":       "Lead",
+  "Evaluation":   "Lead",
   "Purchase":     "Aktiv",
   "Retention":    "Aktiv",
   "Advocacy":     "Abgeschlossen",
   // Spanish
   "Conciencia":   "Lead",
   "Interés":      "Lead",
-  "Consideración":"Follow-up",
-  "Intención":    "Follow-up",
-  "Evaluación":   "Follow-up",
+  "Consideración":"Lead",
+  "Intención":    "Lead",
+  "Evaluación":   "Lead",
   "Compra":       "Aktiv",
   "Retención":    "Aktiv",
   "Recomendación":"Abgeschlossen",
   // French
   "Sensibilisation":"Lead",
   "Intérêt":      "Lead",
-  "Considération":"Follow-up",
-  "Intention":    "Follow-up",
-  "Évaluation":   "Follow-up",
+  "Considération":"Lead",
+  "Intention":    "Lead",
+  "Évaluation":   "Lead",
   "Achat":        "Aktiv",
   "Rétention":    "Aktiv",
   "Recommandation":"Abgeschlossen",
@@ -2499,7 +2498,7 @@ async function addJourney() {
     kontaktId = newK?.id;
   } else {
     // Update status if new phase is "further along" in journey
-    const statusOrder = {"Lead":0,"Follow-up":1,"Aktiv":2,"Abgeschlossen":3,"Inaktiv":-1};
+    const statusOrder = {"Lead":0,"Lead":1,"Aktiv":2,"Abgeschlossen":3,"Inaktiv":-1};
     const currentOrder = statusOrder[existing.status]??0;
     const newOrder     = statusOrder[newStatus]??0;
     if(newOrder > currentOrder) {
@@ -3362,15 +3361,15 @@ function editDeal(id) {
 
 // Pipeline Phase → Kontakt Status + Journey Auto-Sync
 const DEAL_PHASE_SYNC = {
-  "Erstgespräch": { status: "Follow-up",    journeyPhase: "Betrachtung" },
-  "Angebot":      { status: "Follow-up",    journeyPhase: "Bewertung"   },
-  "Verhandlung":  { status: "Follow-up",    journeyPhase: "Absicht"     },
+  "Erstgespräch": { status: "Lead",          journeyPhase: "Betrachtung" },
+  "Angebot":      { status: "Lead",          journeyPhase: "Bewertung"   },
+  "Verhandlung":  { status: "Lead",          journeyPhase: "Absicht"     },
   "Abschluss":    { status: null,           journeyPhase: null          }, // handled by deal status
 };
 const DEAL_STATUS_SYNC = {
   "Gewonnen": { kontaktStatus: "Aktiv",     journeyPhase: "Kauf"        },
   "Verloren": { kontaktStatus: "Inaktiv",   journeyPhase: null          },
-  "Pausiert": { kontaktStatus: "Follow-up", journeyPhase: null          },
+  "Pausiert": { kontaktStatus: "Lead",       journeyPhase: null          },
   "Aktiv":    { kontaktStatus: null,        journeyPhase: null          },
 };
 
@@ -3386,7 +3385,7 @@ async function syncDealToKontakt(kunde, newPhase, newStatus, oldPhase, oldStatus
     .maybeSingle();
   if(!kontakt) return;
 
-  const statusOrder = {"Lead":0,"Follow-up":1,"Aktiv":2,"Abgeschlossen":3,"Inaktiv":-1};
+  const statusOrder = {"Lead":0,"Lead":1,"Aktiv":2,"Abgeschlossen":3,"Inaktiv":-1};
   let newKontaktStatus = null;
   let newJourneyPhase  = null;
 

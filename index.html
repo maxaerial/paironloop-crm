@@ -778,6 +778,54 @@ tbody tr:hover td { background: var(--bg3); }
 }
 .settings-head h3 { font-size: 14px; font-weight: 600; }
 .settings-section { padding: 20px; border-bottom: 1px solid var(--border); }
+.profile-avatar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0 8px;
+}
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+  border: 2px solid var(--border);
+}
+.profile-avatar:hover { opacity: 0.85; }
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-avatar-hint {
+  font-size: 11px;
+  color: var(--text3);
+}
+.profile-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.profile-form .form-full { grid-column: 1/-1; }
+.profile-save-btn {
+  width: 100%;
+  padding: 10px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: var(--transition);
+}
+.profile-save-btn:hover { filter: brightness(1.1); }
+
 .settings-section-title { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); margin-bottom: 14px; }
 
 /* Language picker */
@@ -1717,6 +1765,27 @@ tbody td { font-feature-settings: "zero" 0; }
     <h3 data-i18n="settings">Einstellungen</h3>
     <button class="modal-close" onclick="closeSettings()">×</button>
   </div>
+  <!-- Profile Section -->
+  <div class="settings-section">
+    <div class="settings-section-title">Mein Profil</div>
+    <div class="profile-avatar-wrap">
+      <div class="profile-avatar" id="profile-avatar-display" onclick="document.getElementById('profile-img-input').click()" title="Bild ändern">
+        <span id="profile-avatar-initials">M</span>
+        <img id="profile-avatar-img" src="" style="display:none;position:absolute;inset:0">
+      </div>
+      <div class="profile-avatar-hint">Klicken zum Ändern</div>
+      <input type="file" id="profile-img-input" accept="image/*" style="display:none" onchange="handleProfileImg(this)">
+    </div>
+    <div class="profile-form">
+      <div class="field"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Vorname</label><input id="profile-vorname" placeholder="Max"></div>
+      <div class="field"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Nachname</label><input id="profile-nachname" placeholder="Weidmann"></div>
+      <div class="field form-full"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Firma</label><input id="profile-firma" placeholder="Paironloop"></div>
+      <div class="field form-full"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Telefon</label><input id="profile-telefon" placeholder="+49 89 ..."></div>
+    </div>
+    <button class="profile-save-btn" onclick="saveProfile()">Profil speichern</button>
+    <div id="profile-save-msg" style="font-size:12px;text-align:center;margin-top:8px;display:none"></div>
+  </div>
+
   <div class="settings-section">
     <div class="settings-section-title" data-i18n="language">Sprache</div>
     <div class="lang-grid">
@@ -2853,6 +2922,115 @@ function onLogin(user) {
   document.getElementById("theme-"+theme)?.classList.add("active");
   if(theme !== "midnight") document.documentElement.setAttribute("data-theme", theme);
   renderAll();
+}
+
+// ── PROFILE ──────────────────────────────────────────────────────────────────
+let profileData = {};
+
+async function loadProfile() {
+  if(isDemoMode) return;
+  const userId = (await sb.auth.getUser()).data.user?.id;
+  if(!userId) return;
+  const {data} = await sb.from("profiles").select("*").eq("id", userId).maybeSingle();
+  if(data) {
+    profileData = data;
+    applyProfileToUI(data);
+    prefillProfileForm(data);
+  }
+}
+
+function applyProfileToUI(p) {
+  // Sidebar name
+  const nameEl = document.getElementById("user-name");
+  if(nameEl && (p.vorname||p.nachname)) {
+    nameEl.textContent = [p.vorname, p.nachname].filter(Boolean).join(" ");
+  }
+  // Sidebar firma/role
+  const roleEl = document.getElementById("user-role-display");
+  if(roleEl && p.firma) roleEl.textContent = p.firma;
+  // Avatar
+  const initials = ((p.vorname||"?")[0]+(p.nachname||"")[0]).toUpperCase() || "?";
+  const sidebarText = document.getElementById("sidebar-avatar-text");
+  const sidebarImg  = document.getElementById("sidebar-avatar-img");
+  const profileAvDisp = document.getElementById("profile-avatar-display");
+  const profileAvImg  = document.getElementById("profile-avatar-img");
+  const profileAvInit = document.getElementById("profile-avatar-initials");
+
+  if(sidebarText) sidebarText.textContent = initials;
+  if(profileAvInit) profileAvInit.textContent = initials;
+
+  if(p.avatar) {
+    if(sidebarImg) { sidebarImg.src = p.avatar; sidebarImg.style.display = "block"; if(sidebarText) sidebarText.style.display = "none"; }
+    if(profileAvImg) { profileAvImg.src = p.avatar; profileAvImg.style.display = "block"; if(profileAvInit) profileAvInit.style.display = "none"; }
+  } else {
+    if(sidebarImg) { sidebarImg.style.display = "none"; if(sidebarText) sidebarText.style.display = ""; }
+    if(profileAvImg) { profileAvImg.style.display = "none"; if(profileAvInit) profileAvInit.style.display = ""; }
+  }
+}
+
+function prefillProfileForm(p) {
+  document.getElementById("profile-vorname").value  = p.vorname  || "";
+  document.getElementById("profile-nachname").value = p.nachname || "";
+  document.getElementById("profile-firma").value    = p.firma    || "";
+  document.getElementById("profile-telefon").value  = p.telefon  || "";
+}
+
+function handleProfileImg(input) {
+  const file = input.files[0];
+  if(!file) return;
+  if(file.size > 600000) { showToast("Bild zu groß (max 600KB)", true); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const b64 = e.target.result;
+    // Show preview
+    const img = document.getElementById("profile-avatar-img");
+    const init = document.getElementById("profile-avatar-initials");
+    if(img) { img.src = b64; img.style.display = "block"; }
+    if(init) init.style.display = "none";
+    profileData.avatar = b64;
+    // Also update sidebar
+    const sImg = document.getElementById("sidebar-avatar-img");
+    const sTxt = document.getElementById("sidebar-avatar-text");
+    if(sImg) { sImg.src = b64; sImg.style.display = "block"; }
+    if(sTxt) sTxt.style.display = "none";
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveProfile() {
+  if(isDemoMode) { showToast("Demo-Modus — wird nicht gespeichert"); return; }
+  const btn = document.querySelector(".profile-save-btn");
+  const msg = document.getElementById("profile-save-msg");
+  btn.disabled = true;
+  const userId = (await sb.auth.getUser()).data.user?.id;
+  if(!userId) return;
+
+  const updates = {
+    id: userId,
+    vorname:  document.getElementById("profile-vorname").value.trim(),
+    nachname: document.getElementById("profile-nachname").value.trim(),
+    firma:    document.getElementById("profile-firma").value.trim(),
+    telefon:  document.getElementById("profile-telefon").value.trim(),
+    avatar:   profileData.avatar || null,
+    updated_at: new Date().toISOString()
+  };
+
+  const {error} = await sb.from("profiles").upsert(updates);
+  btn.disabled = false;
+
+  if(error) {
+    msg.textContent = "Fehler: " + error.message;
+    msg.style.color = "var(--red)";
+    msg.style.display = "block";
+  } else {
+    profileData = {...profileData, ...updates};
+    applyProfileToUI(updates);
+    msg.textContent = "✓ Profil gespeichert";
+    msg.style.color = "var(--green)";
+    msg.style.display = "block";
+    setTimeout(() => msg.style.display = "none", 2500);
+    showToast("✓ Profil gespeichert");
+  }
 }
 
 async function doLogout() {

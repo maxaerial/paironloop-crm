@@ -1134,7 +1134,7 @@ tbody td { font-feature-settings: "zero" 0; }
 
   /* Grid layouts — stack on mobile */
   .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
-  div[style*="grid-template-columns:repeat(4"] { grid-template-columns: repeat(2,1fr) !important; }
+  #aktiv-charts-grid { grid-template-columns: repeat(4,1fr) !important; }
 
   /* Charts — smaller height */
   .chart-wrap[style*="height:200px"] { height: 160px !important; }
@@ -2782,7 +2782,7 @@ function renderAktivitaetenDemo() {
   const cs=getComputedStyle(document.documentElement);
   const text3=cs.getPropertyValue("--text3").trim();
   const COLORS=["#7C6EF0","#6EB8F0","#6EF0A0","#F0A86E","#F06E6E","#B06EF0","#38A0E8","#F0804A","#9090A8"];
-  const donutOpts=()=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:8}}}}});
+  const donutOpts=()=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:aLegPos,labels:{color:text3,font:{size:aLegSize},padding:aLegPad,usePointStyle:true,boxWidth:6}}}}}});
   const statusCnt={};rows.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
   if(cAktivTyp)cAktivTyp.destroy();
   const elS=document.getElementById("chart-aktiv-status");
@@ -3672,7 +3672,7 @@ function renderKontakteCharts(data) {
   const statusColorsK = {"Lead":"#6EB8F0","Aktiv":"#6EF0A0","Abgeschlossen":"#B06EF0","Inaktiv":"#9090A8"};
   if(cKStatus) cKStatus.destroy();
   const elS = document.getElementById("chart-k-status");
-  if(elS) cKStatus = new Chart(elS, {type:"doughnut",data:{labels:statusLabelsK,datasets:[{data:statusValsK,backgroundColor:statusLabelsK.map(s=>statusColorsK[s]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:7}}}}});
+  if(elS) cKStatus = new Chart(elS, {type:"doughnut",data:{labels:statusLabelsK,datasets:[{data:statusValsK,backgroundColor:statusLabelsK.map(s=>statusColorsK[s]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:legendPos,labels:{color:text3,font:{size:legendSize},padding:legendPad,usePointStyle:true,boxWidth:7}}}}});
 
   const landCount = {};
   data.forEach(k => { const l=k.land||"–"; landCount[l]=(landCount[l]||0)+1; });
@@ -4050,7 +4050,11 @@ async function renderAktivitaeten(f) {
   // Charts
   const cs=getComputedStyle(document.documentElement);
   const text3=cs.getPropertyValue("--text3").trim();
-  const mkDonut=(labels,vals)=>({type:"doughnut",data:{labels,datasets:[{data:vals,backgroundColor:getColors(labels),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:8}}}}});
+  const isMobileA = window.innerWidth <= 768;
+  const aLegPos  = isMobileA ? "left" : "bottom";
+  const aLegSize = isMobileA ? 7 : 9;
+  const aLegPad  = isMobileA ? 3 : 4;
+  const mkDonut=(labels,vals)=>({type:"doughnut",data:{labels,datasets:[{data:vals,backgroundColor:getColors(labels),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:aLegPos,labels:{color:text3,font:{size:aLegSize},padding:aLegPad,usePointStyle:true,boxWidth:6}}}}});
 
   // Status
   const statusCnt={};aktivData.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
@@ -4065,7 +4069,7 @@ async function renderAktivitaeten(f) {
   const prioClrD={"Niedrig":"#6EF0A0","Mittel":"#F0A86E","Hoch":"#F06E6E"};
   if(cAktivPrio)cAktivPrio.destroy();
   const elP=document.getElementById("chart-aktiv-prio2");
-  if(elP) cAktivPrio=new Chart(elP,{type:"doughnut",data:{labels:prioLblD,datasets:[{data:prioLblD.map(p=>prioCntD[p]),backgroundColor:prioLblD.map(p=>prioClrD[p]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:8}}}}});
+  if(elP) cAktivPrio=new Chart(elP,{type:"doughnut",data:{labels:prioLblD,datasets:[{data:prioLblD.map(p=>prioCntD[p]),backgroundColor:prioLblD.map(p=>prioClrD[p]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:aLegPos,labels:{color:text3,font:{size:aLegSize},padding:aLegPad,usePointStyle:true,boxWidth:6}}}}}});
 
   // Typ
   const typCnt={};aktivData.forEach(a=>{const t=a.typ||"–";typCnt[t]=(typCnt[t]||0)+1;});

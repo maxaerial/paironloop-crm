@@ -1419,9 +1419,8 @@ tbody td { font-feature-settings: "zero" 0; }
             <div class="card-title" data-i18n="leads_by_phase">Kunden nach aktueller Phase <span class="card-subtitle">(letzter Touchpoint pro Kunde)</span></div>
             <div class="card-subtitle" id="journey-total"></div>
           </div>
-          <div class="card-body">
-            <div class="funnel-grid" id="funnel-grid"></div>
-            <div class="chart-wrap" style="height:180px"><canvas id="chart-journey"></canvas></div>
+          <div class="card-body" style="padding:16px 20px">
+            <div id="journey-funnel-unified" style="display:flex;flex-direction:column;gap:10px"></div>
           </div>
         </div>
 
@@ -2957,22 +2956,42 @@ function renderJourneyCharts() {
   document.getElementById("journey-total").textContent = `(${uniqueCustomers} Kunden · ${total} Touchpoints gesamt)`;
   const max = Math.max(...Object.values(counts), 1);
 
-  document.getElementById("funnel-grid").innerHTML = phases.map((p,i)=>{
-    const c=counts[p]||0, pct=total>0?Math.round(c/total*100):0, bar=Math.round(c/max*100);
-    return `<div class="funnel-card${jPhase===p?" selected":""}" onclick="setPhaseFilter('${p}')">
-      <div class="funnel-card-phase">${p}</div>
-      <div class="funnel-card-count" style="color:${PHASE_COLORS[i]}">${c}</div>
-      <div class="funnel-card-pct">${pct}%</div>
-      <div class="funnel-bar"><div class="funnel-bar-fill" style="width:${bar}%;background:${PHASE_COLORS[i]}"></div></div>
+  // Build unified funnel rows
+  const el = document.getElementById("journey-funnel-unified");
+  if(!el) return;
+
+  el.innerHTML = phases.map((p,i) => {
+    const c = counts[p] || 0;
+    const pct = uniqueCustomers > 0 ? Math.round(c / uniqueCustomers * 100) : 0;
+    const barW = max > 0 ? Math.round(c / max * 100) : 0;
+    const color = getColor(p, i);
+    const isActive = jPhase === p;
+
+    // Customers in this phase (for tooltip when ≤5)
+    const phaseCustomers = Object.entries(customerLatestPhase)
+      .filter(([,idx]) => phases[idx] === p)
+      .map(([name]) => name.charAt(0).toUpperCase() + name.slice(1));
+
+    const tooltipHtml = phaseCustomers.length > 0 && phaseCustomers.length <= 5
+      ? `<div class="journey-funnel-tooltip">${phaseCustomers.map(n=>`<div style="padding:2px 0">${n}</div>`).join("")}</div>`
+      : phaseCustomers.length > 5
+      ? `<div class="journey-funnel-tooltip"><div style="color:var(--text3);font-size:11px">${c} Kunden</div></div>`
+      : "";
+
+    return `<div class="journey-funnel-row${isActive ? " active" : ""}" 
+        onclick="setPhaseFilter('${p}')"
+        style="--row-color:${color}">
+      <div class="journey-funnel-label">${p}</div>
+      <div class="journey-funnel-bar-wrap">
+        <div class="journey-funnel-bar" style="width:${barW}%;background:${color}"></div>
+      </div>
+      <div class="journey-funnel-stats">
+        <span class="journey-funnel-count" style="color:${color}">${c}</span>
+        <span class="journey-funnel-pct">${pct}%</span>
+      </div>
+      ${tooltipHtml}
     </div>`;
   }).join("");
-
-  if(cJourney) cJourney.destroy();
-  cJourney = new Chart(document.getElementById("chart-journey"), {type:"bar",
-    data:{labels:phases,datasets:[{data:phases.map(p=>counts[p]||0),backgroundColor:PHASE_COLORS,borderRadius:6,borderSkipped:false,borderWidth:0}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{y:{ticks:{stepSize:1,color:text3,font:{family:"DM Sans",size:10}},grid:{color:borderCol},border:{display:false}},
-              x:{ticks:{color:text3,font:{size:10},maxRotation:25},grid:{display:false},border:{display:false}}}}});
 }
 
 function renderJourneyTable() {

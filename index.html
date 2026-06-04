@@ -41,7 +41,7 @@
   --radius: 12px;
   --radius-sm: 8px;
   --font: 'DM Sans', sans-serif;
-  --font-mono: 'DM Mono', monospace;
+  --font-mono: 'DM Sans', sans-serif;
   --font-display: 'Playfair Display', serif;
   --transition: .18s cubic-bezier(.4,0,.2,1);
   --shadow: 0 4px 24px rgba(0,0,0,.4);
@@ -638,7 +638,8 @@ tbody tr:hover td { background: var(--bg3); }
   font-size: 11px;
   font-weight: 600;
   color: var(--text3);
-  font-family: var(--font-mono);
+  font-family: 'DM Sans', sans-serif;
+  font-feature-settings: 'zero' 0, 'tnum' 1;
 }
 .pipeline-col-body { padding: 10px; min-height: 120px; }
 .deal-card {
@@ -652,7 +653,7 @@ tbody tr:hover td { background: var(--bg3); }
 }
 .deal-card:hover { border-color: var(--border2); box-shadow: var(--shadow-sm); }
 .deal-card-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-.deal-card-value { font-size: 12px; color: var(--text3); font-family: var(--font-mono); margin-bottom: 6px; }
+.deal-card-value { font-size: 12px; color: var(--text3); font-family: 'DM Sans', sans-serif; font-feature-settings: 'zero' 0; margin-bottom: 6px; }
 .deal-card-company { font-size: 11px; color: var(--accent2); }
 .deal-card-actions { margin-top: 10px; display: flex; gap: 6px; }
 
@@ -901,6 +902,13 @@ tbody tr:hover td { background: var(--bg3); }
 [data-theme="rose"] .user-card:hover { background: var(--bg3); }
 
 /* ── NUMBERS: no slashed zeros ── */
+* { font-feature-settings: "zero" 0; }
+[style*="font-mono"],
+.pipeline-col-count,
+.deal-card-value { 
+  font-family: 'DM Sans', sans-serif !important;
+  font-feature-settings: "zero" 0, "tnum" 1 !important;
+}
 .font-num, 
 td[style*="font-mono"],
 td[style*="font-family:var(--font-mono)"] {
@@ -2244,7 +2252,7 @@ async function renderDashboard() {
   const pBg={"Hoch":"rgba(240,110,110,.1)","Mittel":"rgba(240,168,110,.1)","Niedrig":"rgba(110,240,160,.1)"};
   const pC={"Hoch":"var(--red)","Mittel":"var(--orange)","Niedrig":"var(--green)"};
   document.getElementById("recent-activity-body").innerHTML = acts.map(a=>`<tr>
-    <td style="font-family:var(--font-mono);font-size:12px;color:var(--text3)">${fmtDate(a.datum)}</td>
+    <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(a.datum)}</td>
     <td><strong>${a.kunde}</strong></td>
     <td style="color:var(--text2)">${a.typ}</td>
     <td><span style="background:${pBg[a.prioritaet]||"var(--bg3)"};color:${pC[a.prioritaet]||"var(--text3)"};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600">${a.prioritaet}</span></td>
@@ -2358,12 +2366,12 @@ function renderJourneyTable() {
     <tbody>${rows.map(j=>{
       const slug=(j.phase||"").toLowerCase().replace(/[éèêëàâäîïôöùûü\s]/g,c=>({é:"e",è:"e",ê:"e",ë:"e",à:"a",â:"a",ä:"a",î:"i",ï:"i",ô:"o",ö:"o",ù:"u",û:"u",ü:"u"," ":"-"}[c]||c));
       return `<tr>
-        <td style="font-family:var(--font-mono);font-size:12px;color:var(--text3)">${fmtDate(j.datum)}</td>
+        <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(j.datum)}</td>
         <td><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${j.kunde}')">${j.kunde}</strong></td>
         <td><span class="badge badge-${slug}">${j.phase}</span></td>
         <td>${j.touchpoint||"–"}</td><td style="color:var(--text2)">${j.kanal||"–"}</td>
         <td style="color:var(--text2);font-size:12px">${j.reaktion||"–"}</td>
-        <td><span style="font-family:var(--font-mono);font-weight:600">${j.score}/10</span></td>
+        <td><span style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-weight:600">${j.score}/10</span></td>
         <td style="display:flex;gap:6px">
           <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editJourney('${j.id}')">${t("edit")||"Bearbeiten"}</button>
           <button class="btn btn-danger-ghost" onclick="deleteRow('journey','${j.id}',renderJourney)">${t("delete")}</button>
@@ -2597,7 +2605,7 @@ async function renderKontakte(s,st) {
     <tbody>${rows.map(k=>{
       const slug=(k.status||"").toLowerCase().replace(/[^a-z]/g,"-");
       return `<tr>
-        <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${k.nr||"–"}</td>
+        <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:11px;color:var(--text3)">${k.nr||"–"}</td>
         <td><strong>${k.unternehmen}</strong></td>
         <td style="color:var(--text2)">${k.vorname&&k.vorname!=="–"?k.vorname+" "+(k.nachname||""):"–"}</td>
         <td style="color:var(--text2)">${k.ort||"–"}</td>
@@ -2605,7 +2613,7 @@ async function renderKontakte(s,st) {
         <td><span class="badge badge-${slug}">${k.status}</span></td>
         <td style="color:var(--text2);font-size:12px">${k.kanal||"–"}</td>
         <td style="font-size:12px">${k.homepage?(()=>{const url=k.homepage.startsWith("http")?k.homepage:"https://"+k.homepage;const display=k.homepage.replace(/https?:\/\//, "").slice(0,25)+(k.homepage.replace(/https?:\/\//, "").length>25?"…":"");return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:var(--accent2);text-decoration:none;font-size:11px;display:flex;align-items:center;gap:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${display}</a>`;})():"–"}</td>
-        <td style="font-family:var(--font-mono);font-size:12px;color:var(--text3)">${fmtDate(k.letzter_kontakt)}</td>
+        <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(k.letzter_kontakt)}</td>
         <td style="display:flex;gap:6px;align-items:center">
           <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editKontakt('${k.id}')">${t("edit")||"Bearbeiten"}</button>
           <button class="btn btn-danger-ghost" onclick="deleteRow('kontakte','${k.id}',()=>renderKontakte())">${t("delete")}</button>
@@ -2726,7 +2734,7 @@ function filterPipeline() {
       <div class="pipeline-col-head">
         <div class="pipeline-col-name">${ph}</div>
         <div style="display:flex;align-items:center;gap:6px">
-          <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">${colTotal>0?colTotal.toLocaleString("de-DE")+"€":""}</div>
+          <div style="font-size:10px;color:var(--text3);font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1">${colTotal>0?colTotal.toLocaleString("de-DE")+"€":""}</div>
           <div class="pipeline-col-count">${phDeals.length}</div>
         </div>
       </div>
@@ -2743,12 +2751,12 @@ function filterPipeline() {
             </div>
           </div>
           <div class="deal-card-value" style="margin-top:6px">
-            <span style="font-family:var(--font-mono);font-weight:600;color:var(--text)">${(d.wert||0).toLocaleString("de-DE")}€</span>
+            <span style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-weight:600;color:var(--text)">${(d.wert||0).toLocaleString("de-DE")}€</span>
             <span style="color:var(--text3)"> · ${d.wahrscheinlichkeit||0}%</span>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
             <div class="deal-card-company" onclick="goToKontakt('${d.kunde}')" style="cursor:pointer">${d.kunde}</div>
-            ${d.abschluss_datum?`<div style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">${fmtDate(d.abschluss_datum)}</div>`:""}
+            ${d.abschluss_datum?`<div style="font-size:10px;color:var(--text3);font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1">${fmtDate(d.abschluss_datum)}</div>`:""}
           </div>
           <div style="margin-top:8px">
             <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden">
@@ -2983,10 +2991,10 @@ async function renderAktivitaeten(f) {
       <th></th>
     </tr></thead>
     <tbody>${rows.map(a=>`<tr>
-      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${a.nr||"–"}</td>
+      <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:11px;color:var(--text3)">${a.nr||"–"}</td>
       <td><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${a.kunde}')">${a.kunde}</strong></td>
       <td style="color:var(--text2)">${a.typ}</td>
-      <td style="font-family:var(--font-mono);font-size:12px;color:var(--text3)">${fmtDate(a.datum)}</td>
+      <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(a.datum)}</td>
       <td><span style="background:${pBg[a.prioritaet]||"var(--bg3)"};color:${pC[a.prioritaet]||"var(--text3)"};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600">${a.prioritaet}</span></td>
       <td style="color:var(--text2);font-size:12px;max-width:180px">${a.beschreibung||"–"}</td>
       <td style="font-size:12px;color:var(--text3)">${a.verantwortlich||"–"}</td>
@@ -3069,7 +3077,7 @@ async function checkNotifications() {
         <span style="background:${isOver?"rgba(240,110,110,.1)":"rgba(240,168,110,.1)"};color:${dotC};padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700">${label}</span>
         <strong style="font-size:13px">${a.kunde}</strong>
         <span style="color:var(--text3)">${a.typ}</span>
-        <span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text3)">${a.datum}</span>
+        <span style="margin-left:auto;font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:11px;color:var(--text3)">${a.datum}</span>
       </div>`;
     }).join("");
   }

@@ -1402,10 +1402,7 @@ tbody td { font-feature-settings: "zero" 0; }
               <div class="page-subtitle" data-i18n="journey_subtitle">Leads nach Phase – klick zum Filtern</div>
             </div>
 
-            <button class="btn btn-primary" onclick="openModal('modal-journey')">
-              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span data-i18n="add_touchpoint">Touchpoint</span>
-            </button>
+            
           </div>
         </div>
 
@@ -1469,10 +1466,7 @@ tbody td { font-feature-settings: "zero" 0; }
             </div>
 
             
-            <button class="btn btn-primary" onclick="openModal('modal-kontakt')">
-              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span data-i18n="add_contact">Kontakt</span>
-            </button>
+            
           </div>
         </div>
         <!-- Kontakte Charts -->
@@ -1535,10 +1529,7 @@ tbody td { font-feature-settings: "zero" 0; }
               <div class="page-title" data-i18n="pipeline">Pipeline</div>
               <div class="page-subtitle" data-i18n="pipeline_subtitle">Aktuelle Deals im Überblick</div>
             </div>
-            <button class="btn btn-primary" onclick="openModal('modal-deal')">
-              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span data-i18n="add_deal">Deal</span>
-            </button>
+            
           </div>
         </div>
         <div class="kpi-row kpi-row-3" style="margin-bottom:20px">
@@ -1589,44 +1580,27 @@ tbody td { font-feature-settings: "zero" 0; }
             </div>
 
             
-            <button class="btn btn-primary" onclick="openModal('modal-aktivitaet')">
-              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span data-i18n="add_activity">Aktivität</span>
-            </button>
+            
           </div>
         </div>
 
-        <!-- Aktivitäten Dashboard -->
-      <div class="kpi-row" style="margin-bottom:20px">
-        <div class="kpi-card" style="--kpi-color:rgba(240,168,110,.15)">
-          <div class="kpi-label">OFFEN</div>
-          <div class="kpi-value" id="ak-offen" style="color:var(--orange)">–</div>
-          <div class="kpi-sub">Noch zu erledigen</div>
-        </div>
-        <div class="kpi-card" style="--kpi-color:rgba(124,110,240,.15)">
-          <div class="kpi-label">IN BEARBEITUNG</div>
-          <div class="kpi-value" id="ak-progress" style="color:var(--accent2)">–</div>
-          <div class="kpi-sub">Laufend</div>
-        </div>
-        <div class="kpi-card" style="--kpi-color:rgba(110,240,160,.15)">
-          <div class="kpi-label">ERLEDIGT</div>
-          <div class="kpi-value" id="ak-done" style="color:var(--green)">–</div>
-          <div class="kpi-sub">Abgeschlossen</div>
-        </div>
-        <div class="kpi-card" style="--kpi-color:rgba(240,110,110,.15)">
-          <div class="kpi-label">ÜBERFÄLLIG</div>
-          <div class="kpi-value" id="ak-overdue" style="color:var(--red)">–</div>
-          <div class="kpi-sub">Fällig & offen</div>
-        </div>
-      </div>
-      <div class="grid-2" style="margin-bottom:20px">
+        <!-- Aktivitäten Charts -->
+      <div class="grid-2" style="margin-bottom:16px">
         <div class="card">
-          <div class="card-header"><div class="card-title">Aktivitäten nach Typ</div></div>
-          <div class="card-body"><div class="chart-wrap" style="height:200px"><canvas id="chart-aktiv-typ" role="img"></canvas></div></div>
+          <div class="card-header"><div class="card-title">Nach Status</div></div>
+          <div class="card-body"><div class="chart-wrap" style="height:180px"><canvas id="chart-aktiv-status"></canvas></div></div>
         </div>
         <div class="card">
-          <div class="card-header"><div class="card-title">Aktivitäten nach Priorität & Status</div></div>
-          <div class="card-body"><div class="chart-wrap" style="height:200px"><canvas id="chart-aktiv-prio" role="img"></canvas></div></div>
+          <div class="card-header"><div class="card-title">Nach Priorität</div></div>
+          <div class="card-body"><div class="chart-wrap" style="height:180px"><canvas id="chart-aktiv-prio2"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Nach Typ</div></div>
+          <div class="card-body"><div class="chart-wrap" style="height:180px"><canvas id="chart-aktiv-typ2"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Nach Verantwortlich</div></div>
+          <div class="card-body"><div class="chart-wrap" style="height:180px"><canvas id="chart-aktiv-verantw"></canvas></div></div>
         </div>
       </div>
 
@@ -1885,7 +1859,16 @@ tbody td { font-feature-settings: "zero" 0; }
     <div class="modal-head"><h3 data-i18n="add_activity">Neue Aktivität</h3><button class="modal-close" onclick="closeModal('modal-aktivitaet')">×</button></div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="field"><label data-i18n="client">Kunde</label><input id="a-kunde"></div>
+        <div class="field form-full"><label data-i18n="client">Kunde</label>
+          <div style="position:relative">
+            <input id="a-kunde" autocomplete="off" placeholder="Kunde suchen oder neu eingeben…"
+              oninput="filterAktivKunde(this.value,'a')"
+              onfocus="showAktivDropdown('a')"
+              style="width:100%">
+            <div id="a-kunde-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);z-index:99;max-height:180px;overflow-y:auto;box-shadow:var(--shadow)"></div>
+          </div>
+          <div id="a-neue-kunde-hint" style="display:none;font-size:11px;color:var(--orange);margin-top:4px">✚ Neuer Kunde wird in der Kontaktliste angelegt</div>
+        </div>
         <div class="field"><label data-i18n="type">Typ</label><select id="a-typ"><option>E-Mail</option><option data-i18n="call">Anruf</option><option>Meeting</option><option data-i18n="offer">Angebot</option><option data-i18n="followup">Nachfassen</option><option>Demo</option><option data-i18n="other">Sonstiges</option></select></div>
         <div class="field"><label data-i18n="due_date">Fällig am</label><input id="a-datum" type="date"></div>
         <div class="field"><label data-i18n="priority">Priorität</label><select id="a-prioritaet"><option data-i18n="high">Hoch</option><option data-i18n="medium">Mittel</option><option data-i18n="low">Niedrig</option></select></div>
@@ -3283,43 +3266,34 @@ async function renderAktivitaeten(f) {
   const {data}=await sb.from("aktivitaeten").select("*").order("created_at",{ascending:false});
   aktivData=data||[];
 
-  // KPI counts
-  const today=new Date().toISOString().split("T")[0];
-  document.getElementById("ak-offen").textContent=aktivData.filter(a=>a.status==="Offen").length;
-  document.getElementById("ak-progress").textContent=aktivData.filter(a=>a.status==="In Bearbeitung").length;
-  document.getElementById("ak-done").textContent=aktivData.filter(a=>a.status==="Erledigt").length;
-  document.getElementById("ak-overdue").textContent=aktivData.filter(a=>a.status==="Offen"&&a.datum&&a.datum<today).length;
-
-  // Chart: by type
+  // Charts
   const cs=getComputedStyle(document.documentElement);
   const text3=cs.getPropertyValue("--text3").trim();
-  const borderCol=cs.getPropertyValue("--border").trim();
-  const types=["E-Mail","Anruf","Meeting","Angebot","Nachfassen","Demo","Sonstiges"];
-  const typeColors=["#6EB8F0","#6EF0A0","#7C6EF0","#F0A86E","#F06E6E","#B06EF0","#9090A8"];
-  const typeCounts=types.map(t=>aktivData.filter(a=>a.typ===t).length);
-  if(cAktivTyp)cAktivTyp.destroy();
-  cAktivTyp=new Chart(document.getElementById("chart-aktiv-typ"),{type:"doughnut",
-    data:{labels:types,datasets:[{data:typeCounts,backgroundColor:typeColors,borderWidth:0,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:"60%",plugins:{legend:{display:true,position:"right",labels:{color:text3,font:{size:10},padding:8,usePointStyle:true}}}}});
+  const COLORS=["#7C6EF0","#6EB8F0","#6EF0A0","#F0A86E","#F06E6E","#B06EF0","#38A0E8","#F0804A","#9090A8"];
+  const donutOpts=(el)=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:10},padding:6,usePointStyle:true}}}}});
 
-  // Chart: by priority + status
-  const prios=["Hoch","Mittel","Niedrig"];
-  const statuses=["Offen","In Bearbeitung","Erledigt"];
-  const statusColors=["#F0A86E","#7C6EF0","#6EF0A0"];
+  // Status
+  const statusCnt={};aktivData.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
+  if(cAktivTyp)cAktivTyp.destroy();
+  const elS=document.getElementById("chart-aktiv-status");
+  if(elS){const o=donutOpts(elS);o.data={labels:Object.keys(statusCnt),datasets:[{data:Object.values(statusCnt),backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]};cAktivTyp=new Chart(elS,o);}
+
+  // Priorität
+  const prioCnt={};aktivData.forEach(a=>{const p=a.prioritaet||"–";prioCnt[p]=(prioCnt[p]||0)+1;});
   if(cAktivPrio)cAktivPrio.destroy();
-  cAktivPrio=new Chart(document.getElementById("chart-aktiv-prio"),{type:"bar",
-    data:{
-      labels:prios,
-      datasets:statuses.map((s,i)=>({
-        label:s,
-        data:prios.map(p=>aktivData.filter(a=>a.prioritaet===p&&a.status===s).length),
-        backgroundColor:statusColors[i],
-        borderRadius:4,borderSkipped:false,borderWidth:0
-      }))
-    },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:10},padding:8,usePointStyle:true}}},
-      scales:{x:{stacked:true,ticks:{color:text3},grid:{display:false},border:{display:false}},
-              y:{stacked:true,ticks:{color:text3,stepSize:1},grid:{color:borderCol},border:{display:false}}}}});
+  const elP=document.getElementById("chart-aktiv-prio2");
+  if(elP){const o=donutOpts(elP);o.data={labels:Object.keys(prioCnt),datasets:[{data:Object.values(prioCnt),backgroundColor:["#F06E6E","#F0A86E","#6EF0A0"],borderWidth:0,hoverOffset:4}]};cAktivPrio=new Chart(elP,o);}
+
+  // Typ
+  const typCnt={};aktivData.forEach(a=>{const t=a.typ||"–";typCnt[t]=(typCnt[t]||0)+1;});
+  let cAktivTyp2=null;
+  const elT=document.getElementById("chart-aktiv-typ2");
+  if(elT){if(window._cAktivTyp2)window._cAktivTyp2.destroy();const o=donutOpts(elT);o.data={labels:Object.keys(typCnt),datasets:[{data:Object.values(typCnt),backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]};window._cAktivTyp2=new Chart(elT,o);}
+
+  // Verantwortlich
+  const vCnt={};aktivData.forEach(a=>{const v=a.verantwortlich||"–";vCnt[v]=(vCnt[v]||0)+1;});
+  const elV=document.getElementById("chart-aktiv-verantw");
+  if(elV){if(window._cAktivV)window._cAktivV.destroy();const o=donutOpts(elV);o.data={labels:Object.keys(vCnt),datasets:[{data:Object.values(vCnt),backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]};window._cAktivV=new Chart(elV,o);}
 
   let rows=aktivData;
   if(aFilter) rows=rows.filter(a=>a.status===aFilter);

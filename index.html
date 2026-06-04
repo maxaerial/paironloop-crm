@@ -1563,21 +1563,15 @@ tbody td { font-feature-settings: "zero" 0; }
           </div>
         </div>
 
-        <!-- 3 Charts in one row -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+        <!-- 2 Charts in one row -->
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:16px">
           <div class="card">
-            <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Pipeline nach Phase (€)</div></div>
-            <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:150px"><canvas id="chart-pipeline-phases"></canvas></div></div>
+            <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Pipeline nach Phase — Anzahl &amp; Wert (€)</div></div>
+            <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:160px"><canvas id="chart-pipeline-phases"></canvas></div></div>
           </div>
           <div class="card">
-            <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Top Deals</div></div>
-            <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:150px"><canvas id="chart-pipeline-deals"></canvas></div></div>
-          </div>
-          <div class="card">
-            <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Funnel</div></div>
-            <div class="card-body" style="padding:10px 14px">
-              <div id="pipeline-funnel" style="height:150px;display:flex;align-items:flex-end;gap:4px;justify-content:space-around"></div>
-            </div>
+            <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Nach Status</div></div>
+            <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:160px"><canvas id="chart-pipeline-status"></canvas></div></div>
           </div>
         </div>
 <div style="display:flex;align-items:center;gap:8px;padding:10px 0;flex-wrap:wrap;margin-bottom:16px">
@@ -4450,7 +4444,7 @@ const STATUS_COLORS = {
   "Interesse":     "#7C6EF0",
   "Angebot":       "#F0A86E",
   "Kauf":          "#6EF0A0",
-  "Empfehlung":    "#6EB8F0",
+  "Empfehlung":    "#F0C44E",  // gold
   // Branche
   "Hospitality":   "#6EB8F0",
   "Restaurant":    "#F0A86E",

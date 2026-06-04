@@ -918,6 +918,39 @@ td[style*="font-family:var(--font-mono)"] {
 /* Override DM Mono slashed zero globally in tables */
 tbody td { font-feature-settings: "zero" 0; }
 
+/* ── BULK ACTIONS ── */
+.bulk-bar {
+  display:none;
+  position:sticky;
+  top:56px;
+  z-index:40;
+  background:var(--accent);
+  color:#fff;
+  padding:10px 20px;
+  align-items:center;
+  gap:12px;
+  font-size:13px;
+  font-weight:600;
+  box-shadow:0 2px 12px rgba(0,0,0,.2);
+}
+.bulk-bar.visible { display:flex; }
+.bulk-bar-count { flex:1; }
+.bulk-btn {
+  padding:6px 14px;
+  border-radius:6px;
+  border:none;
+  font-size:12px;
+  font-family:var(--font);
+  font-weight:600;
+  cursor:pointer;
+  transition:var(--transition);
+}
+.bulk-btn-ghost { background:rgba(255,255,255,.15); color:#fff; }
+.bulk-btn-ghost:hover { background:rgba(255,255,255,.25); }
+.bulk-btn-danger { background:rgba(240,110,110,.3); color:#fff; }
+.bulk-btn-danger:hover { background:rgba(240,110,110,.5); }
+.row-checkbox { width:16px;height:16px;cursor:pointer;accent-color:var(--accent); }
+
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -1691,7 +1724,14 @@ tbody td { font-feature-settings: "zero" 0; }
     <div class="modal-head"><h3 data-i18n="add_touchpoint">Neuer Touchpoint</h3><button class="modal-close" onclick="closeModal('modal-journey')">×</button></div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="field"><label data-i18n="client">Kunde</label><input id="j-kunde"></div>
+        <div class="field form-full"><label data-i18n="client">Kunde</label>
+          <div style="position:relative">
+            <input id="j-kunde" autocomplete="off" placeholder="Kunde suchen oder neu eingeben…"
+              oninput="filterJourneyKunde(this.value)" onfocus="showJourneyKundeDD()" style="width:100%">
+            <div id="j-kunde-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);z-index:99;max-height:180px;overflow-y:auto;box-shadow:var(--shadow)"></div>
+          </div>
+          <div id="j-neue-kunde-hint" style="display:none;font-size:11px;color:var(--orange);margin-top:4px">✚ Neuer Kunde wird in der Kontaktliste angelegt</div>
+        </div>
         <div class="field"><label data-i18n="date">Datum</label><input id="j-datum" type="date"></div>
         <div class="field"><label data-i18n="phase">Phase</label><select id="j-phase"></select></div>
         <div class="field"><label data-i18n="channel">Kanal</label><input id="j-kanal"></div>
@@ -1765,7 +1805,7 @@ tbody td { font-feature-settings: "zero" 0; }
 <!-- EDIT DEAL MODAL -->
 <div class="modal-overlay" id="modal-edit-deal">
   <div class="modal">
-    <div class="modal-head"><h3 id="ed-title">Deal bearbeiten</h3><button class="modal-close" onclick="closeModal('modal-edit-deal')">×</button></div>
+    <div class="modal-head"><h3 id="ed-title">Deal ändern</h3><button class="modal-close" onclick="closeModal('modal-edit-deal')">×</button></div>
     <div class="modal-body">
       <input type="hidden" id="ed-id">
       <div class="form-grid">
@@ -1791,10 +1831,77 @@ tbody td { font-feature-settings: "zero" 0; }
   </div>
 </div>
 
+<!-- BULK ACTION BARS -->
+<div class="bulk-bar" id="bulk-bar-kontakte">
+  <span class="bulk-bar-count" id="bulk-count-kontakte">0 ausgewählt</span>
+  <button class="bulk-btn bulk-btn-ghost" onclick="bulkEditKontakte()">✎ Ändern</button>
+  <button class="bulk-btn bulk-btn-danger" onclick="bulkDeleteKontakte()">🗑 Löschen</button>
+  <button class="bulk-btn bulk-btn-ghost" onclick="clearBulk('kontakte')">✕ Abbrechen</button>
+</div>
+<div class="bulk-bar" id="bulk-bar-journey">
+  <span class="bulk-bar-count" id="bulk-count-journey">0 ausgewählt</span>
+  <button class="bulk-btn bulk-btn-danger" onclick="bulkDeleteJourney()">🗑 Löschen</button>
+  <button class="bulk-btn bulk-btn-ghost" onclick="clearBulk('journey')">✕ Abbrechen</button>
+</div>
+<div class="bulk-bar" id="bulk-bar-deals">
+  <span class="bulk-bar-count" id="bulk-count-deals">0 ausgewählt</span>
+  <button class="bulk-btn bulk-btn-ghost" onclick="bulkEditDeals()">✎ Phase ändern</button>
+  <button class="bulk-btn bulk-btn-danger" onclick="bulkDeleteDeals()">🗑 Löschen</button>
+  <button class="bulk-btn bulk-btn-ghost" onclick="clearBulk('deals')">✕ Abbrechen</button>
+</div>
+<div class="bulk-bar" id="bulk-bar-aktivitaeten">
+  <span class="bulk-bar-count" id="bulk-count-aktivitaeten">0 ausgewählt</span>
+  <button class="bulk-btn bulk-btn-ghost" onclick="bulkDoneAktivitaeten()">✓ Erledigt</button>
+  <button class="bulk-btn bulk-btn-danger" onclick="bulkDeleteAktivitaeten()">🗑 Löschen</button>
+  <button class="bulk-btn bulk-btn-ghost" onclick="clearBulk('aktivitaeten')">✕ Abbrechen</button>
+</div>
+
+<!-- BULK EDIT MODALS -->
+<div class="modal-overlay" id="modal-bulk-kontakt">
+  <div class="modal">
+    <div class="modal-head"><h3>Massänderung Kontakte</h3><button class="modal-close" onclick="closeModal('modal-bulk-kontakt')">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Nur ausgefüllte Felder werden geändert.</p>
+      <div class="form-grid">
+        <div class="field"><label>Status</label>
+          <select id="bk-status"><option value="">— unverändert —</option><option>Lead</option><option>Aktiv</option><option>Abgeschlossen</option><option>Inaktiv</option></select>
+        </div>
+        <div class="field"><label>Kanal</label><input id="bk-kanal" placeholder="— unverändert —"></div>
+        <div class="field"><label>Branche</label><input id="bk-branche" placeholder="— unverändert —"></div>
+        <div class="field"><label>Land</label><input id="bk-land" placeholder="— unverändert —"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="applyBulkKontakte()">Auf alle anwenden</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-bulk-kontakt')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-bulk-deal">
+  <div class="modal">
+    <div class="modal-head"><h3>Massänderung Deals</h3><button class="modal-close" onclick="closeModal('modal-bulk-deal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label>Phase</label>
+          <select id="bd-phase"><option value="">— unverändert —</option><option>Erstgespräch</option><option>Angebot</option><option>Verhandlung</option><option>Abschluss</option></select>
+        </div>
+        <div class="field"><label>Status</label>
+          <select id="bd-status"><option value="">— unverändert —</option><option>Aktiv</option><option>Gewonnen</option><option>Verloren</option><option>Pausiert</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="applyBulkDeals()">Auf alle anwenden</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-bulk-deal')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
 <!-- EDIT AKTIVITÄT MODAL -->
 <div class="modal-overlay" id="modal-edit-aktivitaet">
   <div class="modal">
-    <div class="modal-head"><h3 id="ea-title">Aktivität bearbeiten</h3><button class="modal-close" onclick="closeModal('modal-edit-aktivitaet')">×</button></div>
+    <div class="modal-head"><h3 id="ea-title">Aktivität ändern</h3><button class="modal-close" onclick="closeModal('modal-edit-aktivitaet')">×</button></div>
     <div class="modal-body">
       <input type="hidden" id="ea-id">
       <div class="form-grid">
@@ -1829,7 +1936,7 @@ tbody td { font-feature-settings: "zero" 0; }
 <!-- EDIT JOURNEY MODAL -->
 <div class="modal-overlay" id="modal-edit-journey">
   <div class="modal">
-    <div class="modal-head"><h3 id="ej-title">Touchpoint bearbeiten</h3><button class="modal-close" onclick="closeModal('modal-edit-journey')">×</button></div>
+    <div class="modal-head"><h3 id="ej-title">Touchpoint ändern</h3><button class="modal-close" onclick="closeModal('modal-edit-journey')">×</button></div>
     <div class="modal-body">
       <input type="hidden" id="ej-id">
       <div class="form-grid">
@@ -1853,7 +1960,7 @@ tbody td { font-feature-settings: "zero" 0; }
 <!-- EDIT KONTAKT MODAL -->
 <div class="modal-overlay" id="modal-edit-kontakt">
   <div class="modal">
-    <div class="modal-head"><h3 id="edit-modal-title">Kontakt bearbeiten</h3><button class="modal-close" onclick="closeModal('modal-edit-kontakt')">×</button></div>
+    <div class="modal-head"><h3 id="edit-modal-title">Kontakt ändern</h3><button class="modal-close" onclick="closeModal('modal-edit-kontakt')">×</button></div>
     <div class="modal-body">
       <input type="hidden" id="ek-id">
       <div class="form-grid">
@@ -2353,6 +2460,7 @@ function renderJourneyTable() {
   });
   document.getElementById("journey-table-wrap").innerHTML = rows.length ? `<table>
     <thead><tr>
+      <th><input type="checkbox" class="row-checkbox" id="check-all-j" onchange="toggleAllBulk('journey',this.checked)"></th>
       <th>${thSort("datum_j",t("date"),jSortCol,jSortDir)}</th>
       <th>${thSort("kunde_j",t("client"),jSortCol,jSortDir)}</th>
       <th>${thSort("phase_j",t("phase"),jSortCol,jSortDir)}</th>
@@ -2365,6 +2473,7 @@ function renderJourneyTable() {
     <tbody>${rows.map(j=>{
       const slug=(j.phase||"").toLowerCase().replace(/[éèêëàâäîïôöùûü\s]/g,c=>({é:"e",è:"e",ê:"e",ë:"e",à:"a",â:"a",ä:"a",î:"i",ï:"i",ô:"o",ö:"o",ù:"u",û:"u",ü:"u"," ":"-"}[c]||c));
       return `<tr>
+        <td><input type="checkbox" class="row-checkbox bulk-check-journey" data-id="${j.id}" onchange="updateBulk('journey')"></td>
         <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(j.datum)}</td>
         <td><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${j.kunde}')">${j.kunde}</strong></td>
         <td><span class="badge badge-${slug}">${j.phase}</span></td>
@@ -2372,7 +2481,7 @@ function renderJourneyTable() {
         <td style="color:var(--text2);font-size:12px">${j.reaktion||"–"}</td>
         <td><span style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-weight:600">${j.score}/10</span></td>
         <td style="display:flex;gap:6px">
-          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editJourney('${j.id}')">${t("edit")||"Bearbeiten"}</button>
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editJourney('${j.id}')">${t("edit")||"Ändern"}</button>
           <button class="btn btn-danger-ghost" onclick="deleteRow('journey','${j.id}',renderJourney)">${t("delete")}</button>
         </td>
       </tr>`;
@@ -2470,6 +2579,21 @@ async function addJourney() {
   const userId   = (await sb.auth.getUser()).data.user?.id;
 
   if(!kunde) { showToast("Bitte Kundenname eingeben", true); btn.disabled=false; return; }
+  // Auto-create contact if new
+  if(journeyKundeIsNew) {
+    const existing = kontakteData.find(k=>k.unternehmen.toLowerCase()===kunde.toLowerCase());
+    if(!existing) {
+      const {count}=await sb.from("kontakte").select("*",{count:"exact",head:true});
+      await sb.from("kontakte").insert({
+        nr:String((count||0)+1).padStart(3,"0"),
+        unternehmen:kunde, vorname:"–", nachname:"–",
+        status:"Lead", letzter_kontakt:new Date().toISOString().split("T")[0],
+        kommentar:"Automatisch angelegt via Journey-Touchpoint",
+        user_id:userId
+      });
+    }
+    journeyKundeIsNew=false;
+  }
 
   // 1. Check if contact exists (case-insensitive search)
   const {data: existing} = await sb.from("kontakte")
@@ -2591,6 +2715,7 @@ async function renderKontakte(s,st) {
   });
   document.getElementById("kontakte-table-wrap").innerHTML = `<table>
     <thead><tr>
+      <th><input type="checkbox" class="row-checkbox" id="check-all-k" onchange="toggleAllBulk('kontakte',this.checked)"></th>
       <th>${thSort("nr_k","nr",kSortCol,kSortDir)}</th>
       <th>${thSort("name_k",t("company_col"),kSortCol,kSortDir)}</th>
       <th>${thSort("person_k",t("name"),kSortCol,kSortDir)}</th>
@@ -2604,8 +2729,9 @@ async function renderKontakte(s,st) {
     <tbody>${rows.map(k=>{
       const slug=(k.status||"").toLowerCase().replace(/[^a-z]/g,"-");
       return `<tr>
+        <td><input type="checkbox" class="row-checkbox bulk-check-kontakte" data-id="${k.id}" onchange="updateBulk('kontakte')"></td>
         <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:11px;color:var(--text3)">${k.nr||"–"}</td>
-        <td><strong>${k.unternehmen}</strong></td>
+        <td><strong style="cursor:pointer;color:var(--accent2)" onclick="editKontakt('${k.id}')">${k.unternehmen}</strong></td>
         <td style="color:var(--text2)">${k.vorname&&k.vorname!=="–"?k.vorname+" "+(k.nachname||""):"–"}</td>
         <td style="color:var(--text2)">${k.ort||"–"}</td>
         <td style="color:var(--text2)">${k.land||"–"}</td>
@@ -2614,7 +2740,7 @@ async function renderKontakte(s,st) {
         <td style="font-size:12px">${k.homepage?(()=>{const url=k.homepage.startsWith("http")?k.homepage:"https://"+k.homepage;const display=k.homepage.replace(/https?:\/\//, "").slice(0,25)+(k.homepage.replace(/https?:\/\//, "").length>25?"…":"");return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:var(--accent2);text-decoration:none;font-size:11px;display:flex;align-items:center;gap:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${display}</a>`;})():"–"}</td>
         <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(k.letzter_kontakt)}</td>
         <td style="display:flex;gap:6px;align-items:center">
-          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editKontakt('${k.id}')">${t("edit")||"Bearbeiten"}</button>
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editKontakt('${k.id}')">${t("edit")||"Ändern"}</button>
           <button class="btn btn-danger-ghost" onclick="deleteRow('kontakte','${k.id}',()=>renderKontakte())">${t("delete")}</button>
         </td>
       </tr>`;
@@ -2743,9 +2869,12 @@ function filterPipeline() {
           ondragend="document.querySelectorAll('.pipeline-col-body').forEach(c=>c.style.background='')"
           style="cursor:grab">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
-            <div class="deal-card-name">${d.beschreibung||"–"}</div>
+            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+              <input type="checkbox" class="row-checkbox bulk-check-deals" data-id="${d.id}" onchange="updateBulk('deals')" style="flex-shrink:0">
+              <div class="deal-card-name">${d.beschreibung||"–"}</div>
+            </div>
             <div style="display:flex;gap:4px;flex-shrink:0">
-              <button class="btn btn-ghost" style="padding:3px 8px;font-size:10px" onclick="editDeal('${d.id}')">${t("edit")||"✎"}</button>
+              <button class="btn btn-ghost" style="padding:3px 8px;font-size:10px" onclick="editDeal('${d.id}')">${t("edit")||"Ändern"}</button>
               <button class="btn btn-danger-ghost" style="padding:3px 8px;font-size:10px" onclick="deleteRow('deals','${d.id}',renderPipeline)">${t("delete")}</button>
             </div>
           </div>
@@ -2979,6 +3108,7 @@ async function renderAktivitaeten(f) {
   const pC={"Hoch":"var(--red)","Mittel":"var(--orange)","Niedrig":"var(--green)"};
   document.getElementById("aktivitaeten-table-wrap").innerHTML=`<table>
     <thead><tr>
+      <th><input type="checkbox" class="row-checkbox" id="check-all-a" onchange="toggleAllBulk('aktivitaeten',this.checked)"></th>
       <th>${thSort("nr_a","Nr",aSortCol,aSortDir)}</th>
       <th>${thSort("kunde_a",t("client"),aSortCol,aSortDir)}</th>
       <th>${thSort("typ_a",t("type"),aSortCol,aSortDir)}</th>
@@ -2990,6 +3120,7 @@ async function renderAktivitaeten(f) {
       <th></th>
     </tr></thead>
     <tbody>${rows.map(a=>`<tr>
+      <td><input type="checkbox" class="row-checkbox bulk-check-aktivitaeten" data-id="${a.id}" onchange="updateBulk('aktivitaeten')"></td>
       <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:11px;color:var(--text3)">${a.nr||"–"}</td>
       <td><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${a.kunde}')">${a.kunde}</strong></td>
       <td style="color:var(--text2)">${a.typ}</td>
@@ -3564,6 +3695,48 @@ async function updateAktivitaet() {
   showToast("✓ Aktivität aktualisiert");
 }
 
+// ── JOURNEY KUNDE DROPDOWN ──────────────────────────────────────────────────
+function showJourneyKundeDD() { filterJourneyKunde(document.getElementById("j-kunde").value); }
+
+function filterJourneyKunde(val) {
+  const dd = document.getElementById("j-kunde-dropdown");
+  if(!dd) return;
+  const v = val.toLowerCase().trim();
+  const matches = v
+    ? kontakteData.filter(k=>k.unternehmen?.toLowerCase().includes(v)).slice(0,8)
+    : kontakteData.slice(0,8);
+  const exactMatch = kontakteData.some(k=>k.unternehmen.toLowerCase()===v);
+  dd.innerHTML = matches.map(k=>`
+    <div onclick="selectJourneyKunde('${k.unternehmen.replace(/'/g,"\'")}')"
+      style="padding:9px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border)"
+      onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+      <div style="font-weight:600">${k.unternehmen}</div>
+      <div style="font-size:11px;color:var(--text3)">${k.status} · ${k.ort||"–"}</div>
+    </div>`).join("")
+  + (val && !exactMatch ? `<div onclick="selectJourneyKunde('${val}',true)"
+      style="padding:9px 14px;cursor:pointer;font-size:13px;color:var(--orange);display:flex;align-items:center;gap:8px;border-top:1px solid var(--border)"
+      onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      "${val}" neu anlegen</div>` : "");
+  dd.style.display = (matches.length || (val && !exactMatch)) ? "block" : "none";
+  const hint = document.getElementById("j-neue-kunde-hint");
+  if(hint) hint.style.display = (val && !exactMatch) ? "block" : "none";
+}
+
+let journeyKundeIsNew = false;
+function selectJourneyKunde(name, isNew=false) {
+  document.getElementById("j-kunde").value = name;
+  document.getElementById("j-kunde-dropdown").style.display = "none";
+  const hint = document.getElementById("j-neue-kunde-hint");
+  if(hint) hint.style.display = isNew ? "block" : "none";
+  journeyKundeIsNew = isNew;
+}
+
+document.addEventListener("click", e => {
+  if(!e.target.closest("#j-kunde") && !e.target.closest("#j-kunde-dropdown"))
+    { const dd=document.getElementById("j-kunde-dropdown"); if(dd) dd.style.display="none"; }
+});
+
 // ── EDIT JOURNEY ──────────────────────────────────────────────────────────────
 function editJourney(id) {
   const j = journeyData.find(x=>x.id===id);
@@ -3697,6 +3870,131 @@ function goToKontakt(name) {
   const searchInput = document.getElementById("kontakte-search");
   if(searchInput) { searchInput.value = name; }
   renderKontakte(name, "");
+}
+
+// ── BULK ACTIONS ──────────────────────────────────────────────────────────────
+let bulkSelected = {kontakte:[], journey:[], aktivitaeten:[], deals:[]};
+
+function updateBulk(table) {
+  const checks = document.querySelectorAll(`.bulk-check-${table}:checked`);
+  bulkSelected[table] = Array.from(checks).map(c=>c.dataset.id);
+  const count = bulkSelected[table].length;
+  const bar = document.getElementById(`bulk-bar-${table}`);
+  const countEl = document.getElementById(`bulk-count-${table}`);
+  if(bar) bar.classList.toggle("visible", count > 0);
+  if(countEl) countEl.textContent = `${count} ausgewählt`;
+  // Sync select-all checkbox
+  const allCheck = document.getElementById(`check-all-${table[0]}`);
+  if(allCheck) {
+    const total = document.querySelectorAll(`.bulk-check-${table}`).length;
+    allCheck.checked = count === total && total > 0;
+    allCheck.indeterminate = count > 0 && count < total;
+  }
+}
+
+function toggleAllBulk(table, checked) {
+  document.querySelectorAll(`.bulk-check-${table}`).forEach(c => c.checked = checked);
+  updateBulk(table);
+}
+
+function clearBulk(table) {
+  document.querySelectorAll(`.bulk-check-${table}`).forEach(c => c.checked = false);
+  bulkSelected[table] = [];
+  const bar = document.getElementById(`bulk-bar-${table}`);
+  if(bar) bar.classList.remove("visible");
+  const allCheck = document.getElementById(`check-all-${table[0]}`);
+  if(allCheck) { allCheck.checked = false; allCheck.indeterminate = false; }
+}
+
+// Kontakte bulk
+function bulkEditKontakte() {
+  if(!bulkSelected.kontakte.length) return;
+  openModal("modal-bulk-kontakt");
+}
+async function applyBulkKontakte() {
+  const updates = {};
+  const status = document.getElementById("bk-status").value;
+  const kanal  = document.getElementById("bk-kanal").value.trim();
+  const branche= document.getElementById("bk-branche").value.trim();
+  const land   = document.getElementById("bk-land").value.trim();
+  if(status)  updates.status  = status;
+  if(kanal)   updates.kanal   = kanal;
+  if(branche) updates.branche = branche;
+  if(land)    updates.land    = land;
+  if(!Object.keys(updates).length) { showToast("Nichts zu ändern", true); return; }
+  const btn = document.querySelector("#modal-bulk-kontakt .btn-primary"); btn.disabled = true;
+  for(const id of bulkSelected.kontakte) {
+    await sb.from("kontakte").update(updates).eq("id", id);
+  }
+  btn.disabled = false;
+  closeModal("modal-bulk-kontakt");
+  clearBulk("kontakte");
+  renderKontakte(); renderDashboard();
+  showToast(`✓ ${bulkSelected.kontakte.length || "?"} Kontakte geändert`);
+}
+async function bulkDeleteKontakte() {
+  if(!bulkSelected.kontakte.length) return;
+  if(!confirm(`${bulkSelected.kontakte.length} Kontakte löschen?`)) return;
+  for(const id of bulkSelected.kontakte) await sb.from("kontakte").delete().eq("id", id);
+  clearBulk("kontakte");
+  renderKontakte(); renderDashboard();
+  showToast("✓ Kontakte gelöscht");
+}
+
+// Journey bulk
+async function bulkDeleteJourney() {
+  if(!bulkSelected.journey.length) return;
+  if(!confirm(`${bulkSelected.journey.length} Touchpoints löschen?`)) return;
+  for(const id of bulkSelected.journey) await sb.from("journey").delete().eq("id", id);
+  clearBulk("journey");
+  renderJourney(); renderDashboard();
+  showToast("✓ Touchpoints gelöscht");
+}
+
+// Deals bulk
+function bulkEditDeals() {
+  if(!bulkSelected.deals.length) return;
+  openModal("modal-bulk-deal");
+}
+async function applyBulkDeals() {
+  const updates = {};
+  const phase  = document.getElementById("bd-phase").value;
+  const status = document.getElementById("bd-status").value;
+  if(phase)  updates.phase  = phase;
+  if(status) updates.status = status;
+  if(!Object.keys(updates).length) { showToast("Nichts zu ändern", true); return; }
+  const btn = document.querySelector("#modal-bulk-deal .btn-primary"); btn.disabled = true;
+  for(const id of bulkSelected.deals) await sb.from("deals").update(updates).eq("id", id);
+  btn.disabled = false;
+  closeModal("modal-bulk-deal");
+  clearBulk("deals");
+  renderPipeline(); renderDashboard();
+  showToast(`✓ Deals geändert`);
+}
+async function bulkDeleteDeals() {
+  if(!bulkSelected.deals.length) return;
+  if(!confirm(`${bulkSelected.deals.length} Deals löschen?`)) return;
+  for(const id of bulkSelected.deals) await sb.from("deals").delete().eq("id", id);
+  clearBulk("deals");
+  renderPipeline(); renderDashboard();
+  showToast("✓ Deals gelöscht");
+}
+
+// Aktivitäten bulk
+async function bulkDoneAktivitaeten() {
+  if(!bulkSelected.aktivitaeten.length) return;
+  for(const id of bulkSelected.aktivitaeten) await sb.from("aktivitaeten").update({status:"Erledigt"}).eq("id", id);
+  clearBulk("aktivitaeten");
+  renderAktivitaeten(); renderDashboard(); checkNotifications();
+  showToast("✓ Als erledigt markiert");
+}
+async function bulkDeleteAktivitaeten() {
+  if(!bulkSelected.aktivitaeten.length) return;
+  if(!confirm(`${bulkSelected.aktivitaeten.length} Aktivitäten löschen?`)) return;
+  for(const id of bulkSelected.aktivitaeten) await sb.from("aktivitaeten").delete().eq("id", id);
+  clearBulk("aktivitaeten");
+  renderAktivitaeten(); renderDashboard(); checkNotifications();
+  showToast("✓ Aktivitäten gelöscht");
 }
 
 function openModal(id) { document.getElementById(id).classList.add("open"); }

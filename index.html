@@ -1500,18 +1500,18 @@ tbody td { font-feature-settings: "zero" 0; }
           </div>
         </div>
         <!-- Kontakte Charts -->
-        <div class="grid-3" style="margin-bottom:20px">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
           <div class="card">
-            <div class="card-header"><div class="card-title">Nach Status</div></div>
-            <div class="card-body"><div class="chart-wrap" style="height:180px"><canvas id="chart-k-status"></canvas></div></div>
+            <div class="card-header" style="padding:8px 12px"><div class="card-title" style="font-size:11px">Nach Status</div></div>
+            <div class="card-body" style="padding:8px 12px"><div class="chart-wrap" style="height:130px"><canvas id="chart-k-status"></canvas></div></div>
           </div>
           <div class="card">
-            <div class="card-header"><div class="card-title">Nach Land</div></div>
-            <div class="card-body"><div class="chart-wrap" style="height:180px"><canvas id="chart-k-land"></canvas></div></div>
+            <div class="card-header" style="padding:8px 12px"><div class="card-title" style="font-size:11px">Nach Land</div></div>
+            <div class="card-body" style="padding:8px 12px"><div class="chart-wrap" style="height:130px"><canvas id="chart-k-land"></canvas></div></div>
           </div>
           <div class="card">
-            <div class="card-header"><div class="card-title">Nach Branche</div></div>
-            <div class="card-body"><div class="chart-wrap" style="height:180px"><canvas id="chart-k-branche"></canvas></div></div>
+            <div class="card-header" style="padding:8px 12px"><div class="card-title" style="font-size:11px">Nach Branche</div></div>
+            <div class="card-body" style="padding:8px 12px"><div class="chart-wrap" style="height:130px"><canvas id="chart-k-branche"></canvas></div></div>
           </div>
         </div>
 
@@ -1566,18 +1566,24 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="kpi-row" style="margin-bottom:16px;grid-template-columns:repeat(4,1fr)">
           <div class="kpi-card" style="--kpi-color:rgba(110,184,240,.15)">
             <div class="kpi-label">Gesamtwert</div>
-            <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px">
               <div class="kpi-value" id="pipeline-total" style="font-size:20px">–</div>
-              <div id="pipeline-weighted" style="font-size:12px;color:var(--text3);font-weight:500;white-space:nowrap">– gewichtet</div>
+              <div id="pipeline-weighted" style="font-size:11px;color:var(--text3);font-weight:500;white-space:nowrap;padding-bottom:3px;text-align:right">– gew.</div>
             </div>
           </div>
           <div class="kpi-card" style="--kpi-color:rgba(240,168,110,.15)">
             <div class="kpi-label">Offene Deals</div>
-            <div class="kpi-value" id="pipeline-open" style="font-size:20px">–</div>
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px">
+              <div class="kpi-value" id="pipeline-open" style="font-size:20px">–</div>
+              <div id="pipeline-open-val" style="font-size:11px;color:var(--text3);font-weight:500;white-space:nowrap;padding-bottom:3px;text-align:right">–</div>
+            </div>
           </div>
           <div class="kpi-card" style="--kpi-color:rgba(240,196,78,.15)">
             <div class="kpi-label">Gewonnen</div>
-            <div class="kpi-value" id="pipeline-won" style="font-size:20px;color:#F0C44E">–</div>
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px">
+              <div class="kpi-value" id="pipeline-won" style="font-size:20px;color:#F0C44E">–</div>
+              <div id="pipeline-won-val" style="font-size:11px;color:var(--text3);font-weight:500;white-space:nowrap;padding-bottom:3px;text-align:right">–</div>
+            </div>
           </div>
           <div class="kpi-card" style="--kpi-color:rgba(110,240,160,.15)">
             <div class="kpi-label">Abschlussquote</div>
@@ -3476,7 +3482,7 @@ function renderKontakteCharts(data) {
   const donut = (labels, vals) => ({
     type:"doughnut",
     data:{labels, datasets:[{data:vals, backgroundColor:getColors(labels), borderWidth:0, hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:10},padding:8,usePointStyle:true}}}}
+    options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:7}}}}
   });
 
   const statusCount = {};
@@ -3634,7 +3640,7 @@ function filterPipeline() {
     window._cPipeStatus = new Chart(elStat, {
       type:"doughnut",
       data:{labels:Object.keys(statusCnt),datasets:[{data:Object.values(statusCnt),backgroundColor:getColors(Object.keys(statusCnt)),borderWidth:0,hoverOffset:4}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:10},padding:8,usePointStyle:true}}}}
+      options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:7}}}}
     });
   }
 
@@ -3864,10 +3870,13 @@ async function renderAktivitaeten(f) {
   if(elS) cAktivTyp=new Chart(elS,mkDonut(Object.keys(statusCnt),Object.values(statusCnt)));
 
   // Priorität
-  const prioCnt={};aktivData.forEach(a=>{const p=a.prioritaet||"–";prioCnt[p]=(prioCnt[p]||0)+1;});
+  const prioCntD={};aktivData.forEach(a=>{const p=a.prioritaet||"–";prioCntD[p]=(prioCntD[p]||0)+1;});
+  const prioOrdD=["Niedrig","Mittel","Hoch"];
+  const prioLblD=prioOrdD.filter(p=>prioCntD[p]>0);
+  const prioClrD={"Niedrig":"#6EF0A0","Mittel":"#F0A86E","Hoch":"#F06E6E"};
   if(cAktivPrio)cAktivPrio.destroy();
   const elP=document.getElementById("chart-aktiv-prio2");
-  if(elP) cAktivPrio=new Chart(elP,mkDonut(Object.keys(prioCnt),Object.values(prioCnt)));
+  if(elP) cAktivPrio=new Chart(elP,{type:"doughnut",data:{labels:prioLblD,datasets:[{data:prioLblD.map(p=>prioCntD[p]),backgroundColor:prioLblD.map(p=>prioClrD[p]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:8}}}}});
 
   // Typ
   const typCnt={};aktivData.forEach(a=>{const t=a.typ||"–";typCnt[t]=(typCnt[t]||0)+1;});

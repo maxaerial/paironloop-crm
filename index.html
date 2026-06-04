@@ -512,6 +512,7 @@ tbody tr:hover td { background: var(--bg3); }
 .badge-gewonnen,.badge-won,.badge-gagné,.badge-ganado { background: rgba(110,240,160,.12); color: var(--green); }
 .badge-verloren,.badge-lost,.badge-perdu,.badge-perdido { background: rgba(240,110,110,.12); color: var(--red); }
 .badge-offen,.badge-open,.badge-ouvert,.badge-abierto { background: rgba(240,168,110,.12); color: var(--orange); }
+.badge-in-bearbeitung,.badge-in-progress { background: rgba(124,110,240,.12); color: #7C6EF0; }
 .badge-erledigt,.badge-done,.badge-fait,.badge-hecho { background: rgba(110,240,160,.12); color: var(--green); }
 .badge-bewusstsein,.badge-awareness,.badge-sensibilisation,.badge-conciencia { background: rgba(110,184,240,.12); color: var(--blue); }
 .badge-interesse,.badge-interest,.badge-intérêt,.badge-interés { background: rgba(124,110,240,.12); color: var(--accent2); }
@@ -3625,6 +3626,19 @@ function filterPipeline() {
                 y:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
   }
 
+  // Chart 3: Status donut — ALL dealsData for full picture
+  const statusCnt={};
+  dealsData.forEach(d=>{ const s=d.status||"Aktiv"; statusCnt[s]=(statusCnt[s]||0)+1; });
+  if(window._cPipeStatus) window._cPipeStatus.destroy();
+  const elStat=document.getElementById("chart-pipeline-status");
+  if(elStat && Object.keys(statusCnt).length > 0) {
+    window._cPipeStatus = new Chart(elStat, {
+      type:"doughnut",
+      data:{labels:Object.keys(statusCnt),datasets:[{data:Object.values(statusCnt),backgroundColor:getColors(Object.keys(statusCnt)),borderWidth:0,hoverOffset:4}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:10},padding:8,usePointStyle:true}}}}
+    });
+  }
+
   // Board
   const board=document.getElementById("pipeline-board");
   if(!board) return;
@@ -3666,13 +3680,13 @@ function filterPipeline() {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
-          <div class="deal-card-value" style="margin-top:6px">
-            <span style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-weight:600;color:var(--text)">${(d.wert||0).toLocaleString("de-DE")}€</span>
-            <span style="color:var(--text3)"> · ${d.wahrscheinlichkeit||0}%</span>
-          </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
             <div class="deal-card-company" onclick="goToKontakt('${d.kunde}')" style="cursor:pointer">${d.kunde}</div>
-            ${d.abschluss_datum?`<div style="font-size:10px;color:var(--text3);font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1">${fmtDate(d.abschluss_datum)}</div>`:""}
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:nowrap">
+            <span style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-weight:600;color:var(--text);font-size:12px">${(d.wert||0).toLocaleString("de-DE")}€</span>
+            <span style="color:var(--text3);font-size:11px">·  ${d.wahrscheinlichkeit||0}%</span>
+            ${d.abschluss_datum?`<span style="margin-left:auto;font-size:10px;color:var(--text3);font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0">${fmtDate(d.abschluss_datum)}</span>`:""}
           </div>
           <div style="margin-top:8px">
             <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden">

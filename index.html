@@ -3657,10 +3657,14 @@ async function renderKontakte(s,st) {
 function renderKontakteCharts(data) {
   const cs = getComputedStyle(document.documentElement);
   const text3 = cs.getPropertyValue("--text3").trim();
+  const isMobile = window.innerWidth <= 768;
+  const legendPos = isMobile ? "left" : "bottom";
+  const legendSize = isMobile ? 8 : 9;
+  const legendPad  = isMobile ? 3 : 4;
   const donut = (labels, vals) => ({
     type:"doughnut",
     data:{labels, datasets:[{data:vals, backgroundColor:getColors(labels), borderWidth:0, hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:7}}}}
+    options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:legendPos,labels:{color:text3,font:{size:legendSize},padding:legendPad,usePointStyle:true,boxWidth:7}}}}
   });
 
   const statusCountRaw = {};

@@ -3951,29 +3951,29 @@ function updateBulk(table) {
   const checks = document.querySelectorAll(`.bulk-check-${table}:checked`);
   bulkSelected[table] = Array.from(checks).map(c=>c.dataset.id);
   const count = bulkSelected[table].length;
+  const show = count > 0;
+
+  // Old sticky bar (keep for compat)
   const bar = document.getElementById(`bulk-bar-${table}`);
   const countEl = document.getElementById(`bulk-count-${table}`);
-  if(bar) bar.classList.toggle("visible", count > 0);
+  if(bar) bar.classList.toggle("visible", show);
   if(countEl) countEl.textContent = `${count} ausgewählt`;
+
+  // New inline bulk buttons in export bar
+  const barMap = {kontakte:"bulk-btns-kontakte", journey:"bulk-btns-journey", deals:"bulk-btns-deals", aktivitaeten:"bulk-btns-aktiv"};
+  const barEl = document.getElementById(barMap[table]);
+  if(barEl) barEl.style.display = show ? "flex" : "none";
+
+  // Update count spans
+  const cntMap = {kontakte:".bulk-cnt-k", journey:".bulk-cnt-j", deals:".bulk-cnt-d", aktivitaeten:".bulk-cnt-a"};
+  if(cntMap[table]) document.querySelectorAll(cntMap[table]).forEach(el => el.textContent = count);
+
   // Sync select-all checkbox
   const allCheck = document.getElementById(`check-all-${table[0]}`);
   if(allCheck) {
     const total = document.querySelectorAll(`.bulk-check-${table}`).length;
     allCheck.checked = count === total && total > 0;
     allCheck.indeterminate = count > 0 && count < total;
-  }
-  // Show/hide header bulk buttons
-  const show = count > 0;
-  const shortMap = {kontakte:"k", journey:"j", deals:"d", aktivitaeten:"a"};
-  const s = shortMap[table];
-  if(s) {
-    ["change","delete","done"].forEach(type => {
-      const btn = document.getElementById(`bulk-btn-${s}-${type}`);
-      if(btn) btn.style.display = show ? "inline-flex" : "none";
-    });
-    // Update count badges
-    const cnt = document.getElementById(`bulk-${s}-cnt`);
-    if(cnt) cnt.textContent = count;
   }
 }
 
@@ -3989,12 +3989,9 @@ function clearBulk(table) {
   if(bar) bar.classList.remove("visible");
   const allCheck = document.getElementById(`check-all-${table[0]}`);
   if(allCheck) { allCheck.checked = false; allCheck.indeterminate = false; }
-  const shortMap = {kontakte:"k", journey:"j", deals:"d", aktivitaeten:"a"};
-  const s = shortMap[table];
-  if(s) ["change","delete","done"].forEach(type => {
-    const btn = document.getElementById(`bulk-btn-${s}-${type}`);
-    if(btn) btn.style.display = "none";
-  });
+  const barMap = {kontakte:"bulk-btns-kontakte", journey:"bulk-btns-journey", deals:"bulk-btns-deals", aktivitaeten:"bulk-btns-aktiv"};
+  const barEl = document.getElementById(barMap[table]);
+  if(barEl) barEl.style.display = "none";
 }
 
 // Kontakte bulk

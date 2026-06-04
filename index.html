@@ -1095,6 +1095,15 @@ tbody td { font-feature-settings: "zero" 0; }
 .mobile-topbar-actions { display: flex; gap: 8px; align-items: center; }
 
 @media (max-width: 768px) {
+  /* Pipeline charts: 3 in a row */
+  #pipeline-charts-row {
+    grid-template-columns: repeat(3,1fr) !important;
+    gap: 6px !important;
+  }
+  #pipeline-charts-row .card-header { padding: 6px 8px !important; }
+  #pipeline-charts-row .card-body   { padding: 6px 8px !important; }
+  #pipeline-charts-row .chart-wrap  { height: 120px !important; }
+  #pipeline-charts-row .card-title  { font-size: 10px !important; }
   /* Hide desktop sidebar + topbar */
   .sidebar { display: none !important; }
   .topbar { display: none !important; }
@@ -1640,7 +1649,7 @@ tbody td { font-feature-settings: "zero" 0; }
         </div>
 
         <!-- 3 Charts in one row -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+        <div id="pipeline-charts-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
           <div class="card">
             <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Pipeline nach Phase</div></div>
             <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:160px"><canvas id="chart-pipeline-phases"></canvas></div></div>
@@ -3658,13 +3667,13 @@ function renderKontakteCharts(data) {
   const cs = getComputedStyle(document.documentElement);
   const text3 = cs.getPropertyValue("--text3").trim();
   const isMobile = window.innerWidth <= 768;
-  const legendPos = isMobile ? "left" : "bottom";
-  const legendSize = isMobile ? 8 : 9;
-  const legendPad  = isMobile ? 3 : 4;
+  const legendOpts = isMobile
+    ? {display:true,position:"bottom",align:"start",labels:{color:text3,font:{size:8},padding:3,usePointStyle:true,boxWidth:6}}
+    : {display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:7}};
   const donut = (labels, vals) => ({
     type:"doughnut",
     data:{labels, datasets:[{data:vals, backgroundColor:getColors(labels), borderWidth:0, hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:legendPos,labels:{color:text3,font:{size:legendSize},padding:legendPad,usePointStyle:true,boxWidth:7}}}}
+    options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:legendOpts}}
   });
 
   const statusCountRaw = {};
@@ -3676,7 +3685,7 @@ function renderKontakteCharts(data) {
   const statusColorsK = {"Lead":"#6EB8F0","Aktiv":"#6EF0A0","Abgeschlossen":"#B06EF0","Inaktiv":"#9090A8"};
   if(cKStatus) cKStatus.destroy();
   const elS = document.getElementById("chart-k-status");
-  if(elS) cKStatus = new Chart(elS, {type:"doughnut",data:{labels:statusLabelsK,datasets:[{data:statusValsK,backgroundColor:statusLabelsK.map(s=>statusColorsK[s]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:legendPos,labels:{color:text3,font:{size:legendSize},padding:legendPad,usePointStyle:true,boxWidth:7}}}}});
+  if(elS) cKStatus = new Chart(elS, {type:"doughnut",data:{labels:statusLabelsK,datasets:[{data:statusValsK,backgroundColor:statusLabelsK.map(s=>statusColorsK[s]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:legendOpts}}});
 
   const landCount = {};
   data.forEach(k => { const l=k.land||"–"; landCount[l]=(landCount[l]||0)+1; });

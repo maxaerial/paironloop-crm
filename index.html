@@ -1185,6 +1185,18 @@ tbody td { font-feature-settings: "zero" 0; }
       <input type="text" id="login-name">
     </div>
     <button class="btn-login" id="login-btn" onclick="doAuth()"></button>
+    <div style="text-align:center;margin-top:12px">
+      <a href="#" onclick="showResetPw();return false;" style="font-size:12px;color:var(--text3);text-decoration:none;transition:var(--transition)" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text3)'" id="forgot-link">Passwort vergessen?</a>
+    </div>
+    <div id="reset-pw-wrap" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen.</div>
+      <div class="form-field">
+        <label style="font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text3);text-transform:uppercase">E-Mail</label>
+        <input type="email" id="reset-email" style="width:100%;padding:11px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;font-family:var(--font);outline:none">
+      </div>
+      <button onclick="doResetPw()" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;font-family:var(--font);font-weight:600;cursor:pointer;margin-top:4px;transition:var(--transition)" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">Link senden</button>
+      <div id="reset-msg" style="font-size:12px;margin-top:10px;display:none;padding:8px 12px;border-radius:6px"></div>
+    </div>
     <div class="login-error" id="login-error"></div>
   </div>
 </div>
@@ -2221,6 +2233,44 @@ function updateTopbarTitle() {
 }
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
+function showResetPw() {
+  const wrap = document.getElementById("reset-pw-wrap");
+  const link = document.getElementById("forgot-link");
+  const loginEmail = document.getElementById("login-email");
+  if(wrap.style.display === "none") {
+    wrap.style.display = "block";
+    link.textContent = "Zurück zum Login";
+    // Pre-fill email if already typed
+    const resetEmail = document.getElementById("reset-email");
+    if(loginEmail?.value) resetEmail.value = loginEmail.value;
+  } else {
+    wrap.style.display = "none";
+    link.textContent = "Passwort vergessen?";
+  }
+}
+
+async function doResetPw() {
+  const email = document.getElementById("reset-email").value.trim();
+  const msg = document.getElementById("reset-msg");
+  if(!email) { msg.textContent = "Bitte E-Mail eingeben"; msg.style.display="block"; msg.style.background="rgba(240,110,110,.08)"; msg.style.color="var(--red)"; return; }
+  const {error} = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname
+  });
+  if(error) {
+    msg.textContent = error.message;
+    msg.style.display = "block";
+    msg.style.background = "rgba(240,110,110,.08)";
+    msg.style.color = "var(--red)";
+    msg.style.border = "1px solid rgba(240,110,110,.2)";
+  } else {
+    msg.textContent = "✓ Link gesendet! Bitte prüfe deine E-Mails.";
+    msg.style.display = "block";
+    msg.style.background = "rgba(110,240,160,.08)";
+    msg.style.color = "var(--green)";
+    msg.style.border = "1px solid rgba(110,240,160,.2)";
+  }
+}
+
 function switchTab(mode) {
   authMode = mode;
   document.querySelectorAll(".login-tab").forEach(t => t.classList.remove("active"));

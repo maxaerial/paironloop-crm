@@ -3385,6 +3385,8 @@ async function changeEmail() {
   msg.style.display = "block";
   setTimeout(() => msg.style.display="none", 4000);
 }
+
+async function doLogout() {
   if(isDemoMode) {
     isDemoMode = false;
     kontakteData=[]; journeyData=[]; dealsData=[]; aktivData=[];

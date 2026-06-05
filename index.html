@@ -1928,7 +1928,7 @@ tbody td { font-feature-settings: "zero" 0; }
       <div class="field form-full"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Firma</label><input id="profile-firma" placeholder="Paironloop"></div>
       <div class="field form-full"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Telefon</label><input id="profile-telefon" placeholder="+49 89 ..."></div>
     </div>
-    <button class="profile-save-btn" onclick="saveProfile()">Profil speichern</button>
+    <button type="button" id="btn-save-profile" class="profile-save-btn" onclick="saveProfile()">Profil speichern</button>
     <div id="profile-save-msg" style="font-size:12px;text-align:center;margin-top:8px;display:none"></div>
   </div>
 
@@ -1944,7 +1944,7 @@ tbody td { font-feature-settings: "zero" 0; }
         <input id="new-email-input" type="email" placeholder="neue@email.com">
       </div>
     </div>
-    <button class="profile-save-btn" onclick="changeEmail()">E-Mail ändern</button>
+    <button type="button" class="profile-save-btn" onclick="changeEmail()">E-Mail ändern</button>
     <div id="email-change-msg" style="font-size:12px;text-align:center;margin-top:8px;display:none"></div>
   </div>
 
@@ -1961,7 +1961,7 @@ tbody td { font-feature-settings: "zero" 0; }
         <input id="new-team-email" type="email" placeholder="max@paironloop.com" onkeydown="if(event.key==='Enter')addTeamMember()">
       </div>
     </div>
-    <button class="profile-save-btn" onclick="addTeamMember()">+ Teammitglied hinzufügen</button>
+    <button type="button" class="profile-save-btn" onclick="addTeamMember()">+ Teammitglied hinzufügen</button>
     <div style="font-size:11px;color:var(--text3);margin-top:8px">Diese Namen erscheinen im Dropdown „Verantwortlich" bei Aktivitäten.</div>
   </div>
 
@@ -3154,20 +3154,25 @@ function renderTeamMembersList() {
 }
 
 function addTeamMember() {
-  const inp = document.getElementById("new-team-member");
-  const emailInp = document.getElementById("new-team-email");
-  const name = inp?.value.trim();
-  const email = emailInp?.value.trim() || "";
-  if(!name) { showToast("⚠ Name eingeben"); return; }
-  const names = teamMembers.map(m => typeof m === "string" ? m : m.name);
-  if(names.includes(name)) { showToast("⚠ Name bereits vorhanden"); return; }
-  teamMembers.push({name, email});
-  saveTeamMembers();
-  if(inp) inp.value = "";
-  if(emailInp) emailInp.value = "";
-  renderTeamMembersList();
-  fillVerantwortlichDropdowns();
-  showToast("✓ " + name + " hinzugefügt");
+  try {
+    const inp = document.getElementById("new-team-member");
+    const emailInp = document.getElementById("new-team-email");
+    const name = inp?.value.trim();
+    const email = emailInp?.value.trim() || "";
+    if(!name) { showToast("⚠ Name eingeben"); return; }
+    const names = teamMembers.map(m => typeof m === "string" ? m : m.name);
+    if(names.includes(name)) { showToast("⚠ Name bereits vorhanden"); return; }
+    teamMembers.push({name, email});
+    saveTeamMembers();
+    if(inp) inp.value = "";
+    if(emailInp) emailInp.value = "";
+    renderTeamMembersList();
+    fillVerantwortlichDropdowns();
+    showToast("✓ " + name + " hinzugefügt");
+  } catch(err) {
+    showToast("Fehler: " + err.message);
+    console.error("addTeamMember error:", err);
+  }
 }
 
 function removeTeamMember(name) {
@@ -3343,7 +3348,7 @@ function handleProfileImg(input) {
 
 async function saveProfile() {
   if(isDemoMode) { showToast("Demo-Modus — wird nicht gespeichert"); return; }
-  const btn = document.querySelector(".profile-save-btn");
+  const btn = document.getElementById("btn-save-profile");
   const msg = document.getElementById("profile-save-msg");
   btn.disabled = true;
   const userId = (await sb.auth.getUser()).data.user?.id;
@@ -5765,8 +5770,13 @@ function sendEmailBulk() {
     .replace(/{{unternehmen}}/g, empfaenger.length === 1 ? (first.unternehmen||"") : "");
 
   const bcc = empfaenger.map(k => k.email).join(",");
-  window.location.href = `mailto:?bcc=${encodeURIComponent(bcc)}&subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(text)}`;
-  showToast(`✓ E-Mail mit ${empfaenger.length} Empfänger(n) im BCC geöffnet`);
+  const mailtoLink = document.createElement("a");
+  mailtoLink.href = "mailto:?bcc=" + encodeURIComponent(bcc) + "&subject=" + encodeURIComponent(betreff) + "&body=" + encodeURIComponent(text);
+  mailtoLink.style.display = "none";
+  document.body.appendChild(mailtoLink);
+  mailtoLink.click();
+  setTimeout(() => document.body.removeChild(mailtoLink), 1000);
+  showToast("✓ E-Mail mit " + empfaenger.length + " Empfänger(n) im BCC geöffnet");
 }
 
 function updateEmailVorlageSelect() {

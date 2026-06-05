@@ -541,6 +541,7 @@ tbody tr:hover td { background: var(--bg3); }
 .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
 .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
 .btn-ghost:hover { background: var(--bg3); color: var(--text); }
+.btn-sm { padding: 5px 11px; font-size: 12px; }
 .btn-danger-ghost { background: transparent; color: var(--red); border: 1px solid rgba(240,110,110,.2); font-size: 11px; padding: 5px 10px; }
 .btn-danger-ghost:hover { background: rgba(240,110,110,.08); }
 .btn svg { width: 14px; height: 14px; stroke-width: 2; fill: none; stroke: currentColor; }
@@ -1851,8 +1852,6 @@ tbody td { font-feature-settings: "zero" 0; }
           </div>
         </div>
       </div>
-    </div>
-
     </div>
 
   </div><!-- /main -->
@@ -5435,11 +5434,15 @@ let emailSelectedIds = new Set();
 
 async function loadEmailVorlagen() {
   const key = "paironloop_email_vorlagen" + (isDemoMode ? "" : "_" + (currentUser?.id || ""));
+  const versionKey = key + "_v2";
+  // Force reload defaults if version not set (clears old 4-template cache)
+  if (!localStorage.getItem(versionKey)) {
+    localStorage.removeItem(key);
+    localStorage.setItem(versionKey, "1");
+  }
   const stored = localStorage.getItem(key);
   let saved = stored ? JSON.parse(stored) : null;
-  // If no saved data OR saved data has fewer than 10 entries (outdated), merge with defaults
   if (!saved || saved.length < 10) {
-    // Keep any user-created vorlagen (ids not starting with 'v' followed by single digit)
     const userCreated = saved ? saved.filter(v => !DEFAULT_VORLAGEN.find(d => d.id === v.id)) : [];
     emailVorlagen = [...JSON.parse(JSON.stringify(DEFAULT_VORLAGEN)), ...userCreated];
     localStorage.setItem(key, JSON.stringify(emailVorlagen));

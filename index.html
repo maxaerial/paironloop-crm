@@ -1226,6 +1226,8 @@ tbody td { font-feature-settings: "zero" 0; }
 
   /* Settings panel */
   .settings-panel { width: 100%; border-radius: 16px 16px 0 0; top: auto; bottom: 0; height: 85vh; box-shadow: 0 -4px 32px rgba(0,0,0,.3); }
+  #settings-back-btn { display: inline-flex !important; }
+  .settings-head .modal-close { display: none; }
 
   /* Buttons */
   .btn { padding: 9px 14px; font-size: 13px; }
@@ -1901,6 +1903,10 @@ tbody td { font-feature-settings: "zero" 0; }
 <!-- SETTINGS PANEL -->
 <div class="settings-panel" id="settings-panel">
   <div class="settings-head">
+    <button class="btn btn-ghost" onclick="closeSettings()" style="display:none;padding:6px 12px;font-size:13px" id="settings-back-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Zurück
+    </button>
     <h3 data-i18n="settings">Einstellungen</h3>
     <button class="modal-close" onclick="closeSettings()">×</button>
   </div>
@@ -1923,6 +1929,16 @@ tbody td { font-feature-settings: "zero" 0; }
     </div>
     <button class="profile-save-btn" onclick="saveProfile()">Profil speichern</button>
     <div id="profile-save-msg" style="font-size:12px;text-align:center;margin-top:8px;display:none"></div>
+  </div>
+
+  <div class="settings-section" id="team-settings-section">
+    <div class="settings-section-title">Team / Verantwortliche</div>
+    <div id="team-members-list" style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:6px"></div>
+    <div style="display:flex;gap:6px">
+      <input id="new-team-member" type="text" placeholder="Name hinzufügen…" style="flex:1;font-size:13px" onkeydown="if(event.key==='Enter')addTeamMember()">
+      <button class="btn btn-primary btn-sm" onclick="addTeamMember()">+ Hinzufügen</button>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px">Diese Namen erscheinen im Dropdown „Verantwortlich" bei Aktivitäten.</div>
   </div>
 
   <div class="settings-section">
@@ -2141,7 +2157,15 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="field"><label data-i18n="due_date">Fällig am</label><input id="a-datum" type="date"></div>
         <div class="field"><label data-i18n="priority">Priorität</label><select id="a-prioritaet"><option data-i18n="high">Hoch</option><option data-i18n="medium">Mittel</option><option data-i18n="low">Niedrig</option></select></div>
         <div class="field form-full"><label data-i18n="description">Beschreibung</label><textarea id="a-beschreibung" rows="2"></textarea></div>
-        <div class="field form-full"><label>Verantwortlich</label><input id="a-verantwortlich" placeholder="z.B. Max, Elena…"></div>
+        <div class="field form-full">
+          <label>Verantwortlich</label>
+          <div style="display:flex;gap:6px">
+            <select id="a-verantwortlich-select" onchange="syncVerantwortlich('a')" style="flex:1">
+              <option value="">— auswählen —</option>
+            </select>
+            <input id="a-verantwortlich" placeholder="oder Freitext…" style="flex:1;font-size:13px">
+          </div>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -2328,7 +2352,7 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="field"><label>Status</label>
           <select id="ea-status"><option>Offen</option><option>In Bearbeitung</option><option>Erledigt</option><option>Verschoben</option><option>Abgebrochen</option></select>
         </div>
-        <div class="field"><label>Verantwortlich</label><input id="ea-verantwortlich" placeholder="z.B. Max, Elena…"></div>
+        <div class="field"><label>Verantwortlich</label><div style="display:flex;gap:6px"><select id="ea-verantwortlich-select" onchange="syncVerantwortlich('ea')" style="flex:1"><option value="">— auswählen —</option></select><input id="ea-verantwortlich" placeholder="oder Freitext…" style="flex:1;font-size:13px"></div></div>
         <div class="field form-full"><label>Beschreibung</label><textarea id="ea-beschreibung" rows="2" style="resize:vertical"></textarea></div>
         <div class="field form-full"><label>Ergebnis / Notizen</label><textarea id="ea-ergebnis" rows="2" style="resize:vertical"></textarea></div>
       </div>
@@ -3073,14 +3097,116 @@ function onLogin(user) {
   document.getElementById("login-screen").style.display = "none";
   document.getElementById("app").style.display = "block";
   applyI18n();
-  // Apply saved lang/theme buttons
   document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
   document.getElementById("lang-"+lang)?.classList.add("active");
   document.querySelectorAll(".theme-btn").forEach(b => b.classList.remove("active"));
   document.getElementById("theme-"+theme)?.classList.add("active");
   if(theme !== "midnight") document.documentElement.setAttribute("data-theme", theme);
+  loadTeamMembers();
   renderAll();
 }
+
+function renderTeamMembersList() {
+  const el = document.getElementById("team-members-list");
+  if(!el) return;
+  el.innerHTML = teamMembers.map(m => `
+    <span style="display:inline-flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px">
+      ${m}
+      <button onclick="removeTeamMember('${m}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:0;line-height:1;font-size:14px" title="Entfernen">×</button>
+    </span>`).join("");
+}
+
+function addTeamMember() {
+  const inp = document.getElementById("new-team-member");
+  const name = inp?.value.trim();
+  if(!name) return;
+  if(teamMembers.includes(name)) { showToast("⚠ Name bereits vorhanden"); return; }
+  teamMembers.push(name);
+  saveTeamMembers();
+  inp.value = "";
+  renderTeamMembersList();
+  fillVerantwortlichDropdowns();
+  showToast("✓ " + name + " hinzugefügt");
+}
+
+function removeTeamMember(name) {
+  teamMembers = teamMembers.filter(m => m !== name);
+  saveTeamMembers();
+  renderTeamMembersList();
+  fillVerantwortlichDropdowns();
+}
+
+function saveTeamMembers() {
+  const key = "paironloop_team_members" + (isDemoMode ? "_demo" : "_" + (window._userId||""));
+  localStorage.setItem(key, JSON.stringify(teamMembers));
+  // Also try to save to Supabase team_members table
+  if(!isDemoMode) {
+    sb.from("team_members").delete().neq("name","__").then(() => {
+      teamMembers.forEach(name => sb.from("team_members").insert({name}).then(()=>{}));
+    }).catch(()=>{});
+  }
+}
+
+function loadTeamMembersFromStorage() {
+  const key = "paironloop_team_members" + (isDemoMode ? "_demo" : "_" + (window._userId||""));
+  const stored = localStorage.getItem(key);
+  if(stored) { teamMembers = JSON.parse(stored); fillVerantwortlichDropdowns(); }
+}
+
+async function loadTeamMembers() {
+  if(isDemoMode) {
+    loadTeamMembersFromStorage();
+    if(!teamMembers.length) teamMembers = ["Max","Elena"];
+    fillVerantwortlichDropdowns(); return;
+  }
+  try {
+    const userId = (await sb.auth.getUser()).data.user?.id;
+    if(userId) window._userId = userId;
+    loadTeamMembersFromStorage();
+    const {data, error} = await sb.from("team_members").select("name").order("name");
+    if(!error && data?.length) {
+      teamMembers = data.map(m => m.name);
+    } else if(!teamMembers.length) {
+      const {data: profiles} = await sb.from("profiles").select("vorname,nachname");
+      if(profiles?.length) teamMembers = profiles.map(p=>[p.vorname,p.nachname].filter(Boolean).join(" ")).filter(Boolean);
+      if(!teamMembers.length) teamMembers = ["Max","Elena"];
+    }
+  } catch(e) { if(!teamMembers.length) teamMembers = ["Max","Elena"]; }
+  fillVerantwortlichDropdowns();
+}
+
+function fillVerantwortlichDropdowns() {
+  const opts = `<option value="">— auswählen —</option>` + teamMembers.map(m=>`<option value="${m}">${m}</option>`).join("") + `<option value="__custom">Andere Person…</option>`;
+  ["a-verantwortlich-select","ea-verantwortlich-select"].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = opts;
+  });
+}
+
+function syncVerantwortlich(prefix) {
+  const sel = document.getElementById(prefix+"-verantwortlich-select");
+  const inp = document.getElementById(prefix+"-verantwortlich");
+  if(!sel || !inp) return;
+  if(sel.value === "__custom") {
+    inp.style.display = "";
+    inp.focus();
+    inp.value = "";
+  } else if(sel.value) {
+    inp.value = sel.value;
+    inp.style.display = "none";
+  } else {
+    inp.value = "";
+    inp.style.display = "none";
+  }
+}
+
+// Initialize dropdowns hidden until selection
+document.addEventListener("DOMContentLoaded", () => {
+  ["a-verantwortlich","ea-verantwortlich"].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = "none";
+  });
+});
 
 // ── PROFILE ──────────────────────────────────────────────────────────────────
 let profileData = {};
@@ -3279,7 +3405,7 @@ function showPage(id, el) {
 function renderAll() { renderDashboard(); renderKontakte(); renderJourney(); renderPipeline(); renderAktivitaeten(); checkNotifications(); }
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
-function openSettings() { document.getElementById("settings-panel").classList.add("open"); }
+function openSettings() { document.getElementById("settings-panel").classList.add("open"); renderTeamMembersList(); }
 function closeSettings() { document.getElementById("settings-panel").classList.remove("open"); }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
@@ -4885,6 +5011,23 @@ function editAktivitaet(id) {
   document.getElementById("ea-verantwortlich").value = a.verantwortlich||"";
   document.getElementById("ea-beschreibung").value = a.beschreibung||"";
   document.getElementById("ea-ergebnis").value = a.ergebnis||"";
+  // Set verantwortlich: try dropdown first, fallback to freetext
+  const eaSel = document.getElementById("ea-verantwortlich-select");
+  const eaInp = document.getElementById("ea-verantwortlich");
+  const vVal = a.verantwortlich||"";
+  if(eaSel && teamMembers.includes(vVal)) {
+    eaSel.value = vVal;
+    eaInp.value = vVal;
+    eaInp.style.display = "none";
+  } else if(vVal) {
+    if(eaSel) eaSel.value = "__custom";
+    eaInp.value = vVal;
+    eaInp.style.display = "";
+  } else {
+    if(eaSel) eaSel.value = "";
+    eaInp.value = "";
+    eaInp.style.display = "none";
+  }
   document.getElementById("ea-title").textContent = (a.kunde||"Aktivität") + " bearbeiten";
   openModal("modal-edit-aktivitaet");
 }

@@ -1150,9 +1150,11 @@ tbody td { font-feature-settings: "zero" 0; }
 
   /* Grid layouts — stack on mobile */
   .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
-  #aktiv-charts-grid { grid-template-columns: repeat(2,1fr) !important; gap:8px !important; }
-  .aktiv-chart-wrap { height: 110px !important; }
-  .aktiv-chart-card .card-title { font-size: 10px !important; }
+  #aktiv-charts-grid { grid-template-columns: repeat(2,1fr) !important; gap:8px !important; align-items: start !important; }
+  #aktiv-charts-grid .card { height: auto !important; }
+  #aktiv-charts-grid .chart-wrap { height: 130px !important; }
+  #aktiv-charts-grid .card-title { font-size: 10px !important; }
+  #aktiv-wrap-status, #aktiv-wrap-prio, #aktiv-wrap-typ, #aktiv-wrap-verantw { height: 130px !important; }
 
   /* Charts — smaller height */
   .chart-wrap[style*="height:200px"] { height: 160px !important; }
@@ -1384,11 +1386,14 @@ tbody td { font-feature-settings: "zero" 0; }
       </button>
     </div>
     <div class="sidebar-bottom">
-      <div class="user-card">
-        <div class="user-avatar" id="user-initials">?</div>
+      <div class="user-card" onclick="openSettings()" title="Einstellungen öffnen">
+        <div class="user-avatar" id="user-initials" style="position:relative;overflow:hidden">
+          <span id="sidebar-avatar-text">?</span>
+          <img id="sidebar-avatar-img" src="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%">
+        </div>
         <div>
           <div class="user-name" id="user-name">–</div>
-          <div class="user-role">Paironloop</div>
+          <div class="user-role" id="user-role-display">Paironloop</div>
         </div>
       </div>
     </div>
@@ -1716,19 +1721,19 @@ tbody td { font-feature-settings: "zero" 0; }
       <div id="aktiv-charts-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
         <div class="card">
           <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Nach Status</div></div>
-          <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:160px"><canvas id="chart-aktiv-status"></canvas></div></div>
+          <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:160px" id="aktiv-wrap-status"><canvas id="chart-aktiv-status"></canvas></div></div>
         </div>
         <div class="card">
           <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Nach Priorität</div></div>
-          <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:160px"><canvas id="chart-aktiv-prio2"></canvas></div></div>
+          <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:160px" id="aktiv-wrap-prio"><canvas id="chart-aktiv-prio2"></canvas></div></div>
         </div>
         <div class="card">
           <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Nach Typ</div></div>
-          <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:160px"><canvas id="chart-aktiv-typ2"></canvas></div></div>
+          <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:160px" id="aktiv-wrap-typ"><canvas id="chart-aktiv-typ2"></canvas></div></div>
         </div>
         <div class="card">
           <div class="card-header" style="padding:10px 14px"><div class="card-title" style="font-size:12px">Nach Verantwortlich</div></div>
-          <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:160px"><canvas id="chart-aktiv-verantw"></canvas></div></div>
+          <div class="card-body" style="padding:10px 14px"><div class="chart-wrap" style="height:160px" id="aktiv-wrap-verantw"><canvas id="chart-aktiv-verantw"></canvas></div></div>
         </div>
       </div>
 
@@ -2597,7 +2602,8 @@ function loginDemo() {
 
   // Fake user
   document.getElementById("user-name").textContent = "Demo User";
-  document.getElementById("user-initials").textContent = "DU";
+  const _demoAvTxt = document.getElementById("sidebar-avatar-text");
+  if(_demoAvTxt) _demoAvTxt.textContent = "DU";
   document.getElementById("settings-email").textContent = "demo@paironloop.com";
 
   // Copy logos to mobile topbar
@@ -2802,7 +2808,10 @@ function renderAktivitaetenDemo() {
   const cs=getComputedStyle(document.documentElement);
   const text3=cs.getPropertyValue("--text3").trim();
   const COLORS=["#7C6EF0","#6EB8F0","#6EF0A0","#F0A86E","#F06E6E","#B06EF0","#38A0E8","#F0804A","#9090A8"];
-  const donutOpts=()=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:aLegPos,labels:{color:text3,font:{size:aLegSize},padding:aLegPad,usePointStyle:true,boxWidth:6}}}}});
+  const isMobileD = window.innerWidth <= 768;
+  const dLegAlign = isMobileD ? "start" : "center";
+  const dLegSize  = isMobileD ? 8 : 9;
+  const donutOpts=()=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",align:dLegAlign,labels:{color:text3,font:{size:dLegSize},padding:4,usePointStyle:true,boxWidth:6}}}}});
   const statusCnt={};rows.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
   if(cAktivTyp)cAktivTyp.destroy();
   const elS=document.getElementById("chart-aktiv-status");
@@ -2930,7 +2939,8 @@ function onLogin(user) {
   const name = user.user_metadata?.full_name || user.email.split("@")[0];
   const initials = name.split(" ").map(n=>n[0]).join("").toUpperCase().slice(0,2);
   document.getElementById("user-name").textContent = name;
-  document.getElementById("user-initials").textContent = initials;
+  const _avTxt = document.getElementById("sidebar-avatar-text");
+  if(_avTxt) _avTxt.textContent = initials;
   document.getElementById("settings-email").textContent = user.email;
   document.getElementById("login-screen").style.display = "none";
   document.getElementById("app").style.display = "block";
@@ -4078,10 +4088,11 @@ async function renderAktivitaeten(f) {
   const cs=getComputedStyle(document.documentElement);
   const text3=cs.getPropertyValue("--text3").trim();
   const isMobileA = window.innerWidth <= 768;
-  const aLegPos  = isMobileA ? "left" : "bottom";
-  const aLegSize = isMobileA ? 7 : 9;
-  const aLegPad  = isMobileA ? 3 : 4;
-  const mkDonut=(labels,vals)=>({type:"doughnut",data:{labels,datasets:[{data:vals,backgroundColor:getColors(labels),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:aLegPos,labels:{color:text3,font:{size:aLegSize},padding:aLegPad,usePointStyle:true,boxWidth:6}}}}});
+  const aLegPos  = "bottom";
+  const aLegAlign = isMobileA ? "start" : "center";
+  const aLegSize = isMobileA ? 8 : 9;
+  const aLegPad  = isMobileA ? 4 : 4;
+  const mkDonut=(labels,vals)=>({type:"doughnut",data:{labels,datasets:[{data:vals,backgroundColor:getColors(labels),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:aLegPos,align:aLegAlign,labels:{color:text3,font:{size:aLegSize},padding:aLegPad,usePointStyle:true,boxWidth:6}}}}});
 
   // Status
   const statusCnt={};aktivData.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});

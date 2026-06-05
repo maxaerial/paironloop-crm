@@ -2811,7 +2811,7 @@ function renderAktivitaetenDemo() {
   const isMobileD = window.innerWidth <= 768;
   const dLegAlign = isMobileD ? "start" : "center";
   const dLegSize  = isMobileD ? 8 : 9;
-  const donutOpts=()=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",align:dLegAlign,labels:{color:text3,font:{size:dLegSize},padding:4,usePointStyle:true,boxWidth:6}}}}});
+  const donutOpts=()=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",align:dLegAlign,labels:{color:text3,font:{size:dLegSize},padding:4,usePointStyle:true,pointStyle:"circle",boxWidth:isMobileD?4:6}}}}});
   const statusCnt={};rows.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
   if(cAktivTyp)cAktivTyp.destroy();
   const elS=document.getElementById("chart-aktiv-status");
@@ -3692,7 +3692,7 @@ function renderKontakteCharts(data) {
     display:true,
     position:"bottom",
     align: isMobile ? "start" : "center",
-    labels:{color:text3,font:{size: isMobile ? 8 : 9},padding: isMobile ? 3 : 4,usePointStyle:true,boxWidth: isMobile ? 5 : 7}
+    labels:{color:text3,font:{size: isMobile ? 7 : 9},padding: isMobile ? 2 : 4,usePointStyle:true,pointStyle:"circle",boxWidth: isMobile ? 4 : 7}
   };
   const donut = (labels, vals) => ({
     type:"doughnut",
@@ -3866,7 +3866,7 @@ function filterPipeline() {
     window._cPipeStatus = new Chart(elStat, {
       type:"doughnut",
       data:{labels:Object.keys(statusCnt),datasets:[{data:Object.values(statusCnt),backgroundColor:getColors(Object.keys(statusCnt)),borderWidth:0,hoverOffset:4}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:7}}}}
+      options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",align:window.innerWidth<=768?"start":"center",labels:{color:text3,font:{size:window.innerWidth<=768?7:9},padding:window.innerWidth<=768?2:4,usePointStyle:true,pointStyle:"circle",boxWidth:window.innerWidth<=768?4:7}}}}
     });
   }
 
@@ -4092,7 +4092,7 @@ async function renderAktivitaeten(f) {
   const aLegAlign = isMobileA ? "start" : "center";
   const aLegSize = isMobileA ? 8 : 9;
   const aLegPad  = isMobileA ? 4 : 4;
-  const mkDonut=(labels,vals)=>({type:"doughnut",data:{labels,datasets:[{data:vals,backgroundColor:getColors(labels),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:aLegPos,align:aLegAlign,labels:{color:text3,font:{size:aLegSize},padding:aLegPad,usePointStyle:true,boxWidth:6}}}}});
+  const mkDonut=(labels,vals)=>({type:"doughnut",data:{labels,datasets:[{data:vals,backgroundColor:getColors(labels),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:aLegPos,align:aLegAlign,labels:{color:text3,font:{size:aLegSize},padding:aLegPad,usePointStyle:true,pointStyle:"circle",boxWidth:isMobileA?4:6}}}}});
 
   // Status
   const statusCnt={};aktivData.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
@@ -4107,7 +4107,7 @@ async function renderAktivitaeten(f) {
   const prioClrD={"Niedrig":"#6EF0A0","Mittel":"#F0A86E","Hoch":"#F06E6E"};
   if(cAktivPrio)cAktivPrio.destroy();
   const elP=document.getElementById("chart-aktiv-prio2");
-  if(elP) cAktivPrio=new Chart(elP,{type:"doughnut",data:{labels:prioLblD,datasets:[{data:prioLblD.map(p=>prioCntD[p]),backgroundColor:prioLblD.map(p=>prioClrD[p]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:7}}}}});
+  if(elP) cAktivPrio=new Chart(elP,{type:"doughnut",data:{labels:prioLblD,datasets:[{data:prioLblD.map(p=>prioCntD[p]),backgroundColor:prioLblD.map(p=>prioClrD[p]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",align:isMobileA?"start":"center",labels:{color:text3,font:{size:isMobileA?7:9},padding:isMobileA?2:4,usePointStyle:true,pointStyle:"circle",boxWidth:isMobileA?4:7}}}}});
 
   // Typ
   const typCnt={};aktivData.forEach(a=>{const t=a.typ||"–";typCnt[t]=(typCnt[t]||0)+1;});

@@ -1355,6 +1355,10 @@ tbody td { font-feature-settings: "zero" 0; }
         <span data-i18n="activities">Tasks</span>
         <span class="mobile-nav-badge" id="mobile-nav-badge"></span>
       </button>
+      <button class="mobile-nav-item" onclick="showPageMobile('email',this)" id="mnav-email">
+        <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+        <span>E-Mail</span>
+      </button>
     </div>
   </nav>
 
@@ -1386,6 +1390,10 @@ tbody td { font-feature-settings: "zero" 0; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         <span data-i18n="activities">Aktivitäten</span>
         <span class="nav-badge" id="nav-badge">0</span>
+      </div>
+      <div class="nav-item" onclick="showPage('email',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+        <span>E-Mail</span>
       </div>
     </nav>
     <div class="sidebar-actions">
@@ -1790,6 +1798,86 @@ tbody td { font-feature-settings: "zero" 0; }
           <div class="table-wrap" id="aktivitaeten-table-wrap">
             <div class="loading-row"><div class="spinner"></div><span data-i18n="loading">Laden...</span></div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMAIL -->
+    <div class="page" id="page-email">
+      <div class="page-header">
+        <div>
+          <div class="page-title">E-Mail</div>
+          <div class="page-subtitle">Vorlagen verwalten und Kontakte anschreiben</div>
+        </div>
+      </div>
+
+      <!-- Vorlagen -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+          <div class="card-title">Vorlagen</div>
+          <button class="btn btn-primary btn-sm" onclick="openEmailVorlageModal()">+ Neue Vorlage</button>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div id="email-vorlagen-list"></div>
+        </div>
+      </div>
+
+      <!-- Kontakte auswählen & senden -->
+      <div class="card">
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div class="card-title">Empfänger auswählen</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input id="email-search-kontakte" type="text" class="form-control" placeholder="Kontakte suchen..." oninput="filterEmailKontakte(this.value)" style="width:200px;font-size:13px">
+            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="emailSelectAll()">Alle auswählen</button>
+            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="emailDeselectAll()">Auswahl aufheben</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:8px 0">
+          <div id="email-kontakte-list" style="max-height:280px;overflow-y:auto"></div>
+        </div>
+        <div class="card-footer" style="padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div style="font-size:13px;color:var(--text3)"><span id="email-selected-count">0</span> Kontakt(e) ausgewählt</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="email-vorlage-select" class="form-control" style="font-size:13px;min-width:200px">
+              <option value="">— Vorlage wählen —</option>
+            </select>
+            <button class="btn btn-primary" onclick="sendEmailBulk()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+              E-Mail senden
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Vorlage bearbeiten -->
+    <div class="modal-backdrop" id="modal-email-vorlage" onclick="if(event.target===this)closeModal('modal-email-vorlage')">
+      <div class="modal" style="max-width:560px">
+        <div class="modal-header">
+          <div class="modal-title" id="email-vorlage-modal-title">Neue Vorlage</div>
+          <button class="modal-close" onclick="closeModal('modal-email-vorlage')">×</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:14px">
+          <input type="hidden" id="email-vorlage-id">
+          <div>
+            <label class="form-label">Name der Vorlage</label>
+            <input id="email-vorlage-name" type="text" class="form-control" placeholder="z.B. Erstkontakt">
+          </div>
+          <div>
+            <label class="form-label">Betreff</label>
+            <input id="email-vorlage-betreff" type="text" class="form-control" placeholder="z.B. Drohnenfilm für {{unternehmen}}">
+          </div>
+          <div>
+            <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+              <span>Text</span>
+              <span style="font-size:11px;color:var(--text3)">Platzhalter: {{vorname}} {{nachname}} {{unternehmen}}</span>
+            </label>
+            <textarea id="email-vorlage-text" class="form-control" rows="8" placeholder="Hallo {{vorname}},&#10;&#10;..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeModal('modal-email-vorlage')">Abbrechen</button>
+          <button class="btn btn-primary" onclick="saveEmailVorlage()">Speichern</button>
         </div>
       </div>
     </div>
@@ -3123,12 +3211,14 @@ function showPage(id, el) {
     if(id==="kontakte")     renderKontakteDemo();
     if(id==="pipeline")     renderPipelineDemo();
     if(id==="aktivitaeten") renderAktivitaetenDemo();
+    if(id==="email")        renderEmail();
   } else {
     if(id==="dashboard")    renderDashboard();
     if(id==="journey")      renderJourney();
     if(id==="kontakte")     renderKontakte();
     if(id==="pipeline")     renderPipeline();
     if(id==="aktivitaeten") renderAktivitaeten();
+    if(id==="email")        renderEmail();
   }
 }
 function renderAll() { renderDashboard(); renderKontakte(); renderJourney(); renderPipeline(); renderAktivitaeten(); checkNotifications(); }
@@ -5223,6 +5313,217 @@ function globalSearch(v) {
 
 // Init
 applyI18n();
+
+// ── E-MAIL FEATURE ────────────────────────────────────────────────────────────
+
+const DEFAULT_VORLAGEN = [
+  {
+    id: "v1", name: "Erstkontakt",
+    betreff: "Drohnenfilm für {{unternehmen}} – Paironloop",
+    text: `Hallo {{vorname}},\n\nich bin Max von Paironloop und wir produzieren professionelle Drohnenvideos für Unternehmen wie Ihres.\n\nGerne würde ich Ihnen zeigen, wie wir {{unternehmen}} durch beeindruckende Luftaufnahmen noch besser in Szene setzen können.\n\nHaben Sie Interesse an einem kurzen Gespräch?\n\nBeste Grüße\nMax Weidmann\nPaironloop`
+  },
+  {
+    id: "v2", name: "Angebot nachfassen",
+    betreff: "Ihr Angebot von Paironloop – Rückfrage",
+    text: `Hallo {{vorname}},\n\nich wollte kurz nachfragen, ob Sie unser Angebot erhalten haben und ob noch Fragen offen sind.\n\nWir freuen uns darauf, {{unternehmen}} mit unserem Drohnen-Team zu unterstützen.\n\nBei Fragen stehe ich gerne zur Verfügung.\n\nBeste Grüße\nMax Weidmann\nPaironloop`
+  },
+  {
+    id: "v3", name: "Empfehlung anfragen",
+    betreff: "Kurze Bitte – Paironloop",
+    text: `Hallo {{vorname}},\n\nwir hoffen, dass Sie mit unserem Drohnenfilm für {{unternehmen}} zufrieden waren!\n\nFalls Sie jemanden kennen, der ebenfalls von unseren Aufnahmen profitieren könnte, würden wir uns sehr über eine Empfehlung freuen.\n\nVielen Dank und beste Grüße\nMax Weidmann\nPaironloop`
+  },
+  {
+    id: "v4", name: "Saisonales Angebot",
+    betreff: "Exklusives Angebot für {{unternehmen}} – Paironloop",
+    text: `Hallo {{vorname}},\n\nals geschätzter Kontakt möchten wir Ihnen als Erstes von unserem aktuellen Sonderangebot berichten.\n\nProfitieren Sie jetzt von unserem Frühjahrs-Paket für Drohnenaufnahmen zu besonders attraktiven Konditionen.\n\nInteressiert? Melden Sie sich gerne bei mir.\n\nBeste Grüße\nMax Weidmann\nPaironloop`
+  }
+];
+
+let emailVorlagen = [];
+let emailKontakteFiltered = [];
+let emailSelectedIds = new Set();
+
+async function loadEmailVorlagen() {
+  if (isDemoMode) {
+    const stored = localStorage.getItem("paironloop_email_vorlagen");
+    emailVorlagen = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(DEFAULT_VORLAGEN));
+  } else {
+    // Load from Supabase profiles metadata or fallback to localStorage
+    const stored = localStorage.getItem("paironloop_email_vorlagen_" + (currentUser?.id || "demo"));
+    emailVorlagen = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(DEFAULT_VORLAGEN));
+  }
+}
+
+function saveEmailVorlagenLocal() {
+  const key = "paironloop_email_vorlagen" + (isDemoMode ? "" : "_" + (currentUser?.id || ""));
+  localStorage.setItem(key, JSON.stringify(emailVorlagen));
+}
+
+async function renderEmail() {
+  await loadEmailVorlagen();
+  renderEmailVorlagenList();
+  renderEmailKontakteList();
+  updateEmailVorlageSelect();
+  updateEmailSelectedCount();
+}
+
+function renderEmailVorlagenList() {
+  const el = document.getElementById("email-vorlagen-list");
+  if (!el) return;
+  if (!emailVorlagen.length) {
+    el.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Noch keine Vorlagen vorhanden.</div>`;
+    return;
+  }
+  el.innerHTML = emailVorlagen.map(v => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-weight:600;font-size:13px;color:var(--text1)">${v.name}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px">${v.betreff}</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="editEmailVorlage('${v.id}')">Bearbeiten</button>
+        <button class="btn btn-sm" style="background:rgba(240,110,110,.12);color:var(--red)" onclick="deleteEmailVorlage('${v.id}')">Löschen</button>
+      </div>
+    </div>`).join("");
+}
+
+function updateEmailVorlageSelect() {
+  const sel = document.getElementById("email-vorlage-select");
+  if (!sel) return;
+  sel.innerHTML = `<option value="">— Vorlage wählen —</option>` +
+    emailVorlagen.map(v => `<option value="${v.id}">${v.name}</option>`).join("");
+}
+
+function renderEmailKontakteList(filter = "") {
+  const el = document.getElementById("email-kontakte-list");
+  if (!el) return;
+  const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
+  emailKontakteFiltered = filter
+    ? src.filter(k => [k.vorname, k.nachname, k.unternehmen, k.email].join(" ").toLowerCase().includes(filter.toLowerCase()))
+    : [...src];
+
+  if (!emailKontakteFiltered.length) {
+    el.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Keine Kontakte gefunden.</div>`;
+    return;
+  }
+  el.innerHTML = emailKontakteFiltered.map(k => {
+    const id = k.id || k.nr;
+    const checked = emailSelectedIds.has(String(id)) ? "checked" : "";
+    const hasEmail = k.email ? "" : "opacity:.4;pointer-events:none";
+    return `<label style="display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;${hasEmail};border-bottom:1px solid var(--border)" 
+      onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''">
+      <input type="checkbox" ${checked} onchange="toggleEmailKontakt('${id}',this.checked)" style="width:15px;height:15px;accent-color:var(--accent2)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:var(--text1)">${k.vorname || ""} ${k.nachname || ""} <span style="font-weight:400;color:var(--text3)">· ${k.unternehmen || "–"}</span></div>
+        <div style="font-size:12px;color:var(--text3)">${k.email || "Keine E-Mail hinterlegt"}</div>
+      </div>
+    </label>`;
+  }).join("");
+}
+
+function toggleEmailKontakt(id, checked) {
+  if (checked) emailSelectedIds.add(String(id));
+  else emailSelectedIds.delete(String(id));
+  updateEmailSelectedCount();
+}
+
+function updateEmailSelectedCount() {
+  const el = document.getElementById("email-selected-count");
+  if (el) el.textContent = emailSelectedIds.size;
+}
+
+function emailSelectAll() {
+  const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
+  src.filter(k => k.email).forEach(k => emailSelectedIds.add(String(k.id || k.nr)));
+  renderEmailKontakteList(document.getElementById("email-search-kontakte")?.value || "");
+  updateEmailSelectedCount();
+}
+
+function emailDeselectAll() {
+  emailSelectedIds.clear();
+  renderEmailKontakteList(document.getElementById("email-search-kontakte")?.value || "");
+  updateEmailSelectedCount();
+}
+
+function filterEmailKontakte(v) {
+  renderEmailKontakteList(v);
+}
+
+function sendEmailBulk() {
+  const vorlageId = document.getElementById("email-vorlage-select")?.value;
+  if (!vorlageId) { showToast("⚠ Bitte eine Vorlage auswählen"); return; }
+  if (!emailSelectedIds.size) { showToast("⚠ Bitte mindestens einen Kontakt auswählen"); return; }
+  const vorlage = emailVorlagen.find(v => v.id === vorlageId);
+  if (!vorlage) return;
+  const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
+  const empfaenger = src.filter(k => emailSelectedIds.has(String(k.id || k.nr)) && k.email);
+  if (!empfaenger.length) { showToast("⚠ Keine Kontakte mit E-Mail-Adresse ausgewählt"); return; }
+
+  // Open one mailto per recipient (browser handles multiple)
+  empfaenger.forEach((k, i) => {
+    setTimeout(() => {
+      const betreff = vorlage.betreff
+        .replace(/{{vorname}}/g, k.vorname || "")
+        .replace(/{{nachname}}/g, k.nachname || "")
+        .replace(/{{unternehmen}}/g, k.unternehmen || "");
+      const text = vorlage.text
+        .replace(/{{vorname}}/g, k.vorname || "")
+        .replace(/{{nachname}}/g, k.nachname || "")
+        .replace(/{{unternehmen}}/g, k.unternehmen || "");
+      window.location.href = `mailto:${encodeURIComponent(k.email)}?subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(text)}`;
+    }, i * 600);
+  });
+  showToast(`✓ ${empfaenger.length} E-Mail(s) werden geöffnet`);
+}
+
+function openEmailVorlageModal(id) {
+  document.getElementById("email-vorlage-id").value = "";
+  document.getElementById("email-vorlage-name").value = "";
+  document.getElementById("email-vorlage-betreff").value = "";
+  document.getElementById("email-vorlage-text").value = "";
+  document.getElementById("email-vorlage-modal-title").textContent = "Neue Vorlage";
+  openModal("modal-email-vorlage");
+}
+
+function editEmailVorlage(id) {
+  const v = emailVorlagen.find(x => x.id === id);
+  if (!v) return;
+  document.getElementById("email-vorlage-id").value = v.id;
+  document.getElementById("email-vorlage-name").value = v.name;
+  document.getElementById("email-vorlage-betreff").value = v.betreff;
+  document.getElementById("email-vorlage-text").value = v.text;
+  document.getElementById("email-vorlage-modal-title").textContent = "Vorlage bearbeiten";
+  openModal("modal-email-vorlage");
+}
+
+function saveEmailVorlage() {
+  const id = document.getElementById("email-vorlage-id").value;
+  const name = document.getElementById("email-vorlage-name").value.trim();
+  const betreff = document.getElementById("email-vorlage-betreff").value.trim();
+  const text = document.getElementById("email-vorlage-text").value.trim();
+  if (!name || !betreff || !text) { showToast("⚠ Alle Felder ausfüllen"); return; }
+  if (id) {
+    const idx = emailVorlagen.findIndex(v => v.id === id);
+    if (idx >= 0) emailVorlagen[idx] = { id, name, betreff, text };
+  } else {
+    emailVorlagen.push({ id: "v" + Date.now(), name, betreff, text });
+  }
+  saveEmailVorlagenLocal();
+  closeModal("modal-email-vorlage");
+  renderEmailVorlagenList();
+  updateEmailVorlageSelect();
+  showToast("✓ Vorlage gespeichert");
+}
+
+function deleteEmailVorlage(id) {
+  if (!confirm("Vorlage löschen?")) return;
+  emailVorlagen = emailVorlagen.filter(v => v.id !== id);
+  saveEmailVorlagenLocal();
+  renderEmailVorlagenList();
+  updateEmailVorlageSelect();
+  showToast("✓ Vorlage gelöscht");
+}
+
 </script>
 </body>
 </html>

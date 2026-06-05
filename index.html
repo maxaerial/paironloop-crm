@@ -989,6 +989,8 @@ td[style*="font-family:var(--font-mono)"] {
 /* Override DM Mono slashed zero globally in tables */
 tbody td { font-feature-settings: "zero" 0; }
 
+.aktiv-chart-wrap { height: 160px; }
+
 /* ── BULK ACTIONS ── */
 .bulk-bar {
   display:none;
@@ -1095,6 +1097,11 @@ tbody td { font-feature-settings: "zero" 0; }
 .mobile-topbar-actions { display: flex; gap: 8px; align-items: center; }
 
 @media (max-width: 768px) {
+  /* Kontakte charts: keep 3-col but smaller */
+  div[style*="grid-template-columns:repeat(3,1fr)"] .chart-wrap { height: 110px !important; }
+  div[style*="grid-template-columns:repeat(3,1fr)"] .card-header { padding: 6px 8px !important; }
+  div[style*="grid-template-columns:repeat(3,1fr)"] .card-body   { padding: 4px 6px !important; }
+
   /* Pipeline charts: 3 in a row */
   #pipeline-charts-row {
     grid-template-columns: repeat(3,1fr) !important;
@@ -1143,7 +1150,9 @@ tbody td { font-feature-settings: "zero" 0; }
 
   /* Grid layouts — stack on mobile */
   .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
-  #aktiv-charts-grid { grid-template-columns: repeat(4,1fr) !important; }
+  #aktiv-charts-grid { grid-template-columns: repeat(2,1fr) !important; gap:8px !important; }
+  .aktiv-chart-wrap { height: 110px !important; }
+  .aktiv-chart-card .card-title { font-size: 10px !important; }
 
   /* Charts — smaller height */
   .chart-wrap[style*="height:200px"] { height: 160px !important; }
@@ -1226,6 +1235,8 @@ tbody td { font-feature-settings: "zero" 0; }
 
   /* KPI sub text */
   .kpi-sub { display: none; }
+  /* Kontakte charts taller on mobile for legend space */
+  #kontakte-charts-row .chart-wrap { height: 100px !important; }
 
   /* Page button alignment */
   .page-header-row > .btn { align-self: flex-start; }
@@ -1557,7 +1568,7 @@ tbody td { font-feature-settings: "zero" 0; }
           </div>
         </div>
         <!-- Kontakte Charts -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+        <div id="kontakte-charts-row" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
           <div class="card">
             <div class="card-header" style="padding:8px 12px"><div class="card-title" style="font-size:11px">Nach Status</div></div>
             <div class="card-body" style="padding:8px 12px"><div class="chart-wrap" style="height:130px"><canvas id="chart-k-status"></canvas></div></div>
@@ -3667,9 +3678,12 @@ function renderKontakteCharts(data) {
   const cs = getComputedStyle(document.documentElement);
   const text3 = cs.getPropertyValue("--text3").trim();
   const isMobile = window.innerWidth <= 768;
-  const legendOpts = isMobile
-    ? {display:true,position:"bottom",align:"start",labels:{color:text3,font:{size:8},padding:3,usePointStyle:true,boxWidth:6}}
-    : {display:true,position:"bottom",labels:{color:text3,font:{size:9},padding:4,usePointStyle:true,boxWidth:7}};
+  const legendOpts = {
+    display:true,
+    position:"bottom",
+    align: isMobile ? "start" : "center",
+    labels:{color:text3,font:{size: isMobile ? 8 : 9},padding: isMobile ? 3 : 4,usePointStyle:true,boxWidth: isMobile ? 5 : 7}
+  };
   const donut = (labels, vals) => ({
     type:"doughnut",
     data:{labels, datasets:[{data:vals, backgroundColor:getColors(labels), borderWidth:0, hoverOffset:4}]},

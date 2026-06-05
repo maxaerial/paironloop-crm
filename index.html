@@ -2310,6 +2310,14 @@ tbody td { font-feature-settings: "zero" 0; }
 // Override Chart.js defaults — no slashed zeros
 Chart.defaults.font.family = "'DM Sans', sans-serif";
 
+// Global: tiny legend dots
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.pointStyle = 'circle';
+Chart.defaults.plugins.legend.labels.boxWidth = 5;
+Chart.defaults.plugins.legend.labels.boxHeight = 5;
+Chart.defaults.plugins.legend.labels.pointStyleWidth = 5;
+
+
 const {createClient} = supabase;
 const sb = createClient("https://ftkriccztlcwccgetdqt.supabase.co","sb_publishable_qpOqA2VwlZDxXEJL86-Wpw_cv15argD");
 
@@ -2667,7 +2675,7 @@ function renderDemoDashboard() {
   if(cStatus)cStatus.destroy();
   cStatus=new Chart(document.getElementById("chart-status"),{type:"doughnut",
     data:{labels:Object.keys(sc),datasets:[{data:Object.values(sc),backgroundColor:getColors(Object.keys(sc)),borderWidth:0,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{display:true,position:"bottom",labels:{color:textColor,font:{size:11,family:"DM Sans"},padding:8,usePointStyle:true,pointStyle:"circle",boxWidth:4}}}}});
+    options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{display:true,position:"bottom",labels:{color:textColor,font:{size:11,family:"DM Sans"},padding:8,usePointStyle:true,pointStyle:"circle",pointStyleWidth:5,boxWidth:5,boxHeight:5}}}}});
 
   const phases=["Erstgespräch","Angebot","Verhandlung","Abschluss"];
   const pv=phases.map(p=>d.filter(x=>x.phase===p).reduce((s,x)=>s+(x.wert||0),0));
@@ -2801,7 +2809,7 @@ function filterPipelineDemo() {
         responsive:true,
         maintainAspectRatio:false,
         cutout:"62%",
-        plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:10},padding:8,usePointStyle:true,pointStyle:"circle",boxWidth:4}}}
+        plugins:{legend:{display:true,position:"bottom",labels:{color:text3,font:{size:10},padding:8,usePointStyle:true,pointStyle:"circle",pointStyleWidth:5,boxWidth:5,boxHeight:5}}}
       }
     });
   }
@@ -2819,7 +2827,7 @@ function renderAktivitaetenDemo() {
   const isMobileD = window.innerWidth <= 768;
   const dLegAlign = isMobileD ? "start" : "center";
   const dLegSize  = isMobileD ? 8 : 9;
-  const donutOpts=()=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",align:dLegAlign,labels:{color:text3,font:{size:dLegSize},padding:4,usePointStyle:true,pointStyle:"circle",boxWidth:isMobileD?3:4}}}}});
+  const donutOpts=()=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",align:dLegAlign,labels:{color:text3,font:{size:dLegSize},padding:4,usePointStyle:true,pointStyle:"circle",pointStyleWidth:5,boxWidth:5,boxHeight:5}}}}});
   const statusCnt={};rows.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
   if(cAktivTyp)cAktivTyp.destroy();
   const elS=document.getElementById("chart-aktiv-status");
@@ -3156,7 +3164,7 @@ async function renderDashboard() {
   if(cStatus) cStatus.destroy();
   cStatus = new Chart(document.getElementById("chart-status"), {type:"doughnut",
     data:{labels:Object.keys(sc),datasets:[{data:Object.values(sc),backgroundColor:[blue,green,orange,text3,purple],borderWidth:0,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{display:true,position:"bottom",labels:{color:textColor,font:{size:11,family:"DM Sans"},padding:8,usePointStyle:true,pointStyle:"circle",boxWidth:4}}}}});
+    options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{display:true,position:"bottom",labels:{color:textColor,font:{size:11,family:"DM Sans"},padding:8,usePointStyle:true,pointStyle:"circle",pointStyleWidth:5,boxWidth:5,boxHeight:5}}}}});
 
   const phases=["Erstgespräch","Angebot","Verhandlung","Abschluss"];
   const pv=phases.map(p=>deals.filter(d=>d.phase===p||d.phase==="First talk"||d.phase===p).reduce((s,d)=>s+(d.wert||0),0));
@@ -3700,7 +3708,7 @@ function renderKontakteCharts(data) {
     display:true,
     position:"bottom",
     align: isMobile ? "start" : "center",
-    labels:{color:text3,font:{size: isMobile ? 7 : 9},padding: isMobile ? 2 : 4,usePointStyle:true,pointStyle:"circle",boxWidth: isMobile ? 3 : 4}
+    labels:{color:text3,font:{size: isMobile ? 7 : 9},padding: isMobile ? 2 : 4,usePointStyle:true,pointStyle:"circle",pointStyleWidth:window.innerWidth<=768?4:5,boxWidth:window.innerWidth<=768?4:5,boxHeight:window.innerWidth<=768?4:5}
   };
   const donut = (labels, vals) => ({
     type:"doughnut",
@@ -3874,7 +3882,7 @@ function filterPipeline() {
     window._cPipeStatus = new Chart(elStat, {
       type:"doughnut",
       data:{labels:Object.keys(statusCnt),datasets:[{data:Object.values(statusCnt),backgroundColor:getColors(Object.keys(statusCnt)),borderWidth:0,hoverOffset:4}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",align:window.innerWidth<=768?"start":"center",labels:{color:text3,font:{size:window.innerWidth<=768?7:9},padding:window.innerWidth<=768?3:4,usePointStyle:true,pointStyle:"circle",boxWidth:window.innerWidth<=768?3:4,maxWidth:window.innerWidth<=768?120:undefined}}}}
+      options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:true,position:"bottom",align:window.innerWidth<=768?"start":"center",labels:{color:text3,font:{size:window.innerWidth<=768?7:9},padding:window.innerWidth<=768?3:4,usePointStyle:true,pointStyle:"circle",pointStyleWidth:window.innerWidth<=768?4:5,boxWidth:window.innerWidth<=768?4:5,boxHeight:window.innerWidth<=768?4:5,maxWidth:window.innerWidth<=768?120:undefined}}}}
     });
   }
 
@@ -4100,7 +4108,7 @@ async function renderAktivitaeten(f) {
   const aLegAlign = isMobileA ? "start" : "center";
   const aLegSize = isMobileA ? 8 : 9;
   const aLegPad  = isMobileA ? 4 : 4;
-  const mkDonut=(labels,vals)=>({type:"doughnut",data:{labels,datasets:[{data:vals,backgroundColor:getColors(labels),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:aLegPos,align:aLegAlign,labels:{color:text3,font:{size:aLegSize},padding:aLegPad,usePointStyle:true,pointStyle:"circle",boxWidth:isMobileA?3:4}}}}});
+  const mkDonut=(labels,vals)=>({type:"doughnut",data:{labels,datasets:[{data:vals,backgroundColor:getColors(labels),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:aLegPos,align:aLegAlign,labels:{color:text3,font:{size:aLegSize},padding:aLegPad,usePointStyle:true,pointStyle:"circle",pointStyleWidth:isMobileA?4:5,boxWidth:isMobileA?4:5,boxHeight:isMobileA?4:5}}}}});
 
   // Status
   const statusCnt={};aktivData.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
@@ -4115,7 +4123,7 @@ async function renderAktivitaeten(f) {
   const prioClrD={"Niedrig":"#6EF0A0","Mittel":"#F0A86E","Hoch":"#F06E6E"};
   if(cAktivPrio)cAktivPrio.destroy();
   const elP=document.getElementById("chart-aktiv-prio2");
-  if(elP) cAktivPrio=new Chart(elP,{type:"doughnut",data:{labels:prioLblD,datasets:[{data:prioLblD.map(p=>prioCntD[p]),backgroundColor:prioLblD.map(p=>prioClrD[p]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",align:isMobileA?"start":"center",labels:{color:text3,font:{size:isMobileA?7:9},padding:isMobileA?2:4,usePointStyle:true,pointStyle:"circle",boxWidth:isMobileA?3:4}}}}});
+  if(elP) cAktivPrio=new Chart(elP,{type:"doughnut",data:{labels:prioLblD,datasets:[{data:prioLblD.map(p=>prioCntD[p]),backgroundColor:prioLblD.map(p=>prioClrD[p]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",align:isMobileA?"start":"center",labels:{color:text3,font:{size:isMobileA?7:9},padding:isMobileA?2:4,usePointStyle:true,pointStyle:"circle",pointStyleWidth:isMobileA?4:5,boxWidth:isMobileA?4:5,boxHeight:isMobileA?4:5}}}}});
 
   // Typ
   const typCnt={};aktivData.forEach(a=>{const t=a.typ||"–";typCnt[t]=(typCnt[t]||0)+1;});

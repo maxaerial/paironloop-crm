@@ -1831,7 +1831,17 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
           <div class="card-title">Empfänger auswählen</div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <input id="email-search-kontakte" type="text" class="form-control" placeholder="Kontakte suchen..." oninput="filterEmailKontakte(this.value)" style="width:200px;font-size:13px">
+            <input id="email-search-kontakte" type="text" class="form-control" placeholder="Kontakte suchen..." oninput="filterEmailKontakte(this.value)" style="width:180px;font-size:13px">
+            <select id="email-branche-filter" class="filter-select" onchange="filterEmailKontakte(document.getElementById('email-search-kontakte').value)" style="font-size:13px">
+              <option value="">Alle Branchen</option>
+              <option>Hospitality</option>
+              <option>Restaurant</option>
+              <option>Weingut</option>
+              <option>Freizeitaktivität</option>
+              <option>Café</option>
+              <option>Bar</option>
+              <option>Sonstiges</option>
+            </select>
             <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="emailSelectAll()">Alle auswählen</button>
             <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="emailDeselectAll()">Auswahl aufheben</button>
           </div>
@@ -5494,11 +5504,13 @@ function updateEmailVorlageSelect() {
 function renderEmailKontakteList(filter = "") {
   const el = document.getElementById("email-kontakte-list");
   if (!el) return;
+  const branche = document.getElementById("email-branche-filter")?.value || "";
   const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
-  emailKontakteFiltered = filter
-    ? src.filter(k => [k.vorname, k.nachname, k.unternehmen, k.email].join(" ").toLowerCase().includes(filter.toLowerCase()))
-    : [...src];
-
+  emailKontakteFiltered = src.filter(k => {
+    const matchText = !filter || [k.vorname,k.nachname,k.unternehmen,k.email].join(" ").toLowerCase().includes(filter.toLowerCase());
+    const matchBranche = !branche || k.branche === branche;
+    return matchText && matchBranche;
+  });
   if (!emailKontakteFiltered.length) {
     el.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Keine Kontakte gefunden.</div>`;
     return;
@@ -5507,12 +5519,12 @@ function renderEmailKontakteList(filter = "") {
     const id = k.id || k.nr;
     const checked = emailSelectedIds.has(String(id)) ? "checked" : "";
     const hasEmail = k.email ? "" : "opacity:.4;pointer-events:none";
-    return `<label style="display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;${hasEmail};border-bottom:1px solid var(--border)" 
+    return `<label style="display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;${hasEmail};border-bottom:1px solid var(--border)"
       onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''">
       <input type="checkbox" ${checked} onchange="toggleEmailKontakt('${id}',this.checked)" style="width:15px;height:15px;accent-color:var(--accent2)">
       <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;color:var(--text1)">${k.vorname || ""} ${k.nachname || ""} <span style="font-weight:400;color:var(--text3)">· ${k.unternehmen || "–"}</span></div>
-        <div style="font-size:12px;color:var(--text3)">${k.email || "Keine E-Mail hinterlegt"}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text1)">${k.vorname||""} ${k.nachname||""} <span style="font-weight:400;color:var(--text3)">· ${k.unternehmen||"–"}</span>${k.branche ? ` <span style="font-size:11px;color:var(--text3)">· ${k.branche}</span>` : ""}</div>
+        <div style="font-size:12px;color:var(--text3)">${k.email||"Keine E-Mail hinterlegt"}</div>
       </div>
     </label>`;
   }).join("");
@@ -5530,8 +5542,9 @@ function updateEmailSelectedCount() {
 }
 
 function emailSelectAll() {
+  const branche = document.getElementById("email-branche-filter")?.value || "";
   const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
-  src.filter(k => k.email).forEach(k => emailSelectedIds.add(String(k.id || k.nr)));
+  src.filter(k => k.email && (!branche || k.branche === branche)).forEach(k => emailSelectedIds.add(String(k.id || k.nr)));
   renderEmailKontakteList(document.getElementById("email-search-kontakte")?.value || "");
   updateEmailSelectedCount();
 }

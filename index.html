@@ -1568,6 +1568,9 @@ tbody td { font-feature-settings: "zero" 0; }
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
               <input id="journey-search" oninput="filterJourney(this.value)" data-i18n-placeholder="search">
             </div>
+            <select class="filter-select" id="journey-kunde-filter" onchange="filterJourneyKundeSelect(this.value)">
+              <option value="">Alle Kunden</option>
+            </select>
             <select class="filter-select" id="phase-filter" onchange="filterJourneyPhase(this.value)">
               <option value="" data-i18n="all_phases">Alle Phasen</option>
             </select>
@@ -2128,6 +2131,7 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="field"><label data-i18n="due_date">Fällig am</label><input id="a-datum" type="date"></div>
         <div class="field"><label data-i18n="priority">Priorität</label><select id="a-prioritaet"><option data-i18n="high">Hoch</option><option data-i18n="medium">Mittel</option><option data-i18n="low">Niedrig</option></select></div>
         <div class="field form-full"><label data-i18n="description">Beschreibung</label><textarea id="a-beschreibung" rows="2"></textarea></div>
+        <div class="field form-full"><label>Verantwortlich</label><input id="a-verantwortlich" placeholder="z.B. Max, Elena…"></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -2845,6 +2849,11 @@ function editKontaktDemo(id) {
 
 function renderJourneyDemo() {
   journeyData=JSON.parse(JSON.stringify(DEMO_DATA.journey));
+  const kdSel = document.getElementById("journey-kunde-filter");
+  if(kdSel) {
+    const kunden = [...new Set(journeyData.map(j=>j.kunde).filter(Boolean))].sort();
+    kdSel.innerHTML = `<option value="">Alle Kunden</option>` + kunden.map(k=>`<option value="${k}"${jKunde===k?" selected":""}>${k}</option>`).join("");
+  }
   renderJourneyCharts(); renderJourneyTable();
 }
 
@@ -3186,6 +3195,42 @@ async function doLogout() {
 
 sb.auth.getSession().then(({data:{session}}) => { if(session) onLogin(session.user); });
 
+// Handle password recovery redirect
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === "PASSWORD_RECOVERY") {
+    // Show password reset UI
+    document.getElementById("login-screen").style.display = "flex";
+    document.getElementById("app").style.display = "none";
+    showPasswordResetForm();
+  }
+});
+
+function showPasswordResetForm() {
+  const screen = document.getElementById("login-screen");
+  screen.innerHTML = `
+    <div style="width:100%;max-width:400px;padding:32px;background:var(--bg2);border-radius:var(--radius);box-shadow:var(--shadow-lg)">
+      <div style="font-size:20px;font-weight:700;color:var(--text1);margin-bottom:8px">Neues Passwort</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:24px">Bitte gib dein neues Passwort ein.</div>
+      <input id="new-pw-1" type="password" class="form-control" placeholder="Neues Passwort" style="margin-bottom:10px">
+      <input id="new-pw-2" type="password" class="form-control" placeholder="Passwort wiederholen" style="margin-bottom:16px">
+      <div id="new-pw-msg" style="display:none;padding:10px;border-radius:6px;font-size:13px;margin-bottom:12px"></div>
+      <button class="btn btn-primary" style="width:100%" onclick="doSetNewPassword()">Passwort speichern</button>
+    </div>`;
+}
+
+async function doSetNewPassword() {
+  const pw1 = document.getElementById("new-pw-1")?.value;
+  const pw2 = document.getElementById("new-pw-2")?.value;
+  const msg = document.getElementById("new-pw-msg");
+  if (!pw1 || pw1.length < 6) { msg.textContent = "Mindestens 6 Zeichen"; msg.style.display="block"; msg.style.color="var(--red)"; return; }
+  if (pw1 !== pw2) { msg.textContent = "Passwörter stimmen nicht überein"; msg.style.display="block"; msg.style.color="var(--red)"; return; }
+  const { error } = await sb.auth.updateUser({ password: pw1 });
+  if (error) { msg.textContent = error.message; msg.style.display="block"; msg.style.color="var(--red)"; return; }
+  msg.textContent = "✓ Passwort gespeichert! Du wirst eingeloggt…";
+  msg.style.display="block"; msg.style.color="var(--green)";
+  setTimeout(() => { const {data:{session}} = sb.auth.getSession(); window.location.reload(); }, 1500);
+}
+
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
 function showPageMobile(id, el) {
   // Update mobile nav
@@ -3283,13 +3328,19 @@ async function renderDashboard() {
 }
 
 // ── JOURNEY ────────────────────────────────────────────────────────────────────
-let jSearch="", jPhase="", jSort="date_desc", journeyData=[], cJourney=null;
+let jSearch="", jPhase="", jKunde="", jSort="date_desc", journeyData=[], cJourney=null;
 
 async function renderJourney(search, phase) {
   if(search!==undefined) jSearch=search;
   if(phase!==undefined) jPhase=phase;
   const {data} = await sb.from("journey").select("*").order("created_at",{ascending:false});
   journeyData = data||[];
+  // Populate kunde filter dropdown
+  const kdSel = document.getElementById("journey-kunde-filter");
+  if(kdSel) {
+    const kunden = [...new Set(journeyData.map(j=>j.kunde).filter(Boolean))].sort();
+    kdSel.innerHTML = `<option value="">Alle Kunden</option>` + kunden.map(k=>`<option value="${k}"${jKunde===k?" selected":""}>${k}</option>`).join("");
+  }
   renderJourneyCharts();
   renderJourneyTable();
 }
@@ -3409,6 +3460,7 @@ function renderJourneyCharts() {
 function renderJourneyTable() {
   let rows = journeyData;
   if(jSearch) rows=rows.filter(j=>j.kunde?.toLowerCase().includes(jSearch.toLowerCase())||j.touchpoint?.toLowerCase().includes(jSearch.toLowerCase()));
+  if(jKunde) rows=rows.filter(j=>j.kunde===jKunde);
   if(jPhase) {
     rows=rows.filter(j=>{
       let match=false;
@@ -3483,6 +3535,11 @@ function setPhaseFilter(p) {
   renderJourney();
 }
 function filterJourney(v) { renderJourney(v,jPhase); }
+
+function filterJourneyKundeSelect(v) {
+  jKunde = v;
+  renderJourneyTable();
+}
 function filterJourneyPhase(v) {
   jPhase=v;
   const badge = document.getElementById("phase-filter-badge");
@@ -4004,8 +4061,8 @@ function renderPipelineBoard(rows) {
         </div>
       </div>
       <div class="pipeline-col-body" style="transition:background .15s">${phDeals.map(d=>`
-        <div class="deal-card" draggable="true"
-          ondragstart="dragDeal(event,'${d.id}')"
+        <div class="deal-card" draggable="${window.innerWidth > 768 ? 'true' : 'false'}"
+          ondragstart="${window.innerWidth > 768 ? `dragDeal(event,'${d.id}')` : ''}"
           ondragend="document.querySelectorAll('.pipeline-col-body').forEach(c=>c.style.background='')"
           style="cursor:grab">
           <div class="deal-ribbon deal-ribbon-${(d.status||'aktiv').toLowerCase().replace(/\s+/g,'-')}">${d.status||'Aktiv'}</div>
@@ -4048,11 +4105,13 @@ function renderPipelineBoard(rows) {
   }).join("")}</div>`;
   // Init touch drag on mobile
   setTimeout(function(){
-    document.querySelectorAll("#pipeline-board .deal-card[draggable]").forEach(function(card){
-      var m=card.getAttribute("ondragstart");
-      var id=m&&m.match(/dragDeal\(event,'([^']+)'\)/);
-      if(id&&id[1]) initTouchDrag(card,id[1]);
-    });
+    if(window.innerWidth > 768) {
+      document.querySelectorAll("#pipeline-board .deal-card[draggable]").forEach(function(card){
+        var m=card.getAttribute("ondragstart");
+        var id=m&&m.match(/dragDeal\(event,'([^']+)'\)/);
+        if(id&&id[1]) initTouchDrag(card,id[1]);
+      });
+    }
   },50);
 }
 

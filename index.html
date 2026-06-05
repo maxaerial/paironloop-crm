@@ -1813,55 +1813,56 @@ tbody td { font-feature-settings: "zero" 0; }
       <div class="page-header">
         <div>
           <div class="page-title">E-Mail</div>
-          <div class="page-subtitle">Vorlagen verwalten und Kontakte anschreiben</div>
+          <div class="page-subtitle">Vorlage wählen, Empfänger auswählen und senden</div>
         </div>
       </div>
 
-      <!-- Vorlagen -->
+      <!-- Vorlage auswählen -->
       <div class="card" style="margin-bottom:16px">
         <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
-          <div class="card-title">Vorlagen</div>
-          <button class="btn btn-primary btn-sm" onclick="openEmailVorlageModal()">+ Neue Vorlage</button>
+          <div class="card-title">Vorlage</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="previewEmailVorlage()" id="btn-preview-vorlage">Vorschau</button>
+            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="editEmailVorlageSelected()">Bearbeiten</button>
+            <button class="btn btn-primary btn-sm" onclick="openEmailVorlageModal()">+ Neue Vorlage</button>
+          </div>
         </div>
-        <div class="card-body" style="padding:0">
-          <div id="email-vorlagen-list"></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+          <select id="email-vorlage-select" style="font-size:13px;width:100%" onchange="updateEmailVorlagePreview()">
+            <option value="">— Vorlage wählen —</option>
+          </select>
+          <div id="email-vorlage-preview" style="display:none;background:var(--bg3);border-radius:var(--radius-sm);padding:12px;font-size:12px;color:var(--text2);white-space:pre-wrap;max-height:120px;overflow-y:auto;border:1px solid var(--border)"></div>
         </div>
       </div>
 
-      <!-- Kontakte auswählen & senden -->
+      <!-- Kontakte auswählen -->
       <div class="card">
         <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-          <div class="card-title">Empfänger auswählen</div>
+          <div class="card-title">Empfänger</div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <input id="email-search-kontakte" type="text" class="form-control" placeholder="Kontakte suchen..." oninput="filterEmailKontakte(this.value)" style="width:180px;font-size:13px">
             <select id="email-branche-filter" class="filter-select" onchange="filterEmailKontakte(document.getElementById('email-search-kontakte').value)" style="font-size:13px">
               <option value="">Alle Branchen</option>
-              <option>Hospitality</option>
-              <option>Restaurant</option>
-              <option>Weingut</option>
-              <option>Freizeitaktivität</option>
-              <option>Café</option>
-              <option>Bar</option>
-              <option>Sonstiges</option>
+              <option>Hospitality</option><option>Restaurant</option><option>Weingut</option>
+              <option>Freizeitaktivität</option><option>Café</option><option>Bar</option><option>Sonstiges</option>
             </select>
-            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="emailSelectAll()">Alle auswählen</button>
-            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="emailDeselectAll()">Auswahl aufheben</button>
+            <div style="position:relative">
+              <select id="email-search-kontakte" style="font-size:13px;min-width:200px" onchange="addEmailEmpfaenger(this.value);this.value=''">
+                <option value="">+ Kontakt hinzufügen…</option>
+              </select>
+            </div>
+            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="emailSelectAll()">Alle</button>
+            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="emailDeselectAll()">Leeren</button>
           </div>
         </div>
         <div class="card-body" style="padding:8px 0">
-          <div id="email-kontakte-list" style="max-height:280px;overflow-y:auto"></div>
+          <div id="email-kontakte-list" style="max-height:260px;overflow-y:auto"></div>
         </div>
         <div class="card-footer" style="padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-          <div style="font-size:13px;color:var(--text3)"><span id="email-selected-count">0</span> Kontakt(e) ausgewählt</div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <select id="email-vorlage-select" class="form-control" style="font-size:13px;min-width:200px">
-              <option value="">— Vorlage wählen —</option>
-            </select>
-            <button class="btn btn-primary" onclick="sendEmailBulk()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
-              E-Mail senden
-            </button>
-          </div>
+          <div style="font-size:13px;color:var(--text3)"><span id="email-selected-count">0</span> Empfänger · alle im BCC</div>
+          <button class="btn btn-primary" onclick="sendEmailBulk()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+            E-Mail öffnen
+          </button>
         </div>
       </div>
     </div>
@@ -5634,30 +5635,76 @@ function saveEmailVorlagenLocal() {
 
 async function renderEmail() {
   await loadEmailVorlagen();
-  renderEmailVorlagenList();
-  renderEmailKontakteList();
   updateEmailVorlageSelect();
+  populateEmailKontakteDropdown();
+  renderEmailKontakteList();
   updateEmailSelectedCount();
 }
 
-function renderEmailVorlagenList() {
-  const el = document.getElementById("email-vorlagen-list");
-  if (!el) return;
-  if (!emailVorlagen.length) {
-    el.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Noch keine Vorlagen vorhanden.</div>`;
-    return;
-  }
-  el.innerHTML = emailVorlagen.map(v => `
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)">
-      <div>
-        <div style="font-weight:600;font-size:13px;color:var(--text1)">${v.name}</div>
-        <div style="font-size:12px;color:var(--text3);margin-top:2px">${v.betreff}</div>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="editEmailVorlage('${v.id}')">Bearbeiten</button>
-        <button class="btn btn-sm" style="background:rgba(240,110,110,.12);color:var(--red)" onclick="deleteEmailVorlage('${v.id}')">Löschen</button>
-      </div>
-    </div>`).join("");
+function populateEmailKontakteDropdown() {
+  const branche = document.getElementById("email-branche-filter")?.value || "";
+  const sel = document.getElementById("email-search-kontakte");
+  if(!sel) return;
+  const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
+  const filtered = src.filter(k => k.email && (!branche || k.branche === branche));
+  sel.innerHTML = `<option value="">+ Kontakt hinzufügen…</option>` +
+    filtered.map(k => `<option value="${k.id||k.nr}">${k.unternehmen||""} – ${k.vorname||""} ${k.nachname||""}</option>`).join("");
+}
+
+function addEmailEmpfaenger(id) {
+  if(!id) return;
+  emailSelectedIds.add(String(id));
+  renderEmailKontakteList();
+  updateEmailSelectedCount();
+}
+
+function updateEmailVorlagePreview() {
+  const id = document.getElementById("email-vorlage-select")?.value;
+  const preview = document.getElementById("email-vorlage-preview");
+  if(!preview) return;
+  if(!id) { preview.style.display = "none"; return; }
+  const v = emailVorlagen.find(x => x.id === id);
+  if(!v) { preview.style.display = "none"; return; }
+  preview.textContent = `Betreff: ${v.betreff}\n\n${v.text}`;
+  preview.style.display = "block";
+}
+
+function previewEmailVorlage() {
+  const preview = document.getElementById("email-vorlage-preview");
+  if(!preview) return;
+  preview.style.display = preview.style.display === "none" ? "block" : "none";
+}
+
+function editEmailVorlageSelected() {
+  const id = document.getElementById("email-vorlage-select")?.value;
+  if(!id) { showToast("⚠ Bitte zuerst eine Vorlage auswählen"); return; }
+  editEmailVorlage(id);
+}
+
+function sendEmailBulk() {
+  const vorlageId = document.getElementById("email-vorlage-select")?.value;
+  if (!vorlageId) { showToast("⚠ Bitte eine Vorlage auswählen"); return; }
+  if (!emailSelectedIds.size) { showToast("⚠ Bitte mindestens einen Empfänger auswählen"); return; }
+  const vorlage = emailVorlagen.find(v => v.id === vorlageId);
+  if (!vorlage) return;
+  const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
+  const empfaenger = src.filter(k => emailSelectedIds.has(String(k.id || k.nr)) && k.email);
+  if (!empfaenger.length) { showToast("⚠ Keine Kontakte mit E-Mail-Adresse ausgewählt"); return; }
+
+  // Use first contact for personalization, all in BCC
+  const first = empfaenger[0];
+  const betreff = vorlage.betreff
+    .replace(/{{vorname}}/g, empfaenger.length === 1 ? (first.vorname||"") : "")
+    .replace(/{{nachname}}/g, empfaenger.length === 1 ? (first.nachname||"") : "")
+    .replace(/{{unternehmen}}/g, empfaenger.length === 1 ? (first.unternehmen||"") : "");
+  const text = vorlage.text
+    .replace(/{{vorname}}/g, empfaenger.length === 1 ? (first.vorname||"") : "")
+    .replace(/{{nachname}}/g, empfaenger.length === 1 ? (first.nachname||"") : "")
+    .replace(/{{unternehmen}}/g, empfaenger.length === 1 ? (first.unternehmen||"") : "");
+
+  const bcc = empfaenger.map(k => k.email).join(",");
+  window.location.href = `mailto:?bcc=${encodeURIComponent(bcc)}&subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(text)}`;
+  showToast(`✓ E-Mail mit ${empfaenger.length} Empfänger(n) im BCC geöffnet`);
 }
 
 function updateEmailVorlageSelect() {
@@ -5667,33 +5714,36 @@ function updateEmailVorlageSelect() {
     emailVorlagen.map(v => `<option value="${v.id}">${v.name}</option>`).join("");
 }
 
+function filterEmailKontakte(v) {
+  populateEmailKontakteDropdown();
+  renderEmailKontakteList();
+}
+
 function renderEmailKontakteList(filter = "") {
   const el = document.getElementById("email-kontakte-list");
   if (!el) return;
-  const branche = document.getElementById("email-branche-filter")?.value || "";
   const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
-  emailKontakteFiltered = src.filter(k => {
-    const matchText = !filter || [k.vorname,k.nachname,k.unternehmen,k.email].join(" ").toLowerCase().includes(filter.toLowerCase());
-    const matchBranche = !branche || k.branche === branche;
-    return matchText && matchBranche;
-  });
-  if (!emailKontakteFiltered.length) {
-    el.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Keine Kontakte gefunden.</div>`;
+  const selected = src.filter(k => emailSelectedIds.has(String(k.id || k.nr)));
+  if (!selected.length) {
+    el.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Noch keine Empfänger ausgewählt. Nutze das Dropdown oben.</div>`;
     return;
   }
-  el.innerHTML = emailKontakteFiltered.map(k => {
+  el.innerHTML = selected.map(k => {
     const id = k.id || k.nr;
-    const checked = emailSelectedIds.has(String(id)) ? "checked" : "";
-    const hasEmail = k.email ? "" : "opacity:.4;pointer-events:none";
-    return `<label style="display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;${hasEmail};border-bottom:1px solid var(--border)"
-      onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''">
-      <input type="checkbox" ${checked} onchange="toggleEmailKontakt('${id}',this.checked)" style="width:15px;height:15px;accent-color:var(--accent2)">
+    return `<div style="display:flex;align-items:center;gap:12px;padding:9px 16px;border-bottom:1px solid var(--border)">
       <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;color:var(--text1)">${k.vorname||""} ${k.nachname||""} <span style="font-weight:400;color:var(--text3)">· ${k.unternehmen||"–"}</span>${k.branche ? ` <span style="font-size:11px;color:var(--text3)">· ${k.branche}</span>` : ""}</div>
-        <div style="font-size:12px;color:var(--text3)">${k.email||"Keine E-Mail hinterlegt"}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text1)">${k.vorname||""} ${k.nachname||""} <span style="font-weight:400;color:var(--text3)">· ${k.unternehmen||"–"}</span></div>
+        <div style="font-size:12px;color:var(--text3)">${k.email||"–"}</div>
       </div>
-    </label>`;
+      <button onclick="removeEmailEmpfaenger('${id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;line-height:1;padding:0" title="Entfernen">×</button>
+    </div>`;
   }).join("");
+}
+
+function removeEmailEmpfaenger(id) {
+  emailSelectedIds.delete(String(id));
+  renderEmailKontakteList();
+  updateEmailSelectedCount();
 }
 
 function toggleEmailKontakt(id, checked) {
@@ -5711,13 +5761,13 @@ function emailSelectAll() {
   const branche = document.getElementById("email-branche-filter")?.value || "";
   const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
   src.filter(k => k.email && (!branche || k.branche === branche)).forEach(k => emailSelectedIds.add(String(k.id || k.nr)));
-  renderEmailKontakteList(document.getElementById("email-search-kontakte")?.value || "");
+  renderEmailKontakteList();
   updateEmailSelectedCount();
 }
 
 function emailDeselectAll() {
   emailSelectedIds.clear();
-  renderEmailKontakteList(document.getElementById("email-search-kontakte")?.value || "");
+  renderEmailKontakteList();
   updateEmailSelectedCount();
 }
 

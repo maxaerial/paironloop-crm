@@ -1156,6 +1156,11 @@ tbody td { font-feature-settings: "zero" 0; }
   .kpi-card { padding: 14px 14px; }
   .kpi-value { font-size: 22px; }
 
+  /* Dashboard charts: side by side on mobile */
+  #dashboard-charts-row { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  #dashboard-charts-row .chart-wrap { height: 150px !important; }
+  #dashboard-charts-row .card-title { font-size: 10px !important; }
+
   /* Grid layouts — stack on mobile */
   .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
   #aktiv-charts-grid { grid-template-columns: repeat(2,1fr) !important; gap:8px !important; align-items: start !important; }
@@ -1464,7 +1469,7 @@ tbody td { font-feature-settings: "zero" 0; }
           </div>
         </div>
 
-        <div class="grid-2">
+        <div class="grid-2" id="dashboard-charts-row">
           <div class="card">
             <div class="card-header">
               <div class="card-title" data-i18n="contacts_by_status">Kontakte nach Status</div>
@@ -2681,7 +2686,7 @@ function renderDemoDashboard() {
   const pv=phases.map(p=>d.filter(x=>x.phase===p).reduce((s,x)=>s+(x.wert||0),0));
   if(cPipe)cPipe.destroy();
   cPipe=new Chart(document.getElementById("chart-pipeline"),{type:"bar",
-    data:{labels:phases,datasets:[{data:pv,backgroundColor:"var(--accent)",borderRadius:8,borderSkipped:false,borderWidth:0}]},
+    data:{labels:phases,datasets:[{data:pv,backgroundColor:"#6EB8F0",borderRadius:8,borderSkipped:false,borderWidth:0}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{size:11}},grid:{color:borderCol},border:{display:false}},
               x:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
@@ -2781,7 +2786,7 @@ function filterPipelineDemo() {
   const phaseVals=phases.map(p=>rows.filter(d=>d.phase===p).reduce((s,d)=>s+(d.wert||0),0));
   if(cPipePhases)cPipePhases.destroy();
   const el1=document.getElementById("chart-pipeline-phases");
-  if(el1)cPipePhases=new Chart(el1,{type:"bar",data:{labels:phases,datasets:[{data:phaseVals,backgroundColor:"var(--accent)",borderRadius:8,borderSkipped:false,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{size:10}},grid:{color:borderCol},border:{display:false}},x:{ticks:{color:text3,font:{size:10}},grid:{display:false},border:{display:false}}}}});
+  if(el1)cPipePhases=new Chart(el1,{type:"bar",data:{labels:phases,datasets:[{data:phaseVals,backgroundColor:"#6EB8F0",borderRadius:8,borderSkipped:false,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{size:10}},grid:{color:borderCol},border:{display:false}},x:{ticks:{color:text3,font:{size:10}},grid:{display:false},border:{display:false}}}}});
   const topDeals=[...rows].sort((a,b)=>(b.wert||0)-(a.wert||0)).slice(0,6);
   if(cPipeDeals2)cPipeDeals2.destroy();
   const el2=document.getElementById("chart-pipeline-deals");
@@ -3170,7 +3175,7 @@ async function renderDashboard() {
   const pv=phases.map(p=>deals.filter(d=>d.phase===p||d.phase==="First talk"||d.phase===p).reduce((s,d)=>s+(d.wert||0),0));
   if(cPipe) cPipe.destroy();
   cPipe = new Chart(document.getElementById("chart-pipeline"), {type:"bar",
-    data:{labels:phases,datasets:[{data:pv,backgroundColor:"var(--accent)",borderRadius:8,borderSkipped:false,borderWidth:0}]},
+    data:{labels:phases,datasets:[{data:pv,backgroundColor:"#6EB8F0",borderRadius:8,borderSkipped:false,borderWidth:0}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{family:"DM Sans",size:11}},grid:{color:borderCol},border:{display:false}},
               x:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
@@ -3852,7 +3857,7 @@ function filterPipeline() {
   if(chartEl){
     if(cPipePhases)cPipePhases.destroy();
     cPipePhases=new Chart(chartEl,{type:"bar",
-      data:{labels:phases,datasets:[{data:phaseVals,backgroundColor:"var(--accent)",borderRadius:8,borderSkipped:false,borderWidth:0}]},
+      data:{labels:phases,datasets:[{data:phaseVals,backgroundColor:"#6EB8F0",borderRadius:8,borderSkipped:false,borderWidth:0}]},
       options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
         scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{family:"DM Sans",size:10}},grid:{color:borderCol},border:{display:false}},
                 x:{ticks:{color:text3,font:{size:10}},grid:{display:false},border:{display:false}}}}});

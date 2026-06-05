@@ -1853,34 +1853,32 @@ tbody td { font-feature-settings: "zero" 0; }
       </div>
     </div>
 
-    <!-- MODAL: Vorlage bearbeiten -->
-    <div class="modal-backdrop" id="modal-email-vorlage" onclick="if(event.target===this)closeModal('modal-email-vorlage')">
+    <div class="modal-overlay" id="modal-email-vorlage" onclick="if(event.target===this)closeModal('modal-email-vorlage')">
       <div class="modal" style="max-width:560px">
-        <div class="modal-header">
-          <div class="modal-title" id="email-vorlage-modal-title">Neue Vorlage</div>
+        <div class="modal-head">
+          <h3 id="email-vorlage-modal-title">Neue Vorlage</h3>
           <button class="modal-close" onclick="closeModal('modal-email-vorlage')">×</button>
         </div>
-        <div class="modal-body" style="display:flex;flex-direction:column;gap:14px">
-          <input type="hidden" id="email-vorlage-id">
-          <div>
-            <label class="form-label">Name der Vorlage</label>
-            <input id="email-vorlage-name" type="text" class="form-control" placeholder="z.B. Erstkontakt">
-          </div>
-          <div>
-            <label class="form-label">Betreff</label>
-            <input id="email-vorlage-betreff" type="text" class="form-control" placeholder="z.B. Drohnenfilm für {{unternehmen}}">
-          </div>
-          <div>
-            <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
-              <span>Text</span>
-              <span style="font-size:11px;color:var(--text3)">Platzhalter: {{vorname}} {{nachname}} {{unternehmen}}</span>
-            </label>
-            <textarea id="email-vorlage-text" class="form-control" rows="8" placeholder="Hallo {{vorname}},&#10;&#10;..."></textarea>
+        <div class="modal-body">
+          <div class="form-grid">
+            <input type="hidden" id="email-vorlage-id">
+            <div class="field form-full">
+              <label>Name der Vorlage</label>
+              <input id="email-vorlage-name" type="text" placeholder="z.B. Erstkontakt">
+            </div>
+            <div class="field form-full">
+              <label>Betreff</label>
+              <input id="email-vorlage-betreff" type="text" placeholder="z.B. Drohnenfilm für {{unternehmen}}">
+            </div>
+            <div class="field form-full">
+              <label>Text <span style="font-size:11px;color:var(--text3);font-weight:400">— Platzhalter: {{vorname}} {{nachname}} {{unternehmen}}</span></label>
+              <textarea id="email-vorlage-text" rows="9" placeholder="Hallo {{vorname}},&#10;&#10;..."></textarea>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn" onclick="closeModal('modal-email-vorlage')">Abbrechen</button>
           <button class="btn btn-primary" onclick="saveEmailVorlage()">Speichern</button>
+          <button class="btn btn-ghost" onclick="closeModal('modal-email-vorlage')">Abbrechen</button>
         </div>
       </div>
     </div>
@@ -5377,24 +5375,54 @@ applyI18n();
 
 const DEFAULT_VORLAGEN = [
   {
-    id: "v1", name: "Erstkontakt",
-    betreff: "Drohnenfilm für {{unternehmen}} – Paironloop",
-    text: `Hallo {{vorname}},\n\nich bin Max von Paironloop und wir produzieren professionelle Drohnenvideos für Unternehmen wie Ihres.\n\nGerne würde ich Ihnen zeigen, wie wir {{unternehmen}} durch beeindruckende Luftaufnahmen noch besser in Szene setzen können.\n\nHaben Sie Interesse an einem kurzen Gespräch?\n\nBeste Grüße\nMax Weidmann\nPaironloop`
+    id: "v1", name: "Erstkontakt / Hallo",
+    betreff: "Hallo von Paironloop – Drohnenfilm für {{unternehmen}}",
+    text: `Hallo {{vorname}},\n\nmein Name ist Max Weidmann und ich bin Mitgründer von Paironloop – wir produzieren professionelle Drohnenvideos für Unternehmen, Hotels, Weingüter und Freizeitbetriebe.\n\nIch bin auf {{unternehmen}} aufmerksam geworden und denke, dass beeindruckende Luftaufnahmen Ihre Außenwirkung deutlich stärken könnten.\n\nDarf ich Ihnen kurz zeigen, was wir für ähnliche Betriebe umgesetzt haben?\n\nBeste Grüße\nMax Weidmann & Elena Schwarze\nPaironloop\nwww.paironloop.com`
   },
   {
-    id: "v2", name: "Angebot nachfassen",
-    betreff: "Ihr Angebot von Paironloop – Rückfrage",
-    text: `Hallo {{vorname}},\n\nich wollte kurz nachfragen, ob Sie unser Angebot erhalten haben und ob noch Fragen offen sind.\n\nWir freuen uns darauf, {{unternehmen}} mit unserem Drohnen-Team zu unterstützen.\n\nBei Fragen stehe ich gerne zur Verfügung.\n\nBeste Grüße\nMax Weidmann\nPaironloop`
+    id: "v2", name: "Newsletter Willkommen",
+    betreff: "Willkommen bei Paironloop – schön, dass Sie dabei sind!",
+    text: `Hallo {{vorname}},\n\nwir freuen uns sehr, Sie in unserer Community begrüßen zu dürfen!\n\nAls Newsletter-Abonnent erhalten Sie als Erstes:\n• Einblicke hinter die Kulissen unserer Produktionen\n• Exklusive Angebote und saisonale Aktionen\n• Inspirationen für Ihren nächsten Drohnenfilm\n\nWir können es kaum erwarten, Ihnen mehr zu zeigen.\n\nHerzliche Grüße\nMax & Elena\nPaironloop`
   },
   {
-    id: "v3", name: "Empfehlung anfragen",
-    betreff: "Kurze Bitte – Paironloop",
-    text: `Hallo {{vorname}},\n\nwir hoffen, dass Sie mit unserem Drohnenfilm für {{unternehmen}} zufrieden waren!\n\nFalls Sie jemanden kennen, der ebenfalls von unseren Aufnahmen profitieren könnte, würden wir uns sehr über eine Empfehlung freuen.\n\nVielen Dank und beste Grüße\nMax Weidmann\nPaironloop`
+    id: "v3", name: "Angebotsübersicht",
+    betreff: "Unsere Leistungen für {{unternehmen}} – Paironloop",
+    text: `Hallo {{vorname}},\n\nwie versprochen hier ein Überblick über unsere Angebote:\n\n🎬 DROHNENFILM STANDARD\nLuftaufnahmen, Schnitt & Color Grading – ideal für Social Media und Website\n\n🏆 DROHNENFILM PREMIUM\nMehrtägige Produktion, Interview, Voiceover, Musiklizenz – für maximale Wirkung\n\n📸 FOTO-PAKET\nHochauflösende Luftbilder für Print, Architektur und Immobilien\n\n🎯 INDIVIDUAL\nMaßgeschneiderte Konzepte nach Ihren Wünschen\n\nAlle Pakete sind anpassbar. Gerne erstelle ich Ihnen ein persönliches Angebot für {{unternehmen}}.\n\nBeste Grüße\nMax Weidmann\nPaironloop\nwww.paironloop.com`
   },
   {
-    id: "v4", name: "Saisonales Angebot",
-    betreff: "Exklusives Angebot für {{unternehmen}} – Paironloop",
-    text: `Hallo {{vorname}},\n\nals geschätzter Kontakt möchten wir Ihnen als Erstes von unserem aktuellen Sonderangebot berichten.\n\nProfitieren Sie jetzt von unserem Frühjahrs-Paket für Drohnenaufnahmen zu besonders attraktiven Konditionen.\n\nInteressiert? Melden Sie sich gerne bei mir.\n\nBeste Grüße\nMax Weidmann\nPaironloop`
+    id: "v4", name: "Angebot nachfassen",
+    betreff: "Kurze Rückfrage zu unserem Angebot – Paironloop",
+    text: `Hallo {{vorname}},\n\nvor einigen Tagen habe ich Ihnen unser Angebot für {{unternehmen}} zugeschickt – haben Sie es erhalten?\n\nIch wollte kurz nachfragen, ob noch Fragen offen sind oder ob ich etwas anpassen soll.\n\nIch freue mich auf Ihre Rückmeldung.\n\nBeste Grüße\nMax Weidmann\nPaironloop`
+  },
+  {
+    id: "v5", name: "Weihnachtsgruß",
+    betreff: "Frohe Weihnachten von Paironloop 🎄",
+    text: `Hallo {{vorname}},\n\ndas Jahr neigt sich dem Ende – Zeit, innezuhalten und Danke zu sagen.\n\nWir möchten uns herzlich bei Ihnen und {{unternehmen}} für die schöne Zusammenarbeit und das entgegengebrachte Vertrauen bedanken.\n\nWir wünschen Ihnen und Ihren Liebsten frohe, besinnliche Weihnachten und einen guten Rutsch ins neue Jahr!\n\nHerzliche Weihnachtsgrüße\nMax, Elena & das Paironloop-Team`
+  },
+  {
+    id: "v6", name: "Neujahrsgruß",
+    betreff: "Frohes neues Jahr von Paironloop 🎆",
+    text: `Hallo {{vorname}},\n\nein neues Jahr beginnt – und mit ihm neue Möglichkeiten, neue Ideen und neue Bilder.\n\nWir wünschen Ihnen und {{unternehmen}} ein erfolgreiches, gesundes und inspirierendes Jahr!\n\nWir freuen uns darauf, Sie auch in diesem Jahr zu begleiten – mit Perspektiven, die begeistern.\n\nAuf ein gutes gemeinsames Jahr!\nMax & Elena\nPaironloop`
+  },
+  {
+    id: "v7", name: "Ostergruß",
+    betreff: "Frohe Ostern von Paironloop 🐣",
+    text: `Hallo {{vorname}},\n\nwir wünschen Ihnen und Ihrem Team von {{unternehmen}} ein frohes Osterfest!\n\nMöge der Frühling neue Energie und frische Ideen bringen – wir sind gespannt, was wir gemeinsam in dieser Saison auf die Beine stellen.\n\nFröhliche Ostern!\nMax & Elena\nPaironloop`
+  },
+  {
+    id: "v8", name: "Empfehlung anfragen",
+    betreff: "Kurze Bitte an Sie – Paironloop",
+    text: `Hallo {{vorname}},\n\nwir hoffen, dass Sie mit unserem Drohnenfilm für {{unternehmen}} rundum zufrieden sind!\n\nFalls Sie jemanden kennen – einen Kollegen, Partner oder Bekannten – der ebenfalls von professionellen Luftaufnahmen profitieren könnte, würden wir uns über eine Empfehlung sehr freuen.\n\nAls kleines Dankeschön bieten wir Ihnen bei einer erfolgreichen Weiterempfehlung einen Rabatt auf Ihren nächsten Auftrag an.\n\nVielen Dank und herzliche Grüße\nMax Weidmann\nPaironloop`
+  },
+  {
+    id: "v9", name: "Saisonangebot Frühling",
+    betreff: "Frühlingsangebot für {{unternehmen}} – Paironloop 🌿",
+    text: `Hallo {{vorname}},\n\nder Frühling ist die schönste Zeit für Drohnenaufnahmen – grüne Landschaften, klares Licht, perfekte Bedingungen.\n\nBis Ende Mai bieten wir ein exklusives Frühlingspaket an:\n✓ 1 Drehtag inkl. Schnitt & Farbkorrektur\n✓ 3 Social-Media-Clips inklusive\n✓ 10 % Frühbucherrabatt bei Buchung bis 15. April\n\nInteresse? Ich freue mich auf Ihre Nachricht.\n\nBeste Grüße\nMax Weidmann\nPaironloop`
+  },
+  {
+    id: "v10", name: "Feedback anfragen",
+    betreff: "Wie war Ihre Erfahrung mit Paironloop?",
+    text: `Hallo {{vorname}},\n\nwir hoffen, dass unser Drohnenfilm für {{unternehmen}} Ihre Erwartungen erfüllt – oder sogar übertroffen hat!\n\nIhr Feedback ist uns sehr wichtig: Was hat Ihnen besonders gut gefallen? Was können wir verbessern?\n\nUnd falls Sie einen Moment Zeit haben – eine kurze Bewertung auf Google hilft uns enorm, anderen Kunden zu helfen, die richtige Entscheidung zu treffen.\n\nVielen herzlichen Dank!\nMax & Elena\nPaironloop`
   }
 ];
 

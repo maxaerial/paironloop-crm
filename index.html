@@ -3178,47 +3178,56 @@ function removeTeamMember(name) {
 }
 
 function getTeamKey() {
-  return "paironloop_team_members_" + (window._userId || "demo");
+  // Always use a stable key — never "undefined"
+  const uid = window._userId || (isDemoMode ? "demo" : "anon");
+  return "paironloop_team_v2_" + uid;
 }
 
 function saveTeamMembers() {
-  localStorage.setItem(getTeamKey(), JSON.stringify(teamMembers));
+  // Always save to localStorage first (reliable)
+  try { localStorage.setItem(getTeamKey(), JSON.stringify(teamMembers)); } catch(e) {}
+  // Try Supabase in background (non-blocking, optional)
   if(!isDemoMode) {
-    sb.from("team_members").delete().neq("name","__").then(() => {
-      teamMembers.forEach(m => {
-        const name = typeof m === "string" ? m : m.name;
-        const email = typeof m === "object" ? (m.email||"") : "";
-        sb.from("team_members").insert({name, email}).then(()=>{});
-      });
-    }).catch(()=>{});
+    try {
+      sb.from("team_members").delete().neq("name","__").then(() => {
+        teamMembers.forEach(m => {
+          const name = typeof m === "string" ? m : m.name;
+          const email = typeof m === "object" ? (m.email||"") : "";
+          sb.from("team_members").insert({name, email}).then(()=>{}).catch(()=>{});
+        });
+      }).catch(()=>{});
+    } catch(e) {}
   }
 }
 
 function loadTeamMembersFromStorage() {
-  const stored = localStorage.getItem(getTeamKey());
-  if(stored) { try { teamMembers = JSON.parse(stored); fillVerantwortlichDropdowns(); } catch(e){} }
+  try {
+    const stored = localStorage.getItem(getTeamKey());
+    if(stored) {
+      const parsed = JSON.parse(stored);
+      if(Array.isArray(parsed) && parsed.length) {
+        teamMembers = parsed;
+        fillVerantwortlichDropdowns();
+        return true;
+      }
+    }
+  } catch(e) {}
+  return false;
 }
 
 async function loadTeamMembers() {
   if(isDemoMode) {
-    loadTeamMembersFromStorage();
-    if(!teamMembers.length) teamMembers = ["Max","Elena"];
+    if(!loadTeamMembersFromStorage()) teamMembers = [{name:"Max",email:""},{name:"Elena",email:""}];
     fillVerantwortlichDropdowns(); return;
   }
-  try {
-    const userId = (await sb.auth.getUser()).data.user?.id;
-    if(userId) window._userId = userId;
-    loadTeamMembersFromStorage();
-    const {data, error} = await sb.from("team_members").select("name,email").order("name");
-    if(!error && data?.length) {
-      teamMembers = data.map(m => ({name: m.name, email: m.email||""}));
-    } else if(!teamMembers.length) {
-      const {data: profiles} = await sb.from("profiles").select("vorname,nachname");
-      if(profiles?.length) teamMembers = profiles.map(p=>[p.vorname,p.nachname].filter(Boolean).join(" ")).filter(Boolean);
-      if(!teamMembers.length) teamMembers = ["Max","Elena"];
-    }
-  } catch(e) { if(!teamMembers.length) teamMembers = ["Max","Elena"]; }
+  try { const u=(await sb.auth.getUser()).data.user; if(u?.id) window._userId=u.id; } catch(e){}
+  if(!loadTeamMembersFromStorage()) teamMembers = [{name:"Max",email:""},{name:"Elena",email:""}];
   fillVerantwortlichDropdowns();
+  // Supabase sync in background
+  try {
+    const {data,error} = await sb.from("team_members").select("name,email").order("name");
+    if(!error && data?.length) { teamMembers=data.map(m=>({name:m.name,email:m.email||""})); saveTeamMembers(); fillVerantwortlichDropdowns(); }
+  } catch(e) {}
 }
 
 function fillVerantwortlichDropdowns() {
@@ -5826,33 +5835,6 @@ function emailDeselectAll() {
 
 function filterEmailKontakte(v) {
   renderEmailKontakteList(v);
-}
-
-function sendEmailBulk() {
-  const vorlageId = document.getElementById("email-vorlage-select")?.value;
-  if (!vorlageId) { showToast("⚠ Bitte eine Vorlage auswählen"); return; }
-  if (!emailSelectedIds.size) { showToast("⚠ Bitte mindestens einen Kontakt auswählen"); return; }
-  const vorlage = emailVorlagen.find(v => v.id === vorlageId);
-  if (!vorlage) return;
-  const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
-  const empfaenger = src.filter(k => emailSelectedIds.has(String(k.id || k.nr)) && k.email);
-  if (!empfaenger.length) { showToast("⚠ Keine Kontakte mit E-Mail-Adresse ausgewählt"); return; }
-
-  // Open one mailto per recipient (browser handles multiple)
-  empfaenger.forEach((k, i) => {
-    setTimeout(() => {
-      const betreff = vorlage.betreff
-        .replace(/{{vorname}}/g, k.vorname || "")
-        .replace(/{{nachname}}/g, k.nachname || "")
-        .replace(/{{unternehmen}}/g, k.unternehmen || "");
-      const text = vorlage.text
-        .replace(/{{vorname}}/g, k.vorname || "")
-        .replace(/{{nachname}}/g, k.nachname || "")
-        .replace(/{{unternehmen}}/g, k.unternehmen || "");
-      window.location.href = `mailto:${encodeURIComponent(k.email)}?subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(text)}`;
-    }, i * 600);
-  });
-  showToast(`✓ ${empfaenger.length} E-Mail(s) werden geöffnet`);
 }
 
 function openEmailVorlageModal(id) {

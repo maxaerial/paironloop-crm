@@ -2741,6 +2741,7 @@ let isDemoMode = false;
 
 function loginDemo() {
   isDemoMode = true;
+  window._userId = "demo";
   // Load demo data into memory
   kontakteData = JSON.parse(JSON.stringify(DEMO_DATA.kontakte));
   journeyData  = JSON.parse(JSON.stringify(DEMO_DATA.journey));
@@ -3088,6 +3089,7 @@ async function doAuth() {
 document.getElementById("login-pw").addEventListener("keydown", e => { if(e.key==="Enter") doAuth(); });
 
 function onLogin(user) {
+  window._userId = user.id;
   const name = user.user_metadata?.full_name || user.email.split("@")[0];
   const initials = name.split(" ").map(n=>n[0]).join("").toUpperCase().slice(0,2);
   document.getElementById("user-name").textContent = name;
@@ -5586,7 +5588,7 @@ let emailKontakteFiltered = [];
 let emailSelectedIds = new Set();
 
 async function loadEmailVorlagen() {
-  const key = "paironloop_email_vorlagen" + (isDemoMode ? "" : "_" + (currentUser?.id || ""));
+  const key = "paironloop_email_vorlagen_" + (window._userId || "demo");
   const versionKey = key + "_v2";
   // Force reload defaults if version not set (clears old 4-template cache)
   if (!localStorage.getItem(versionKey)) {
@@ -5605,7 +5607,7 @@ async function loadEmailVorlagen() {
 }
 
 function saveEmailVorlagenLocal() {
-  const key = "paironloop_email_vorlagen" + (isDemoMode ? "" : "_" + (currentUser?.id || ""));
+  const key = "paironloop_email_vorlagen_" + (window._userId || "demo");
   localStorage.setItem(key, JSON.stringify(emailVorlagen));
 }
 

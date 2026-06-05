@@ -1853,38 +1853,41 @@ tbody td { font-feature-settings: "zero" 0; }
       </div>
     </div>
 
-    <div class="modal-overlay" id="modal-email-vorlage" onclick="if(event.target===this)closeModal('modal-email-vorlage')">
-      <div class="modal" style="max-width:560px">
-        <div class="modal-head">
-          <h3 id="email-vorlage-modal-title">Neue Vorlage</h3>
-          <button class="modal-close" onclick="closeModal('modal-email-vorlage')">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-grid">
-            <input type="hidden" id="email-vorlage-id">
-            <div class="field form-full">
-              <label>Name der Vorlage</label>
-              <input id="email-vorlage-name" type="text" placeholder="z.B. Erstkontakt">
-            </div>
-            <div class="field form-full">
-              <label>Betreff</label>
-              <input id="email-vorlage-betreff" type="text" placeholder="z.B. Drohnenfilm für {{unternehmen}}">
-            </div>
-            <div class="field form-full">
-              <label>Text <span style="font-size:11px;color:var(--text3);font-weight:400">— Platzhalter: {{vorname}} {{nachname}} {{unternehmen}}</span></label>
-              <textarea id="email-vorlage-text" rows="9" placeholder="Hallo {{vorname}},&#10;&#10;..."></textarea>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-primary" onclick="saveEmailVorlage()">Speichern</button>
-          <button class="btn btn-ghost" onclick="closeModal('modal-email-vorlage')">Abbrechen</button>
-        </div>
-      </div>
     </div>
 
   </div><!-- /main -->
 </div><!-- /app -->
+
+<!-- EMAIL VORLAGE MODAL -->
+<div class="modal-overlay" id="modal-email-vorlage" onclick="if(event.target===this)closeModal('modal-email-vorlage')">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">
+      <h3 id="email-vorlage-modal-title">Neue Vorlage</h3>
+      <button class="modal-close" onclick="closeModal('modal-email-vorlage')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <input type="hidden" id="email-vorlage-id">
+        <div class="field form-full">
+          <label>Name der Vorlage</label>
+          <input id="email-vorlage-name" type="text" placeholder="z.B. Erstkontakt">
+        </div>
+        <div class="field form-full">
+          <label>Betreff</label>
+          <input id="email-vorlage-betreff" type="text" placeholder="z.B. Drohnenfilm für {{unternehmen}}">
+        </div>
+        <div class="field form-full">
+          <label>Text <span style="font-size:11px;color:var(--text3);font-weight:400">— Platzhalter: {{vorname}} {{nachname}} {{unternehmen}}</span></label>
+          <textarea id="email-vorlage-text" rows="9" placeholder="Hallo {{vorname}},&#10;&#10;..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveEmailVorlage()">Speichern</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-email-vorlage')">Abbrechen</button>
+    </div>
+  </div>
+</div>
 
 <!-- SETTINGS PANEL -->
 <div class="settings-panel" id="settings-panel">
@@ -5431,13 +5434,17 @@ let emailKontakteFiltered = [];
 let emailSelectedIds = new Set();
 
 async function loadEmailVorlagen() {
-  if (isDemoMode) {
-    const stored = localStorage.getItem("paironloop_email_vorlagen");
-    emailVorlagen = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(DEFAULT_VORLAGEN));
+  const key = "paironloop_email_vorlagen" + (isDemoMode ? "" : "_" + (currentUser?.id || ""));
+  const stored = localStorage.getItem(key);
+  let saved = stored ? JSON.parse(stored) : null;
+  // If no saved data OR saved data has fewer than 10 entries (outdated), merge with defaults
+  if (!saved || saved.length < 10) {
+    // Keep any user-created vorlagen (ids not starting with 'v' followed by single digit)
+    const userCreated = saved ? saved.filter(v => !DEFAULT_VORLAGEN.find(d => d.id === v.id)) : [];
+    emailVorlagen = [...JSON.parse(JSON.stringify(DEFAULT_VORLAGEN)), ...userCreated];
+    localStorage.setItem(key, JSON.stringify(emailVorlagen));
   } else {
-    // Load from Supabase profiles metadata or fallback to localStorage
-    const stored = localStorage.getItem("paironloop_email_vorlagen_" + (currentUser?.id || "demo"));
-    emailVorlagen = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(DEFAULT_VORLAGEN));
+    emailVorlagen = saved;
   }
 }
 

@@ -3887,6 +3887,11 @@ function filterPipeline() {
   }
 
   // Board
+  renderPipelineBoard(rows);
+}
+
+function renderPipelineBoard(rows) {
+  const phases=["Erstgespräch","Angebot","Verhandlung","Abschluss"];
   const board=document.getElementById("pipeline-board");
   if(!board) return;
   board.innerHTML=`<div class="pipeline-board">${phases.map(ph=>{

@@ -1932,14 +1932,36 @@ tbody td { font-feature-settings: "zero" 0; }
     <div id="profile-save-msg" style="font-size:12px;text-align:center;margin-top:8px;display:none"></div>
   </div>
 
+  <div class="settings-section">
+    <div class="settings-section-title">E-Mail-Adresse ändern</div>
+    <div class="profile-form">
+      <div class="field form-full">
+        <label>Aktuelle E-Mail</label>
+        <div style="font-size:13px;color:var(--text2);padding:8px 0" id="settings-email-display"></div>
+      </div>
+      <div class="field form-full">
+        <label>Neue E-Mail-Adresse</label>
+        <input id="new-email-input" type="email" placeholder="neue@email.com">
+      </div>
+    </div>
+    <button class="profile-save-btn" onclick="changeEmail()">E-Mail ändern</button>
+    <div id="email-change-msg" style="font-size:12px;text-align:center;margin-top:8px;display:none"></div>
+  </div>
+
   <div class="settings-section" id="team-settings-section">
     <div class="settings-section-title">Team / Verantwortliche</div>
     <div id="team-members-list" style="margin-bottom:12px"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-      <input id="new-team-member" type="text" placeholder="Name*" style="font-size:13px" onkeydown="if(event.key==='Enter')document.getElementById('new-team-email').focus()">
-      <input id="new-team-email" type="email" placeholder="E-Mail (optional)" style="font-size:13px" onkeydown="if(event.key==='Enter')addTeamMember()">
+    <div class="profile-form">
+      <div class="field">
+        <label>Name</label>
+        <input id="new-team-member" type="text" placeholder="z.B. Max" onkeydown="if(event.key==='Enter')document.getElementById('new-team-email').focus()">
+      </div>
+      <div class="field">
+        <label>E-Mail (optional)</label>
+        <input id="new-team-email" type="email" placeholder="max@paironloop.com" onkeydown="if(event.key==='Enter')addTeamMember()">
+      </div>
     </div>
-    <button class="btn btn-primary btn-sm" onclick="addTeamMember()" style="width:100%">+ Teammitglied hinzufügen</button>
+    <button class="profile-save-btn" onclick="addTeamMember()">+ Teammitglied hinzufügen</button>
     <div style="font-size:11px;color:var(--text3);margin-top:8px">Diese Namen erscheinen im Dropdown „Verantwortlich" bei Aktivitäten.</div>
   </div>
 
@@ -3155,9 +3177,12 @@ function removeTeamMember(name) {
   fillVerantwortlichDropdowns();
 }
 
+function getTeamKey() {
+  return "paironloop_team_members_" + (window._userId || "demo");
+}
+
 function saveTeamMembers() {
-  const key = "paironloop_team_members_" + (window._userId || "demo");
-  localStorage.setItem(key, JSON.stringify(teamMembers));
+  localStorage.setItem(getTeamKey(), JSON.stringify(teamMembers));
   if(!isDemoMode) {
     sb.from("team_members").delete().neq("name","__").then(() => {
       teamMembers.forEach(m => {
@@ -3170,9 +3195,8 @@ function saveTeamMembers() {
 }
 
 function loadTeamMembersFromStorage() {
-  const key = "paironloop_team_members_" + (window._userId || "demo");
-  const stored = localStorage.getItem(key);
-  if(stored) { teamMembers = JSON.parse(stored); fillVerantwortlichDropdowns(); }
+  const stored = localStorage.getItem(getTeamKey());
+  if(stored) { try { teamMembers = JSON.parse(stored); fillVerantwortlichDropdowns(); } catch(e){} }
 }
 
 async function loadTeamMembers() {
@@ -3244,6 +3268,10 @@ async function loadProfile() {
     applyProfileToUI(data);
     prefillProfileForm(data);
   }
+  // Fill email display if settings open
+  const emailDisp = document.getElementById("settings-email-display");
+  const emailTxt = document.getElementById("settings-email");
+  if(emailDisp && emailTxt) emailDisp.textContent = emailTxt.textContent;
 }
 
 function applyProfileToUI(p) {
@@ -3340,7 +3368,23 @@ async function saveProfile() {
   }
 }
 
-async function doLogout() {
+async function changeEmail() {
+  if(isDemoMode) { showToast("Demo-Modus — wird nicht gespeichert"); return; }
+  const newEmail = document.getElementById("new-email-input")?.value.trim();
+  const msg = document.getElementById("email-change-msg");
+  if(!newEmail) { msg.textContent = "Bitte neue E-Mail eingeben"; msg.style.color="var(--red)"; msg.style.display="block"; return; }
+  const {error} = await sb.auth.updateUser({email: newEmail});
+  if(error) {
+    msg.textContent = "Fehler: " + error.message;
+    msg.style.color = "var(--red)";
+  } else {
+    msg.textContent = "✓ Bestätigungsmail gesendet. Bitte prüfe dein Postfach.";
+    msg.style.color = "var(--green)";
+    document.getElementById("new-email-input").value = "";
+  }
+  msg.style.display = "block";
+  setTimeout(() => msg.style.display="none", 4000);
+}
   if(isDemoMode) {
     isDemoMode = false;
     kontakteData=[]; journeyData=[]; dealsData=[]; aktivData=[];
@@ -3428,7 +3472,14 @@ function showPage(id, el) {
 function renderAll() { renderDashboard(); renderKontakte(); renderJourney(); renderPipeline(); renderAktivitaeten(); checkNotifications(); }
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
-function openSettings() { document.getElementById("settings-panel").classList.add("open"); renderTeamMembersList(); }
+function openSettings() {
+  document.getElementById("settings-panel").classList.add("open");
+  // Fill current email display
+  const emailDisp = document.getElementById("settings-email-display");
+  const emailTxt = document.getElementById("settings-email");
+  if(emailDisp && emailTxt) emailDisp.textContent = emailTxt.textContent;
+  renderTeamMembersList();
+}
 function closeSettings() { document.getElementById("settings-panel").classList.remove("open"); }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────

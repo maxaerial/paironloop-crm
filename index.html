@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 /* ── RESET & BASE ── */
 *{margin:0;padding:0;box-sizing:border-box}
@@ -4674,31 +4675,42 @@ async function addAktivitaet() {
 }
 
 // ── AKTIVITÄT NOTIFICATIONS ───────────────────────────────────────────────────
-function sendAktivitaetNotification(type, verantw, kunde, aktivitaet, datum, prioritaet, beschreibung) {
-  // Find team member email
+const EMAILJS_SERVICE  = "service_hrlpxqc";
+const EMAILJS_TEMPLATE = "template_4mozcwl";
+const EMAILJS_PUBLIC   = "IF5buA7n2MWaXOlh5";
+
+// Initialize EmailJS
+(function(){ emailjs.init({ publicKey: EMAILJS_PUBLIC }); })();
+
+async function sendAktivitaetNotification(type, verantw, kunde, aktivitaet, datum, prioritaet, beschreibung) {
   const member = teamMembers.find(m => (typeof m === "string" ? m : m.name) === verantw);
-  const email = member && typeof member === "object" ? member.email : "";
+  const email  = member && typeof member === "object" ? member.email : "";
   if(!email) {
-    // No email stored — show toast with info
-    showToast(`ℹ Kein E-Mail für ${verantw} hinterlegt. Bitte in Einstellungen ergänzen.`);
+    showToast(`ℹ Kein E-Mail für ${verantw} hinterlegt – bitte in Einstellungen ergänzen.`);
     return;
   }
   const datumFmt = datum ? new Date(datum).toLocaleDateString("de-DE") : "–";
-  let betreff, text;
+  let subject, message;
   if(type === "assign") {
-    betreff = `Neue Aufgabe für dich: ${aktivitaet} – ${kunde}`;
-    text = `Hallo ${verantw},\n\ndir wurde soeben eine neue Aktivität zugewiesen:\n\n📋 Aufgabe: ${aktivitaet}\n👤 Kunde: ${kunde}\n📅 Fällig am: ${datumFmt}\n⚡ Priorität: ${prioritaet}\n📝 Beschreibung: ${beschreibung}\n\nBitte bestätige die Übernahme und aktualisiere den Status im CRM wenn du die Aufgabe bearbeitet hast.\n\nViele Grüße\nPaironloop CRM`;
+    subject = `Neue Aufgabe: ${aktivitaet} – ${kunde}`;
+    message = `Hallo ${verantw},\n\ndir wurde eine neue Aktivität zugewiesen:\n\nAufgabe: ${aktivitaet}\nKunde: ${kunde}\nFällig am: ${datumFmt}\nPriorität: ${prioritaet}\nBeschreibung: ${beschreibung||"–"}\n\nBitte aktualisiere den Status im CRM nach Bearbeitung.\n\nViele Grüße\nPaironloop CRM`;
   } else {
-    betreff = `Erinnerung: Aktivität fällig – ${kunde}`;
-    text = `Hallo ${verantw},\n\nnur eine kurze Erinnerung: Die folgende Aktivität ist bald fällig oder bereits überfällig.\n\n📋 Aktivität: ${aktivitaet}\n👤 Kunde: ${kunde}\n📅 Fällig am: ${datumFmt}\n⚡ Priorität: ${prioritaet}\n\nBitte kümmere dich zeitnah darum und aktualisiere den Status im CRM.\n\nBeste Grüße\nPaironloop CRM`;
+    subject = `⏰ Erinnerung fällig: ${aktivitaet} – ${kunde}`;
+    message = `Hallo ${verantw},\n\ndie folgende Aktivität ist bald fällig oder bereits überfällig:\n\nAktivität: ${aktivitaet}\nKunde: ${kunde}\nFällig am: ${datumFmt}\nPriorität: ${prioritaet}\n\nBitte kümmere dich zeitnah darum.\n\nViele Grüße\nPaironloop CRM`;
   }
-  const a = document.createElement("a");
-  a.href = "mailto:" + encodeURIComponent(email) + "?subject=" + encodeURIComponent(betreff) + "&body=" + encodeURIComponent(text);
-  a.style.display = "none";
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => document.body.removeChild(a), 1000);
-  showToast(`✓ Erinnerung an ${verantw} (${email}) geöffnet`);
+  try {
+    showToast(`⏳ E-Mail wird gesendet…`);
+    await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+      to_email: email,
+      subject,
+      message,
+      email: "info@paironloop.com"
+    });
+    showToast(`✓ E-Mail an ${verantw} (${email}) gesendet`);
+  } catch(err) {
+    showToast(`⚠ Fehler beim Senden: ${err?.text || err?.message || "Unbekannter Fehler"}`, true);
+    console.error("EmailJS error:", err);
+  }
 }
 
 function sendReminderForAktivitaet(id) {

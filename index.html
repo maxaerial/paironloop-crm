@@ -762,7 +762,7 @@ tbody tr:hover td { background: var(--bg3); }
 /* ── SETTINGS PANEL ── */
 .settings-panel {
   position: fixed; top: 0; right: 0;
-  width: 320px; height: 100vh;
+  width: 420px; height: 100vh;
   background: var(--bg2);
   border-left: 1px solid var(--border);
   z-index: 150;
@@ -1933,11 +1933,12 @@ tbody td { font-feature-settings: "zero" 0; }
 
   <div class="settings-section" id="team-settings-section">
     <div class="settings-section-title">Team / Verantwortliche</div>
-    <div id="team-members-list" style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:6px"></div>
-    <div style="display:flex;gap:6px">
-      <input id="new-team-member" type="text" placeholder="Name hinzufügen…" style="flex:1;font-size:13px" onkeydown="if(event.key==='Enter')addTeamMember()">
-      <button class="btn btn-primary btn-sm" onclick="addTeamMember()">+ Hinzufügen</button>
+    <div id="team-members-list" style="margin-bottom:12px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+      <input id="new-team-member" type="text" placeholder="Name*" style="font-size:13px" onkeydown="if(event.key==='Enter')document.getElementById('new-team-email').focus()">
+      <input id="new-team-email" type="email" placeholder="E-Mail (optional)" style="font-size:13px" onkeydown="if(event.key==='Enter')addTeamMember()">
     </div>
+    <button class="btn btn-primary btn-sm" onclick="addTeamMember()" style="width:100%">+ Teammitglied hinzufügen</button>
     <div style="font-size:11px;color:var(--text3);margin-top:8px">Diese Namen erscheinen im Dropdown „Verantwortlich" bei Aktivitäten.</div>
   </div>
 
@@ -3111,46 +3112,64 @@ function onLogin(user) {
 function renderTeamMembersList() {
   const el = document.getElementById("team-members-list");
   if(!el) return;
-  el.innerHTML = teamMembers.map(m => `
-    <span style="display:inline-flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px">
-      ${m}
-      <button onclick="removeTeamMember('${m}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:0;line-height:1;font-size:14px" title="Entfernen">×</button>
-    </span>`).join("");
+  if(!teamMembers.length) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--text3);padding:4px 0">Noch keine Teammitglieder.</div>`;
+    return;
+  }
+  el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">` +
+    teamMembers.map(m => {
+      const name = typeof m === "string" ? m : m.name;
+      const email = typeof m === "object" ? (m.email||"") : "";
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:8px 4px;font-weight:600">${name}</td>
+        <td style="padding:8px 4px;color:var(--text3)">${email}</td>
+        <td style="padding:8px 4px;text-align:right">
+          <button onclick="removeTeamMember('${name}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;line-height:1" title="Entfernen">×</button>
+        </td>
+      </tr>`;
+    }).join("") + `</table>`;
 }
 
 function addTeamMember() {
   const inp = document.getElementById("new-team-member");
+  const emailInp = document.getElementById("new-team-email");
   const name = inp?.value.trim();
-  if(!name) return;
-  if(teamMembers.includes(name)) { showToast("⚠ Name bereits vorhanden"); return; }
-  teamMembers.push(name);
+  const email = emailInp?.value.trim() || "";
+  if(!name) { showToast("⚠ Name eingeben"); return; }
+  const names = teamMembers.map(m => typeof m === "string" ? m : m.name);
+  if(names.includes(name)) { showToast("⚠ Name bereits vorhanden"); return; }
+  teamMembers.push({name, email});
   saveTeamMembers();
-  inp.value = "";
+  if(inp) inp.value = "";
+  if(emailInp) emailInp.value = "";
   renderTeamMembersList();
   fillVerantwortlichDropdowns();
   showToast("✓ " + name + " hinzugefügt");
 }
 
 function removeTeamMember(name) {
-  teamMembers = teamMembers.filter(m => m !== name);
+  teamMembers = teamMembers.filter(m => (typeof m === "string" ? m : m.name) !== name);
   saveTeamMembers();
   renderTeamMembersList();
   fillVerantwortlichDropdowns();
 }
 
 function saveTeamMembers() {
-  const key = "paironloop_team_members" + (isDemoMode ? "_demo" : "_" + (window._userId||""));
+  const key = "paironloop_team_members_" + (window._userId || "demo");
   localStorage.setItem(key, JSON.stringify(teamMembers));
-  // Also try to save to Supabase team_members table
   if(!isDemoMode) {
     sb.from("team_members").delete().neq("name","__").then(() => {
-      teamMembers.forEach(name => sb.from("team_members").insert({name}).then(()=>{}));
+      teamMembers.forEach(m => {
+        const name = typeof m === "string" ? m : m.name;
+        const email = typeof m === "object" ? (m.email||"") : "";
+        sb.from("team_members").insert({name, email}).then(()=>{});
+      });
     }).catch(()=>{});
   }
 }
 
 function loadTeamMembersFromStorage() {
-  const key = "paironloop_team_members" + (isDemoMode ? "_demo" : "_" + (window._userId||""));
+  const key = "paironloop_team_members_" + (window._userId || "demo");
   const stored = localStorage.getItem(key);
   if(stored) { teamMembers = JSON.parse(stored); fillVerantwortlichDropdowns(); }
 }
@@ -3165,9 +3184,9 @@ async function loadTeamMembers() {
     const userId = (await sb.auth.getUser()).data.user?.id;
     if(userId) window._userId = userId;
     loadTeamMembersFromStorage();
-    const {data, error} = await sb.from("team_members").select("name").order("name");
+    const {data, error} = await sb.from("team_members").select("name,email").order("name");
     if(!error && data?.length) {
-      teamMembers = data.map(m => m.name);
+      teamMembers = data.map(m => ({name: m.name, email: m.email||""}));
     } else if(!teamMembers.length) {
       const {data: profiles} = await sb.from("profiles").select("vorname,nachname");
       if(profiles?.length) teamMembers = profiles.map(p=>[p.vorname,p.nachname].filter(Boolean).join(" ")).filter(Boolean);
@@ -3178,7 +3197,8 @@ async function loadTeamMembers() {
 }
 
 function fillVerantwortlichDropdowns() {
-  const opts = `<option value="">— auswählen —</option>` + teamMembers.map(m=>`<option value="${m}">${m}</option>`).join("") + `<option value="__custom">Andere Person…</option>`;
+  const names = teamMembers.map(m => typeof m === "string" ? m : m.name);
+  const opts = `<option value="">— auswählen —</option>` + names.map(n=>`<option value="${n}">${n}</option>`).join("") + `<option value="__custom">Andere Person…</option>`;
   ["a-verantwortlich-select","ea-verantwortlich-select"].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.innerHTML = opts;
@@ -5017,7 +5037,8 @@ function editAktivitaet(id) {
   const eaSel = document.getElementById("ea-verantwortlich-select");
   const eaInp = document.getElementById("ea-verantwortlich");
   const vVal = a.verantwortlich||"";
-  if(eaSel && teamMembers.includes(vVal)) {
+  const teamNames = teamMembers.map(m => typeof m === "string" ? m : m.name);
+  if(eaSel && teamNames.includes(vVal)) {
     eaSel.value = vVal;
     eaInp.value = vVal;
     eaInp.style.display = "none";

@@ -4677,7 +4677,7 @@ async function addAktivitaet() {
 
 // ── AKTIVITÄT NOTIFICATIONS ───────────────────────────────────────────────────
 const EMAILJS_SERVICE  = "service_hrlpxqc";
-const EMAILJS_TEMPLATE = "4mozcwl";
+const EMAILJS_TEMPLATE = "template_eiax419";
 const EMAILJS_PUBLIC   = "IF5buA7n2MWaXOlh5";
 
 // Initialize EmailJS after DOM ready
@@ -4705,6 +4705,8 @@ async function sendAktivitaetNotification(type, verantw, kunde, aktivitaet, datu
   }
   try {
     showToast(`⏳ E-Mail wird gesendet…`);
+    if(typeof emailjs === "undefined") { showToast("⚠ EmailJS nicht geladen", true); return; }
+    emailjs.init({ publicKey: EMAILJS_PUBLIC });
     await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
       to_email: email,
       subject,
@@ -5826,6 +5828,11 @@ function saveEmailVorlagenLocal() {
 async function renderEmail() {
   await loadEmailVorlagen();
   updateEmailVorlageSelect();
+  // Ensure contacts are loaded
+  if(!isDemoMode && (!kontakteData || !kontakteData.length)) {
+    const {data} = await sb.from("kontakte").select("*").order("unternehmen");
+    if(data) kontakteData = data;
+  }
   populateEmailKontakteDropdown();
   renderEmailKontakteList();
   updateEmailSelectedCount();

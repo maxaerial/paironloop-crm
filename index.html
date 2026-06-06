@@ -1864,10 +1864,16 @@ tbody td { font-feature-settings: "zero" 0; }
         </div>
         <div class="card-footer" style="padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
           <div style="font-size:13px;color:var(--text3)"><span id="email-selected-count">0</span> Empfänger · alle im BCC</div>
-          <button class="btn btn-primary" onclick="sendEmailBulk()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
-            E-Mail öffnen
-          </button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn" style="background:var(--bg3);color:var(--text1)" onclick="sendEmailBulk()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+              Mailprogramm öffnen
+            </button>
+            <button class="btn btn-primary" onclick="sendEmailBulkDirect()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Direkt senden via Titan
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -5817,62 +5823,62 @@ const DEFAULT_VORLAGEN = [
   {
     id: "v1", name: "Erstkontakt / Hallo",
     betreff: "Hallo von Paironloop – Drohnenfilm für {{unternehmen}}",
-    text: `Hallo {{vorname}},\n\nmein Name ist Max Weidmann und ich bin Mitgründer von Paironloop – wir produzieren professionelle Drohnenvideos für Unternehmen, Hotels, Weingüter und Freizeitbetriebe.\n\nIch bin auf {{unternehmen}} aufmerksam geworden und denke, dass beeindruckende Luftaufnahmen Ihre Außenwirkung deutlich stärken könnten.\n\nDarf ich Ihnen kurz zeigen, was wir für ähnliche Betriebe umgesetzt haben?\n\nBeste Grüße\nMax Weidmann & Elena Schwarze\nPaironloop\nwww.paironloop.com`
+    text: `Hallo {{vorname}},\n\nmein Name ist Max Weidmann und ich bin Mitgründer von Paironloop – wir produzieren professionelle Drohnenvideos für Unternehmen, Hotels, Weingüter und Freizeitbetriebe.\n\nIch bin auf {{unternehmen}} aufmerksam geworden und denke, dass beeindruckende Luftaufnahmen Ihre Außenwirkung deutlich stärken könnten.\n\nDarf ich Ihnen kurz zeigen, was wir für ähnliche Betriebe umgesetzt haben?\n`
   },
   {
     id: "v2", name: "Newsletter Willkommen",
     betreff: "Willkommen bei Paironloop – schön, dass Sie dabei sind!",
-    text: `Hallo {{vorname}},\n\nwir freuen uns sehr, Sie in unserer Community begrüßen zu dürfen!\n\nAls Newsletter-Abonnent erhalten Sie als Erstes:\n• Einblicke hinter die Kulissen unserer Produktionen\n• Exklusive Angebote und saisonale Aktionen\n• Inspirationen für Ihren nächsten Drohnenfilm\n\nWir können es kaum erwarten, Ihnen mehr zu zeigen.\n\nHerzliche Grüße\nMax & Elena\nPaironloop`
+    text: `Hallo {{vorname}},\n\nwir freuen uns sehr, Sie in unserer Community begrüßen zu dürfen!\n\nAls Newsletter-Abonnent erhalten Sie als Erstes:\n• Einblicke hinter die Kulissen unserer Produktionen\n• Exklusive Angebote und saisonale Aktionen\n• Inspirationen für Ihren nächsten Drohnenfilm\n\nWir können es kaum erwarten, Ihnen mehr zu zeigen.\n`
   },
   {
     id: "v3", name: "Angebotsübersicht",
     betreff: "Unsere Leistungen für {{unternehmen}} – Paironloop",
-    text: `Hallo {{vorname}},\n\nwie versprochen hier ein Überblick über unsere Angebote:\n\n🎬 DROHNENFILM STANDARD\nLuftaufnahmen, Schnitt & Color Grading – ideal für Social Media und Website\n\n🏆 DROHNENFILM PREMIUM\nMehrtägige Produktion, Interview, Voiceover, Musiklizenz – für maximale Wirkung\n\n📸 FOTO-PAKET\nHochauflösende Luftbilder für Print, Architektur und Immobilien\n\n🎯 INDIVIDUAL\nMaßgeschneiderte Konzepte nach Ihren Wünschen\n\nAlle Pakete sind anpassbar. Gerne erstelle ich Ihnen ein persönliches Angebot für {{unternehmen}}.\n\nBeste Grüße\nMax Weidmann\nPaironloop\nwww.paironloop.com`
+    text: `Hallo {{vorname}},\n\nwie versprochen hier ein Überblick über unsere Angebote:\n\n🎬 DROHNENFILM STANDARD\nLuftaufnahmen, Schnitt & Color Grading – ideal für Social Media und Website\n\n🏆 DROHNENFILM PREMIUM\nMehrtägige Produktion, Interview, Voiceover, Musiklizenz – für maximale Wirkung\n\n📸 FOTO-PAKET\nHochauflösende Luftbilder für Print, Architektur und Immobilien\n\n🎯 INDIVIDUAL\nMaßgeschneiderte Konzepte nach Ihren Wünschen\n\nAlle Pakete sind anpassbar. Gerne erstelle ich Ihnen ein persönliches Angebot für {{unternehmen}}.\n`
   },
   {
     id: "v4", name: "Angebot nachfassen",
     betreff: "Kurze Rückfrage zu unserem Angebot – Paironloop",
-    text: `Hallo {{vorname}},\n\nvor einigen Tagen habe ich Ihnen unser Angebot für {{unternehmen}} zugeschickt – haben Sie es erhalten?\n\nIch wollte kurz nachfragen, ob noch Fragen offen sind oder ob ich etwas anpassen soll.\n\nIch freue mich auf Ihre Rückmeldung.\n\nBeste Grüße\nMax Weidmann\nPaironloop`
+    text: `Hallo {{vorname}},\n\nvor einigen Tagen habe ich Ihnen unser Angebot für {{unternehmen}} zugeschickt – haben Sie es erhalten?\n\nIch wollte kurz nachfragen, ob noch Fragen offen sind oder ob ich etwas anpassen soll.\n\nIch freue mich auf Ihre Rückmeldung.\n`
   },
   {
     id: "v5", name: "Weihnachtsgruß",
     betreff: "Frohe Weihnachten von Paironloop 🎄",
-    text: `Hallo {{vorname}},\n\ndas Jahr neigt sich dem Ende – Zeit, innezuhalten und Danke zu sagen.\n\nWir möchten uns herzlich bei Ihnen und {{unternehmen}} für die schöne Zusammenarbeit und das entgegengebrachte Vertrauen bedanken.\n\nWir wünschen Ihnen und Ihren Liebsten frohe, besinnliche Weihnachten und einen guten Rutsch ins neue Jahr!\n\nHerzliche Weihnachtsgrüße\nMax, Elena & das Paironloop-Team`
+    text: `Hallo {{vorname}},\n\ndas Jahr neigt sich dem Ende – Zeit, innezuhalten und Danke zu sagen.\n\nWir möchten uns herzlich bei Ihnen und {{unternehmen}} für die schöne Zusammenarbeit und das entgegengebrachte Vertrauen bedanken.\n\nWir wünschen Ihnen und Ihren Liebsten frohe, besinnliche Weihnachten und einen guten Rutsch ins neue Jahr!\n`
   },
   {
     id: "v6", name: "Neujahrsgruß",
     betreff: "Frohes neues Jahr von Paironloop 🎆",
-    text: `Hallo {{vorname}},\n\nein neues Jahr beginnt – und mit ihm neue Möglichkeiten, neue Ideen und neue Bilder.\n\nWir wünschen Ihnen und {{unternehmen}} ein erfolgreiches, gesundes und inspirierendes Jahr!\n\nWir freuen uns darauf, Sie auch in diesem Jahr zu begleiten – mit Perspektiven, die begeistern.\n\nAuf ein gutes gemeinsames Jahr!\nMax & Elena\nPaironloop`
+    text: `Hallo {{vorname}},\n\nein neues Jahr beginnt – und mit ihm neue Möglichkeiten, neue Ideen und neue Bilder.\n\nWir wünschen Ihnen und {{unternehmen}} ein erfolgreiches, gesundes und inspirierendes Jahr!\n\nWir freuen uns darauf, Sie auch in diesem Jahr zu begleiten – mit Perspektiven, die begeistern.\n\nAuf ein gutes gemeinsames Jahr!`
   },
   {
     id: "v7", name: "Ostergruß",
     betreff: "Frohe Ostern von Paironloop 🐣",
-    text: `Hallo {{vorname}},\n\nwir wünschen Ihnen und Ihrem Team von {{unternehmen}} ein frohes Osterfest!\n\nMöge der Frühling neue Energie und frische Ideen bringen – wir sind gespannt, was wir gemeinsam in dieser Saison auf die Beine stellen.\n\nFröhliche Ostern!\nMax & Elena\nPaironloop`
+    text: `Hallo {{vorname}},\n\nwir wünschen Ihnen und Ihrem Team von {{unternehmen}} ein frohes Osterfest!\n\nMöge der Frühling neue Energie und frische Ideen bringen – wir sind gespannt, was wir gemeinsam in dieser Saison auf die Beine stellen.\n\nFröhliche Ostern!`
   },
   {
     id: "v8", name: "Empfehlung anfragen",
     betreff: "Kurze Bitte an Sie – Paironloop",
-    text: `Hallo {{vorname}},\n\nwir hoffen, dass Sie mit unserem Drohnenfilm für {{unternehmen}} rundum zufrieden sind!\n\nFalls Sie jemanden kennen – einen Kollegen, Partner oder Bekannten – der ebenfalls von professionellen Luftaufnahmen profitieren könnte, würden wir uns über eine Empfehlung sehr freuen.\n\nAls kleines Dankeschön bieten wir Ihnen bei einer erfolgreichen Weiterempfehlung einen Rabatt auf Ihren nächsten Auftrag an.\n\nVielen Dank und herzliche Grüße\nMax Weidmann\nPaironloop`
+    text: `Hallo {{vorname}},\n\nwir hoffen, dass Sie mit unserem Drohnenfilm für {{unternehmen}} rundum zufrieden sind!\n\nFalls Sie jemanden kennen – einen Kollegen, Partner oder Bekannten – der ebenfalls von professionellen Luftaufnahmen profitieren könnte, würden wir uns über eine Empfehlung sehr freuen.\n\nAls kleines Dankeschön bieten wir Ihnen bei einer erfolgreichen Weiterempfehlung einen Rabatt auf Ihren nächsten Auftrag an.\n`
   },
   {
     id: "v9", name: "Saisonangebot Frühling",
     betreff: "Frühlingsangebot für {{unternehmen}} – Paironloop 🌿",
-    text: `Hallo {{vorname}},\n\nder Frühling ist die schönste Zeit für Drohnenaufnahmen – grüne Landschaften, klares Licht, perfekte Bedingungen.\n\nBis Ende Mai bieten wir ein exklusives Frühlingspaket an:\n✓ 1 Drehtag inkl. Schnitt & Farbkorrektur\n✓ 3 Social-Media-Clips inklusive\n✓ 10 % Frühbucherrabatt bei Buchung bis 15. April\n\nInteresse? Ich freue mich auf Ihre Nachricht.\n\nBeste Grüße\nMax Weidmann\nPaironloop`
+    text: `Hallo {{vorname}},\n\nder Frühling ist die schönste Zeit für Drohnenaufnahmen – grüne Landschaften, klares Licht, perfekte Bedingungen.\n\nBis Ende Mai bieten wir ein exklusives Frühlingspaket an:\n✓ 1 Drehtag inkl. Schnitt & Farbkorrektur\n✓ 3 Social-Media-Clips inklusive\n✓ 10 % Frühbucherrabatt bei Buchung bis 15. April\n\nInteresse? Ich freue mich auf Ihre Nachricht.\n`
   },
   {
     id: "v10", name: "Feedback anfragen",
     betreff: "Wie war Ihre Erfahrung mit Paironloop?",
-    text: `Hallo {{vorname}},\n\nwir hoffen, dass unser Drohnenfilm für {{unternehmen}} Ihre Erwartungen erfüllt – oder sogar übertroffen hat!\n\nIhr Feedback ist uns sehr wichtig: Was hat Ihnen besonders gut gefallen? Was können wir verbessern?\n\nUnd falls Sie einen Moment Zeit haben – eine kurze Bewertung auf Google hilft uns enorm, anderen Kunden zu helfen, die richtige Entscheidung zu treffen.\n\nVielen herzlichen Dank!\nMax & Elena\nPaironloop`
+    text: `Hallo {{vorname}},\n\nwir hoffen, dass unser Drohnenfilm für {{unternehmen}} Ihre Erwartungen erfüllt – oder sogar übertroffen hat!\n\nIhr Feedback ist uns sehr wichtig: Was hat Ihnen besonders gut gefallen? Was können wir verbessern?\n\nUnd falls Sie einen Moment Zeit haben – eine kurze Bewertung auf Google hilft uns enorm, anderen Kunden zu helfen, die richtige Entscheidung zu treffen.\n\nVielen herzlichen Dank!`
   },
   {
     id: "v11", name: "🔔 Aktivität – Erinnerung fällig",
     betreff: "Erinnerung: Aktivität fällig – {{kunde}}",
-    text: `Hallo {{verantwortlich}},\n\nnur eine kurze Erinnerung: Die folgende Aktivität ist bald fällig oder bereits überfällig.\n\n📋 Aktivität: {{aktivitaet}}\n👤 Kunde: {{kunde}}\n📅 Fällig am: {{datum}}\n⚡ Priorität: {{prioritaet}}\n\nBitte kümmere dich zeitnah darum und aktualisiere den Status im CRM.\n\nBeste Grüße\nPaironloop CRM`
+    text: `Hallo {{verantwortlich}},\n\nnur eine kurze Erinnerung: Die folgende Aktivität ist bald fällig oder bereits überfällig.\n\n📋 Aktivität: {{aktivitaet}}\n👤 Kunde: {{kunde}}\n📅 Fällig am: {{datum}}\n⚡ Priorität: {{prioritaet}}\n\nBitte kümmere dich zeitnah darum und aktualisiere den Status im CRM.`
   },
   {
     id: "v12", name: "📋 Aktivität – neue Zuweisung",
     betreff: "Neue Aufgabe für dich: {{aktivitaet}}",
-    text: `Hallo {{verantwortlich}},\n\ndir wurde soeben eine neue Aktivität zugewiesen:\n\n📋 Aufgabe: {{aktivitaet}}\n👤 Kunde: {{kunde}}\n📅 Fällig am: {{datum}}\n⚡ Priorität: {{prioritaet}}\n📝 Beschreibung: {{beschreibung}}\n\nBitte bestätige die Übernahme und aktualisiere den Status im CRM wenn du die Aufgabe bearbeitet hast.\n\nViele Grüße\nPaironloop CRM`
+    text: `Hallo {{verantwortlich}},\n\ndir wurde soeben eine neue Aktivität zugewiesen:\n\n📋 Aufgabe: {{aktivitaet}}\n👤 Kunde: {{kunde}}\n📅 Fällig am: {{datum}}\n⚡ Priorität: {{prioritaet}}\n📝 Beschreibung: {{beschreibung}}\n\nBitte bestätige die Übernahme und aktualisiere den Status im CRM wenn du die Aufgabe bearbeitet hast.`
   }
 ];
 
@@ -5882,7 +5888,7 @@ let emailSelectedIds = new Set();
 
 async function loadEmailVorlagen() {
   const key = "paironloop_email_vorlagen_" + (window._userId || "demo");
-  const versionKey = key + "_v3";
+  const versionKey = key + "_v4";
   // Force reload defaults if version not set (clears old 4-template cache)
   if (!localStorage.getItem(versionKey)) {
     localStorage.removeItem(key);
@@ -6008,7 +6014,52 @@ function updateEmailVorlageSelect() {
     emailVorlagen.map(v => `<option value="${v.id}">${v.name}</option>`).join("");
 }
 
-function filterEmailKontakte() {
+async function sendEmailBulkDirect() {
+  const vorlageId = document.getElementById("email-vorlage-select")?.value;
+  if (!vorlageId) { showToast("⚠ Bitte eine Vorlage auswählen"); return; }
+  if (!emailSelectedIds.size) { showToast("⚠ Bitte mindestens einen Empfänger auswählen"); return; }
+  const vorlage = emailVorlagen.find(v => v.id === vorlageId);
+  if (!vorlage) return;
+  const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
+  const empfaenger = src.filter(k => emailSelectedIds.has(String(k.id || k.nr)) && k.email);
+  if (!empfaenger.length) { showToast("⚠ Keine Kontakte mit E-Mail-Adresse ausgewählt"); return; }
+
+  if(typeof emailjs === "undefined") { showToast("⚠ EmailJS nicht geladen"); return; }
+  emailjs.init({ publicKey: EMAILJS_PUBLIC });
+
+  showToast(`⏳ Sende ${empfaenger.length} E-Mail(s)…`);
+  let success = 0, failed = 0;
+
+  for (const k of empfaenger) {
+    const betreff = vorlage.betreff
+      .replace(/{{vorname}}/g, k.vorname||"")
+      .replace(/{{nachname}}/g, k.nachname||"")
+      .replace(/{{unternehmen}}/g, k.unternehmen||"");
+    const text = vorlage.text
+      .replace(/{{vorname}}/g, k.vorname||"")
+      .replace(/{{nachname}}/g, k.nachname||"")
+      .replace(/{{unternehmen}}/g, k.unternehmen||"");
+
+    try {
+      await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+        to_email: k.email,
+        subject: betreff,
+        message: text.replace(/\n/g, "<br>") + EMAIL_SIGNATURE,
+        email: "info@paironloop.com"
+      });
+      success++;
+    } catch(err) {
+      failed++;
+      console.error("EmailJS error for", k.email, err);
+    }
+  }
+
+  if(failed === 0) {
+    showToast(`✓ ${success} E-Mail(s) erfolgreich gesendet`);
+  } else {
+    showToast(`⚠ ${success} gesendet, ${failed} fehlgeschlagen`);
+  }
+}
   populateEmailKontakteDropdown();
   renderEmailKontakteList();
 }

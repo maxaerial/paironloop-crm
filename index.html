@@ -1829,7 +1829,7 @@ tbody td { font-feature-settings: "zero" 0; }
           </div>
         </div>
         <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
-          <select id="email-vorlage-select" style="font-size:13px;width:100%" onchange="updateEmailVorlagePreview()">
+          <select id="email-vorlage-select" class="filter-select" style="width:100%;max-width:100%" onchange="updateEmailVorlagePreview()">
             <option value="">— Vorlage wählen —</option>
           </select>
           <div id="email-vorlage-preview" style="display:none;background:var(--bg3);border-radius:var(--radius-sm);padding:12px;font-size:12px;color:var(--text2);white-space:pre-wrap;max-height:120px;overflow-y:auto;border:1px solid var(--border)"></div>
@@ -1847,7 +1847,7 @@ tbody td { font-feature-settings: "zero" 0; }
               <option>Freizeitaktivität</option><option>Café</option><option>Bar</option><option>Sonstiges</option>
             </select>
             <div style="position:relative">
-              <select id="email-search-kontakte" style="font-size:13px;min-width:200px" onchange="addEmailEmpfaenger(this.value);this.value=''">
+              <select id="email-search-kontakte" class="filter-select" style="min-width:200px" onchange="addEmailEmpfaenger(this.value);this.value=''">
                 <option value="">+ Kontakt hinzufügen…</option>
               </select>
             </div>

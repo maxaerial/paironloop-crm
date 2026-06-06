@@ -4684,6 +4684,50 @@ const EMAILJS_SERVICE  = "service_hrlpxqc";
 const EMAILJS_TEMPLATE = "template_eiax419";
 const EMAILJS_PUBLIC   = "IF5buA7n2MWaXOlh5";
 
+const EMAIL_SIGNATURE = `<br><br>
+<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;max-width:500px;">
+  <tbody>
+    <tr>
+      <td style="padding:18px 0 16px 0;border-top:1px solid #cccccc;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:4px;width:100%">
+          <tbody>
+            <tr>
+              <td style="vertical-align:middle">
+                <div style="font-size:17px;font-weight:bold;color:#1a1a1a">Elena &amp; Max</div>
+                <div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#999999;margin-top:4px">Content Creator</div>
+              </td>
+              <td style="text-align:right;vertical-align:middle;padding-left:20px">
+                <img src="https://paironloop.com/logo.png" alt="Pair On Loop" width="100" style="display:block;border:0px" onerror="this.style.display='none'">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="border-top:1px solid #eeeeee;margin:4px 0 6px 0"><br></div>
+        <table cellpadding="0" cellspacing="0" border="0">
+          <tbody>
+            <tr><td style="padding:0 0 2px 0;font-size:11px;font-family:Arial,sans-serif;color:#1a1a1a">+49 176 17755780</td></tr>
+            <tr><td style="padding:0 0 2px 0"><a href="mailto:info@paironloop.com" style="font-size:11px;font-family:Arial,sans-serif;color:#c0392b;text-decoration:none">info@paironloop.com</a></td></tr>
+            <tr><td style="padding:0 0 10px 0"><a href="https://www.paironloop.com" style="font-size:11px;font-family:Arial,sans-serif;color:#1a1a1a;text-decoration:none">www.paironloop.com</a></td></tr>
+          </tbody>
+        </table>
+        <table cellpadding="0" cellspacing="0" border="0">
+          <tbody>
+            <tr>
+              <td><a href="https://www.instagram.com/paironloop" style="font-size:11px;font-family:Arial,sans-serif;color:#555555;text-decoration:none">Instagram</a></td>
+              <td style="padding:0 8px;color:#cccccc;font-size:11px">|</td>
+              <td><a href="https://www.tiktok.com/@paironloop" style="font-size:11px;font-family:Arial,sans-serif;color:#555555;text-decoration:none">TikTok</a></td>
+              <td style="padding:0 8px;color:#cccccc;font-size:11px">|</td>
+              <td><a href="https://www.youtube.com/@paironloop" style="font-size:11px;font-family:Arial,sans-serif;color:#555555;text-decoration:none">YouTube</a></td>
+              <td style="padding:0 8px;color:#cccccc;font-size:11px">|</td>
+              <td><a href="https://wa.me/4917617755780" style="font-size:11px;font-family:Arial,sans-serif;color:#555555;text-decoration:none">WhatsApp</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>`;
+
 // Initialize EmailJS after DOM ready
 window.addEventListener("load", () => {
   if(typeof emailjs !== "undefined") {
@@ -4714,7 +4758,7 @@ async function sendAktivitaetNotification(type, verantw, kunde, aktivitaet, datu
     await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
       to_email: email,
       subject,
-      message,
+      message: message + EMAIL_SIGNATURE,
       email: "info@paironloop.com"
     });
     showToast(`✓ E-Mail an ${verantw} (${email}) gesendet`);

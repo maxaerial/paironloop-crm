@@ -4764,7 +4764,7 @@ async function sendAktivitaetNotification(type, verantw, kunde, aktivitaet, datu
     await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
       to_email: email,
       subject,
-      message: message + EMAIL_SIGNATURE,
+      message: message.replace(/\n/g, "<br>") + EMAIL_SIGNATURE,
       email: "info@paironloop.com"
     });
     showToast(`✓ E-Mail an ${verantw} (${email}) gesendet`);

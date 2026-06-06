@@ -1841,10 +1841,14 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
           <div class="card-title">Empfänger</div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <select id="email-branche-filter" class="filter-select" onchange="filterEmailKontakte()" style="font-size:13px">
+            <select id="email-branche-filter" class="filter-select" onchange="filterEmailKontakte()">
               <option value="">Alle Branchen</option>
               <option>Hospitality</option><option>Restaurant</option><option>Weingut</option>
               <option>Freizeitaktivität</option><option>Café</option><option>Bar</option><option>Sonstiges</option>
+            </select>
+            <select id="email-phase-filter" class="filter-select" onchange="filterEmailKontakte()">
+              <option value="">Alle Phasen</option>
+              <option>Bewusstsein</option><option>Interesse</option><option>Angebot</option><option>Kauf</option><option>Empfehlung</option>
             </select>
             <div style="position:relative">
               <select id="email-search-kontakte" class="filter-select" style="min-width:200px" onchange="addEmailEmpfaenger(this.value);this.value=''">
@@ -4737,7 +4741,6 @@ async function checkNotifications() {
   const list=document.getElementById("notif-list");
   badge.style.display=count>0?"flex":"none";
   badge.textContent=count>9?"9+":count;
-  // Sync mobile badge
   const mb = document.getElementById("mobile-nav-badge");
   if(mb) { mb.style.display=count>0?"flex":"none"; mb.textContent=count>9?"9+":count; }
   panel.style.display=count>0?"block":"none";
@@ -4755,6 +4758,38 @@ async function checkNotifications() {
       </div>`;
     }).join("");
   }
+  // Auto-send reminder emails (once per day per aktivitaet)
+  autoSendReminders(data||[], today);
+}
+
+function autoSendReminders(faelligeAktiv, today) {
+  if(isDemoMode) return; // no auto-emails in demo
+  if(!faelligeAktiv.length) return;
+  const sentKey = "paironloop_reminders_sent_" + today;
+  let sentIds = [];
+  try { sentIds = JSON.parse(localStorage.getItem(sentKey) || "[]"); } catch(e) {}
+
+  faelligeAktiv.forEach(a => {
+    if(!a.verantwortlich) return; // no responsible person
+    if(sentIds.includes(a.id)) return; // already sent today
+    const member = teamMembers.find(m => (typeof m === "string" ? m : m.name) === a.verantwortlich);
+    const email = member && typeof member === "object" ? member.email : "";
+    if(!email) return; // no email stored
+
+    // Send reminder
+    sendAktivitaetNotification("remind", a.verantwortlich, a.kunde, a.typ||"Aktivität", a.datum, a.prioritaet||"–", a.beschreibung||"");
+    sentIds.push(a.id);
+  });
+
+  // Save sent IDs for today
+  try { localStorage.setItem(sentKey, JSON.stringify(sentIds)); } catch(e) {}
+
+  // Clean up old keys (older than 3 days)
+  try {
+    Object.keys(localStorage)
+      .filter(k => k.startsWith("paironloop_reminders_sent_") && k < "paironloop_reminders_sent_" + today)
+      .forEach(k => localStorage.removeItem(k));
+  } catch(e) {}
 }
 
 // ── EXPORT ─────────────────────────────────────────────────────────────────────
@@ -5840,10 +5875,23 @@ async function renderEmail() {
 
 function populateEmailKontakteDropdown() {
   const branche = document.getElementById("email-branche-filter")?.value || "";
+  const phase   = document.getElementById("email-phase-filter")?.value || "";
   const sel = document.getElementById("email-search-kontakte");
   if(!sel) return;
   const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
-  const filtered = src.filter(k => k.email && (!branche || k.branche === branche));
+
+  // Get kontakte that match the journey phase (via journeyData)
+  let matchByPhase = new Set();
+  if(phase) {
+    const jSrc = isDemoMode ? (window.DEMO_DATA?.journey || []) : (journeyData || []);
+    jSrc.filter(j => j.phase === phase).forEach(j => matchByPhase.add(j.kunde));
+  }
+
+  const filtered = src.filter(k => {
+    const matchBranche = !branche || k.branche === branche;
+    const matchPhase   = !phase   || matchByPhase.has(k.unternehmen);
+    return k.email && matchBranche && matchPhase;
+  });
   sel.innerHTML = `<option value="">+ Kontakt hinzufügen…</option>` +
     filtered.map(k => `<option value="${k.id||k.nr}">${k.unternehmen||""} – ${k.vorname||""} ${k.nachname||""}</option>`).join("");
 }
@@ -5961,8 +6009,18 @@ function updateEmailSelectedCount() {
 
 function emailSelectAll() {
   const branche = document.getElementById("email-branche-filter")?.value || "";
+  const phase   = document.getElementById("email-phase-filter")?.value || "";
   const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
-  src.filter(k => k.email && (!branche || k.branche === branche)).forEach(k => emailSelectedIds.add(String(k.id || k.nr)));
+  let matchByPhase = new Set();
+  if(phase) {
+    const jSrc = isDemoMode ? (window.DEMO_DATA?.journey || []) : (journeyData || []);
+    jSrc.filter(j => j.phase === phase).forEach(j => matchByPhase.add(j.kunde));
+  }
+  src.filter(k => {
+    const matchBranche = !branche || k.branche === branche;
+    const matchPhase   = !phase   || matchByPhase.has(k.unternehmen);
+    return k.email && matchBranche && matchPhase;
+  }).forEach(k => emailSelectedIds.add(String(k.id || k.nr)));
   renderEmailKontakteList();
   updateEmailSelectedCount();
 }

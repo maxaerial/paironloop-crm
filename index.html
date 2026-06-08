@@ -6194,7 +6194,7 @@ async function loadEmailVorlagen() {
   }
   const stored = localStorage.getItem(key);
   let saved = stored ? JSON.parse(stored) : null;
-  if (!saved || saved.length < 12) {
+  if (!saved || saved.length < 13) {
     const userCreated = saved ? saved.filter(v => !DEFAULT_VORLAGEN.find(d => d.id === v.id)) : [];
     emailVorlagen = [...JSON.parse(JSON.stringify(DEFAULT_VORLAGEN)), ...userCreated];
     localStorage.setItem(key, JSON.stringify(emailVorlagen));

@@ -2412,6 +2412,35 @@ tbody td { font-feature-settings: "zero" 0; }
     </div>
   </div>
 </div>
+<div class="modal-overlay" id="modal-reaktion">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head"><h3>Reaktion erfassen</h3><button class="modal-close" onclick="closeModal('modal-reaktion')">×</button></div>
+    <div class="modal-body">
+      <p id="reaktion-context" style="font-size:13px;color:var(--text2);margin-bottom:16px"></p>
+      <div class="form-grid">
+        <div class="field form-full"><label>Reaktion</label>
+          <select id="reaktion-typ">
+            <option value="">— bitte wählen —</option>
+            <option value="Geantwortet">✉ Geantwortet</option>
+            <option value="Interesse signalisiert">👍 Interesse signalisiert</option>
+            <option value="Kein Interesse">👎 Kein Interesse</option>
+            <option value="Deal entstanden">🤝 Deal entstanden</option>
+            <option value="Wartet auf Antwort">⏳ Wartet auf Antwort</option>
+            <option value="Termin vereinbart">📅 Termin vereinbart</option>
+          </select>
+        </div>
+        <div class="field form-full"><label>Notiz (optional)</label>
+          <input id="reaktion-notiz" placeholder="z.B. sehr positives Feedback, möchte Angebot sehen">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveReaktion()">Speichern + Touchpoint anlegen</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-reaktion')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-bulk-kontakt">
   <div class="modal">
     <div class="modal-head"><h3>Massenänderung Kontakte</h3><button class="modal-close" onclick="closeModal('modal-bulk-kontakt')">×</button></div>
@@ -3910,8 +3939,9 @@ function renderJourneyTable() {
         <td>${j.touchpoint||"–"}</td><td style="color:var(--text2)">${j.kanal||"–"}</td>
         <td style="color:var(--text2);font-size:12px">${j.reaktion||"–"}</td>
         <td><span style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-weight:600">${j.score}/10</span></td>
-
-      </tr>`;
+        <td>
+          <button onclick="openReaktionModal('${j.id}','${(j.kunde||"").replace(/'/g,"\\'")}','${j.touchpoint||""}')" style="background:none;border:1px solid var(--border);cursor:pointer;color:var(--text3);padding:3px 8px;border-radius:4px;font-size:11px" title="Reaktion erfassen" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✉ Reaktion</button>
+        </td>
     }).join("")}</tbody>
   </table>` : `<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg><p>${t("loading")}</p></div>`;
 }
@@ -4129,8 +4159,7 @@ async function addJourney() {
   }
 
   // 2. Insert journey touchpoint
-  const {count: jCount} = await sb.from("journey").select("*",{count:"exact",head:true});
-  const journeyNr = "T" + String((jCount||0)+1).padStart(3,"0");
+  const journeyNr = await getNextJourneyNr();
   const {error} = await sb.from("journey").insert({
     nr: journeyNr, kunde, kontakt_id: kontaktId,
     datum, phase, touchpoint, kanal,
@@ -5038,6 +5067,68 @@ function initPipelineTooltips(rows) {
   });
 }
 
+// ── REAKTION TRACKING ────────────────────────────────────────────────────────
+async function getNextJourneyNr() {
+  const {data} = await sb.from("journey").select("nr").order("created_at", {ascending:false}).limit(100);
+  const nums = (data||[]).map(r => parseInt((r.nr||"").replace(/\D/g,""))||0);
+  const max = nums.length ? Math.max(...nums) : 0;
+  return "T" + String(max + 1).padStart(3, "0");
+}
+let _reaktionJourneyId = null;
+let _reaktionKunde = null;
+
+function openReaktionModal(journeyId, kunde, touchpoint) {
+  _reaktionJourneyId = journeyId;
+  _reaktionKunde = kunde;
+  document.getElementById("reaktion-context").textContent = `Touchpoint: ${touchpoint} · Kunde: ${kunde}`;
+  document.getElementById("reaktion-typ").value = "";
+  document.getElementById("reaktion-notiz").value = "";
+  openModalEdit("modal-reaktion");
+}
+
+async function saveReaktion() {
+  const reaktion = document.getElementById("reaktion-typ").value;
+  const notiz    = document.getElementById("reaktion-notiz").value.trim();
+  if(!reaktion) { showToast("Bitte Reaktion auswählen", true); return; }
+
+  const userId = (await sb.auth.getUser()).data.user?.id;
+  const today  = new Date().toISOString().split("T")[0];
+
+  // 1. Update existing touchpoint reaktion
+  await sb.from("journey").update({ reaktion: notiz ? `${reaktion} – ${notiz}` : reaktion }).eq("id", _reaktionJourneyId);
+
+  // 2. Map reaktion to new touchpoint
+  const map = {
+    "Geantwortet":            { touchpoint:"Antwort erhalten",     phase:"Interesse", score:7 },
+    "Interesse signalisiert": { touchpoint:"Interesse bestätigt",  phase:"Angebot",   score:8 },
+    "Kein Interesse":         { touchpoint:"Absage erhalten",      phase:"Bewusstsein", score:2 },
+    "Deal entstanden":        { touchpoint:"Deal gestartet",       phase:"Kauf",      score:10 },
+    "Wartet auf Antwort":     { touchpoint:"Follow-up ausstehend", phase:"Interesse", score:5 },
+    "Termin vereinbart":      { touchpoint:"Termin bestätigt",     phase:"Angebot",   score:9 },
+  };
+  const next = map[reaktion];
+
+  if(next) {
+    const reaktionNr = await getNextJourneyNr();
+    await sb.from("journey").insert({
+      nr: reaktionNr,
+      kunde: _reaktionKunde,
+      datum: today,
+      phase: next.phase,
+      touchpoint: next.touchpoint,
+      kanal: "E-Mail",
+      aktivitaet: notiz || reaktion,
+      reaktion: "–",
+      score: next.score,
+      user_id: userId
+    });
+  }
+
+  closeModal("modal-reaktion");
+  showToast("✓ Reaktion gespeichert + neuer Touchpoint angelegt");
+  renderJourney();
+}
+
 // ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
 // ── NEWSLETTER SIGNUP ─────────────────────────────────────────────────────────
 async function handleNewsletterSignup(email, vorname, nachname, unternehmen) {
@@ -5063,9 +5154,9 @@ async function handleNewsletterSignup(email, vorname, nachname, unternehmen) {
   }
 
   // Create journey touchpoint
-  const {count: jCount} = await sb.from("journey").select("*",{count:"exact",head:true});
+  const nlJourneyNr = await getNextJourneyNr();
   await sb.from("journey").insert({
-    nr: "T"+String((jCount||0)+1).padStart(3,"0"),
+    nr: nlJourneyNr,
     kunde: unternehmen || (vorname+" "+nachname).trim() || email,
     datum: today, phase: "Bewusstsein",
     touchpoint: "Newsletter-Anmeldung",
@@ -5476,8 +5567,7 @@ async function syncDealToKontakt(kunde, newPhase, newStatus, oldPhase, oldStatus
 
   // Auto-create journey touchpoint if phase changed meaningfully
   if(newJourneyPhase && newPhase !== oldPhase) {
-    const {count} = await sb.from("journey").select("*",{count:"exact",head:true});
-    const nr = "T"+String((count||0)+1).padStart(3,"0");
+    const nr = await getNextJourneyNr();
     await sb.from("journey").insert({
       nr, kunde, kontakt_id: kontakt.id,
       datum: today,
@@ -6406,12 +6496,12 @@ async function sendEmailBulkDirect() {
       if(!isDemoMode && k.email !== "info@paironloop.com") {
         const phase = mapVorlageToJourneyPhase(vorlage.name);
         const userId = (await sb.auth.getUser()).data.user?.id;
-        const {count: jCount} = await sb.from("journey").select("*",{count:"exact",head:true});
+        const emailJourneyNr = await getNextJourneyNr();
         await sb.from("journey").insert({
           kunde: k.unternehmen || `${k.vorname||""} ${k.nachname||""}`.trim(),
           datum: today,
           phase,
-          nr: "T"+String((jCount||0)+1).padStart(3,"0"),
+          nr: emailJourneyNr,
           touchpoint: vorlage.name,
           kanal: "E-Mail",
           aktivitaet: betreff,

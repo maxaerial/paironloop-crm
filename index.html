@@ -1889,6 +1889,16 @@ tbody td { font-feature-settings: "zero" 0; }
               <option value="">Alle Phasen</option>
               <option>Bewusstsein</option><option>Interesse</option><option>Angebot</option><option>Kauf</option><option>Empfehlung</option>
             </select>
+            <select id="email-newsletter-filter" class="filter-select" onchange="filterEmailKontakte()">
+              <option value="">Newsletter: alle</option>
+              <option value="ja">Newsletter: Ja</option>
+              <option value="nein">Newsletter: Nein</option>
+            </select>
+            <select id="email-aktivtyp-filter" class="filter-select" onchange="filterEmailKontakte()">
+              <option value="">Alle Aktivitäten</option>
+              <option value="faellig">Fällige Aktivitäten</option>
+              <option>Angebot</option><option>Meeting</option><option>Anruf</option><option>E-Mail</option><option>Nachfassen</option>
+            </select>
             <div style="position:relative">
               <select id="email-search-kontakte" class="filter-select" style="min-width:200px" onchange="addEmailEmpfaenger(this.value);this.value=''">
                 <option value="">+ Kontakt hinzufügen…</option>
@@ -1996,6 +2006,22 @@ tbody td { font-feature-settings: "zero" 0; }
     </div>
     <button type="button" class="profile-save-btn" onclick="changeEmail()">E-Mail ändern</button>
     <div id="email-change-msg" style="font-size:12px;text-align:center;margin-top:8px;display:none"></div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Newsletter-Anmeldung erfassen</div>
+    <div class="profile-form" style="margin-bottom:8px">
+      <div class="field"><label>E-Mail</label><input id="nl-email" type="email" placeholder="kunde@beispiel.de"></div>
+      <div class="field"><label>Vorname</label><input id="nl-vorname" placeholder="Max"></div>
+      <div class="field"><label>Nachname</label><input id="nl-nachname" placeholder="Mustermann"></div>
+      <div class="field"><label>Unternehmen</label><input id="nl-unternehmen" placeholder="optional"></div>
+    </div>
+    <button class="btn btn-primary" style="font-size:12px;padding:6px 14px" onclick="(async()=>{
+      const e=document.getElementById('nl-email').value.trim();
+      if(!e){showToast('⚠ E-Mail erforderlich');return;}
+      await handleNewsletterSignup(e,document.getElementById('nl-vorname').value.trim(),document.getElementById('nl-nachname').value.trim(),document.getElementById('nl-unternehmen').value.trim());
+      ['nl-email','nl-vorname','nl-nachname','nl-unternehmen'].forEach(id=>document.getElementById(id).value='');
+    })()">Newsletter-Anmeldung speichern</button>
   </div>
 
   <div class="settings-section" id="team-settings-section">
@@ -2115,6 +2141,7 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="field"><label data-i18n="firstname">Vorname</label><input id="k-vorname"></div>
         <div class="field"><label data-i18n="lastname">Nachname</label><input id="k-nachname"></div>
         <div class="field"><label>Geschlecht</label><select id="k-geschlecht"><option value="">– nicht angegeben –</option><option value="m">Männlich</option><option value="f">Weiblich</option></select></div>
+        <div class="field"><label>Newsletter</label><select id="k-newsletter"><option value="">– nicht angegeben –</option><option value="ja">Ja</option><option value="nein">Nein</option></select></div>
         <div class="field"><label>Stadt</label><input id="k-ort"></div>
         <div class="field"><label>Land</label><input id="k-land" placeholder="z.B. Deutschland"></div>
         <div class="field"><label data-i18n="email">E-Mail</label><input id="k-email" type="email"></div>
@@ -2131,7 +2158,7 @@ tbody td { font-feature-settings: "zero" 0; }
               <option>Messe</option>
               <option value="__custom">Eigene Eingabe…</option>
             </select>
-            <input id="k-kanal-custom" placeholder="Kanal eingeben…" style="display:none;margin-top:6px"></div>
+            <input id="k-kanal-custom" placeholder="Kanal eingeben…" style="display:none;margin-top:6px;width:100%"></div>
         <div class="field"><label data-i18n="status">Status</label>
           <select id="k-status" class="status-select-de">
             <option>Lead</option><option data-i18n="active">Aktiv</option>            <option data-i18n="inactive">Inaktiv</option><option data-i18n="closed">Abgeschlossen</option>
@@ -2176,7 +2203,19 @@ tbody td { font-feature-settings: "zero" 0; }
         </div>
         <div class="field"><label data-i18n="date">Datum</label><input id="j-datum" type="date"></div>
         <div class="field"><label data-i18n="phase">Phase</label><select id="j-phase"></select></div>
-        <div class="field"><label data-i18n="channel">Kanal</label><input id="j-kanal"></div>
+        <div class="field"><label data-i18n="channel">Kanal</label><select id="j-kanal" onchange="if(this.value==='__custom'){this.nextElementSibling.style.display='';this.nextElementSibling.focus()}else{this.nextElementSibling.style.display='none'}">
+              <option value="">— bitte wählen —</option>
+              <option>Instagram</option>
+              <option>YouTube</option>
+              <option>TikTok</option>
+              <option>E-Mail</option>
+              <option>Mündlich</option>
+              <option>Website</option>
+              <option>Empfehlung</option>
+              <option>Messe</option>
+              <option value="__custom">Eigene Eingabe…</option>
+            </select>
+            <input id="j-kanal-custom" placeholder="Kanal eingeben…" style="display:none;margin-top:6px;width:100%"></div>
         <div class="field"><label>Touchpoint</label><input id="j-touchpoint"></div>
         <div class="field"><label>Score (1–10)</label><input id="j-score" type="number" min="1" max="10" value="5"></div>
         <div class="field form-full"><label data-i18n="activity">Aktivität</label><textarea id="j-aktivitaet" rows="2"></textarea></div>
@@ -2461,7 +2500,19 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="field"><label>Kunde</label><input id="ej-kunde"></div>
         <div class="field"><label>Datum</label><input id="ej-datum" type="date"></div>
         <div class="field"><label>Phase</label><select id="ej-phase"></select></div>
-        <div class="field"><label>Kanal</label><input id="ej-kanal"></div>
+        <div class="field"><label>Kanal</label><select id="ej-kanal" onchange="if(this.value==='__custom'){this.nextElementSibling.style.display='';this.nextElementSibling.focus()}else{this.nextElementSibling.style.display='none'}">
+              <option value="">— bitte wählen —</option>
+              <option>Instagram</option>
+              <option>YouTube</option>
+              <option>TikTok</option>
+              <option>E-Mail</option>
+              <option>Mündlich</option>
+              <option>Website</option>
+              <option>Empfehlung</option>
+              <option>Messe</option>
+              <option value="__custom">Eigene Eingabe…</option>
+            </select>
+            <input id="ej-kanal-custom" placeholder="Kanal eingeben…" style="display:none;margin-top:6px;width:100%"></div>
         <div class="field"><label>Touchpoint</label><input id="ej-touchpoint"></div>
         <div class="field"><label>Score (1–10)</label><input id="ej-score" type="number" min="1" max="10"></div>
         <div class="field form-full"><label>Beschreibung / Aktivität</label><textarea id="ej-aktivitaet" rows="2" style="resize:vertical"></textarea></div>
@@ -2486,6 +2537,7 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="field"><label>Vorname</label><input id="ek-vorname"></div>
         <div class="field"><label>Nachname</label><input id="ek-nachname"></div>
         <div class="field"><label>Geschlecht</label><select id="ek-geschlecht"><option value="">– nicht angegeben –</option><option value="m">Männlich</option><option value="f">Weiblich</option></select></div>
+        <div class="field"><label>Newsletter</label><select id="ek-newsletter"><option value="">– nicht angegeben –</option><option value="ja">Ja</option><option value="nein">Nein</option></select></div>
         <div class="field"><label>Stadt</label><input id="ek-ort"></div>
         <div class="field"><label>Land</label><input id="ek-land" placeholder="z.B. Deutschland"></div>
         <div class="field"><label>E-Mail</label><input id="ek-email" type="email"></div>
@@ -2502,7 +2554,7 @@ tbody td { font-feature-settings: "zero" 0; }
               <option>Messe</option>
               <option value="__custom">Eigene Eingabe…</option>
             </select>
-            <input id="ek-kanal-custom" placeholder="Kanal eingeben…" style="display:none;margin-top:6px"></div>
+            <input id="ek-kanal-custom" placeholder="Kanal eingeben…" style="display:none;margin-top:6px;width:100%"></div>
         <div class="field"><label>Status</label>
           <select id="ek-status"><option>Lead</option><option>Aktiv</option><option>Inaktiv</option><option>Abgeschlossen</option></select>
         </div>
@@ -2993,7 +3045,7 @@ function editKontaktDemo(id) {
   const k=kontakteData.find(x=>x.id===id); if(!k) return;
   document.getElementById("ek-id").value=k.id;
   document.getElementById("ek-unternehmen").value=k.unternehmen||"";
-  document.getElementById("ek-vorname").value=k.vorname||""; document.getElementById("ek-geschlecht").value=k.geschlecht||"";
+  document.getElementById("ek-vorname").value=k.vorname||""; document.getElementById("ek-geschlecht").value=k.geschlecht||""; document.getElementById("ek-newsletter").value=k.newsletter||"";
   document.getElementById("ek-nachname").value=k.nachname||"";
   document.getElementById("ek-ort").value=k.ort||"";
   document.getElementById("ek-land").value=k.land||"";
@@ -3805,6 +3857,7 @@ function renderJourneyTable() {
   }
   // Column sort
   const jColMap = {
+    "nr_j":        r => (r.nr||"").replace(/\D/g,"").padStart(6,"0"),
     "datum_j":     r => r.datum||"",
     "kunde_j":     r => r.kunde||"",
     "phase_j":     r => r.phase||"",
@@ -3812,7 +3865,7 @@ function renderJourneyTable() {
     "kanal_j":     r => r.kanal||"",
     "score_j":     r => String(r.score||0).padStart(3,"0"),
   };
-  const jFn = jColMap[jSortCol] || jColMap["datum_j"];
+  const jFn = jColMap[jSortCol] || jColMap["nr_j"];
   rows = [...rows].sort((a,b)=>{
     const av=jFn(a), bv=jFn(b);
     return jSortDir==="asc" ? av.localeCompare(bv) : bv.localeCompare(av);
@@ -3820,6 +3873,7 @@ function renderJourneyTable() {
   document.getElementById("journey-table-wrap").innerHTML = rows.length ? `<table>
     <thead><tr>
       <th><input type="checkbox" class="row-checkbox" id="check-all-j" onchange="toggleAllBulk('journey',this.checked)"></th>
+      <th>${thSort("nr_j","Nr",jSortCol,jSortDir)}</th>
       <th>${thSort("datum_j",t("date"),jSortCol,jSortDir)}</th>
       <th>${thSort("kunde_j",t("client"),jSortCol,jSortDir)}</th>
       <th>${thSort("phase_j",t("phase"),jSortCol,jSortDir)}</th>
@@ -3832,6 +3886,7 @@ function renderJourneyTable() {
       const slug=(j.phase||"").toLowerCase().replace(/[éèêëàâäîïôöùûü\s]/g,c=>({é:"e",è:"e",ê:"e",ë:"e",à:"a",â:"a",ä:"a",î:"i",ï:"i",ô:"o",ö:"o",ù:"u",û:"u",ü:"u"," ":"-"}[c]||c));
       return `<tr>
         <td><input type="checkbox" class="row-checkbox bulk-check-journey" data-id="${j.id}" onchange="updateBulk('journey')"></td>
+        <td style="font-size:11px;color:var(--text3)">${j.nr||"–"}</td>
         <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(j.datum)}</td>
         <td><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${j.kunde}')">${j.kunde}</strong></td>
         <td><span style="
@@ -3995,7 +4050,7 @@ async function addJourney() {
   const kunde    = document.getElementById("j-kunde").value.trim();
   const phase    = document.getElementById("j-phase").value;
   const datum    = document.getElementById("j-datum").value||new Date().toISOString().split("T")[0];
-  const kanal    = document.getElementById("j-kanal").value;
+  const kanal    = getKanalValue("j-kanal");
   const touchpoint = document.getElementById("j-touchpoint").value;
   const aktivitaet = document.getElementById("j-aktivitaet").value;
   const reaktion = document.getElementById("j-reaktion").value;
@@ -4096,8 +4151,8 @@ async function addJourney() {
 // ── KONTAKTE ────────────────────────────────────────────────────────────────────
 let kSearch="", kStatus="", kBranche="", kUnternehmen="", kSort="nr_asc", kSortCol="nr_k", kSortDir="asc", kontakteData=[];
 let cKStatus=null, cKLand=null, cKBranche=null;
-let jSortCol="datum_j", jSortDir="desc";
-let aSortCol="datum_a", aSortDir="desc";
+let jSortCol="nr_j", jSortDir="desc";
+let aSortCol="nr_a", aSortDir="desc";
 
 // ── SORT HELPER ───────────────────────────────────────────────────────────────
 const SORT_ICONS = { asc:"↑", desc:"↓", none:"↕" };
@@ -4259,6 +4314,7 @@ async function addKontakt() {
     vorname:document.getElementById("k-vorname").value||"–",
     nachname:document.getElementById("k-nachname").value||"–",
     geschlecht:document.getElementById("k-geschlecht").value||null,
+    newsletter:document.getElementById("k-newsletter").value||null,
     ort:document.getElementById("k-ort").value,
     land:document.getElementById("k-land").value||null,
     email:document.getElementById("k-email").value||"–",
@@ -4964,6 +5020,46 @@ function initPipelineTooltips(rows) {
 }
 
 // ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
+// ── NEWSLETTER SIGNUP ─────────────────────────────────────────────────────────
+async function handleNewsletterSignup(email, vorname, nachname, unternehmen) {
+  // Find or create contact
+  const userId = (await sb.auth.getUser()).data.user?.id;
+  const today = new Date().toISOString().split("T")[0];
+  let kontakt = kontakteData.find(k => k.email?.toLowerCase() === email.toLowerCase());
+
+  if(!kontakt) {
+    const {count} = await sb.from("kontakte").select("*",{count:"exact",head:true});
+    const {data} = await sb.from("kontakte").insert({
+      nr: String((count||0)+1).padStart(3,"0"),
+      unternehmen: unternehmen || vorname + " " + nachname,
+      vorname: vorname||"–", nachname: nachname||"–",
+      email, status: "Lead", newsletter: "ja",
+      kanal: "Website", letzter_kontakt: today,
+      kommentar: "Newsletter-Anmeldung via paironloop.com",
+      user_id: userId
+    }).select().single();
+    kontakt = data;
+  } else {
+    await sb.from("kontakte").update({newsletter:"ja", letzter_kontakt:today}).eq("id", kontakt.id);
+  }
+
+  // Create journey touchpoint
+  const {count: jCount} = await sb.from("journey").select("*",{count:"exact",head:true});
+  await sb.from("journey").insert({
+    nr: "T"+String((jCount||0)+1).padStart(3,"0"),
+    kunde: unternehmen || (vorname+" "+nachname).trim() || email,
+    datum: today, phase: "Bewusstsein",
+    touchpoint: "Newsletter-Anmeldung",
+    kanal: "Website",
+    aktivitaet: "Newsletter angemeldet via paironloop.com",
+    reaktion: "Anmeldung bestätigt", score: 7,
+    user_id: userId
+  });
+
+  showToast(`✓ Newsletter-Anmeldung von ${email} gespeichert`);
+  renderAll();
+}
+
 async function checkNotifications() {
   const today=new Date().toISOString().split("T")[0];
   const {data}=await sb.from("aktivitaeten").select("*").lte("datum",today).eq("status","Offen").order("datum");
@@ -5643,7 +5739,7 @@ function editJourney(id) {
   document.getElementById("ej-id").value = j.id;
   document.getElementById("ej-kunde").value = j.kunde||"";
   document.getElementById("ej-datum").value = j.datum||"";
-  document.getElementById("ej-kanal").value = j.kanal||"";
+  setKanalValue("ej-kanal", j.kanal||"");
   document.getElementById("ej-touchpoint").value = j.touchpoint||"";
   document.getElementById("ej-score").value = j.score||5;
   document.getElementById("ej-aktivitaet").value = j.aktivitaet||"";
@@ -5659,7 +5755,7 @@ async function updateJourney() {
     kunde:document.getElementById("ej-kunde").value,
     datum:document.getElementById("ej-datum").value,
     phase:document.getElementById("ej-phase").value,
-    kanal:document.getElementById("ej-kanal").value,
+    kanal:getKanalValue("ej-kanal"),
     touchpoint:document.getElementById("ej-touchpoint").value,
     score:parseInt(document.getElementById("ej-score").value)||5,
     aktivitaet:document.getElementById("ej-aktivitaet").value,
@@ -5678,7 +5774,7 @@ function editKontakt(id) {
   if(!k) return;
   document.getElementById("ek-id").value = k.id;
   document.getElementById("ek-unternehmen").value = k.unternehmen||"";
-  document.getElementById("ek-vorname").value = k.vorname||""; document.getElementById("ek-geschlecht").value = k.geschlecht||"";
+  document.getElementById("ek-vorname").value = k.vorname||""; document.getElementById("ek-geschlecht").value = k.geschlecht||""; document.getElementById("ek-newsletter").value = k.newsletter||"";
   document.getElementById("ek-nachname").value = k.nachname||"";
   document.getElementById("ek-ort").value = k.ort||"";
   document.getElementById("ek-land").value = k.land||"";
@@ -5702,6 +5798,7 @@ async function updateKontakt() {
     vorname:document.getElementById("ek-vorname").value||"–",
     nachname:document.getElementById("ek-nachname").value||"–",
     geschlecht:document.getElementById("ek-geschlecht").value||null,
+    newsletter:document.getElementById("ek-newsletter").value||null,
     ort:document.getElementById("ek-ort").value,
     land:document.getElementById("ek-land").value||null,
     email:document.getElementById("ek-email").value||"–",
@@ -6115,23 +6212,37 @@ async function renderEmail() {
 }
 
 function populateEmailKontakteDropdown() {
-  const branche = document.getElementById("email-branche-filter")?.value || "";
-  const phase   = document.getElementById("email-phase-filter")?.value || "";
+  const branche   = document.getElementById("email-branche-filter")?.value || "";
+  const phase     = document.getElementById("email-phase-filter")?.value || "";
+  const newsletter= document.getElementById("email-newsletter-filter")?.value || "";
+  const aktivtyp  = document.getElementById("email-aktivtyp-filter")?.value || "";
   const sel = document.getElementById("email-search-kontakte");
   if(!sel) return;
   const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
 
-  // Get kontakte that match the journey phase (via journeyData)
   let matchByPhase = new Set();
   if(phase) {
     const jSrc = isDemoMode ? (window.DEMO_DATA?.journey || []) : (journeyData || []);
     jSrc.filter(j => j.phase === phase).forEach(j => matchByPhase.add(j.kunde));
   }
 
+  let matchByAktiv = new Set();
+  if(aktivtyp) {
+    const aSrc = isDemoMode ? (window.DEMO_DATA?.aktivitaeten || []) : (aktivData || []);
+    const today = new Date().toISOString().split("T")[0];
+    const filtered = aktivtyp === "faellig"
+      ? aSrc.filter(a => a.datum <= today && a.status === "Offen")
+      : aSrc.filter(a => a.typ === aktivtyp);
+    filtered.forEach(a => matchByAktiv.add(a.kunde));
+  }
+
   const filtered = src.filter(k => {
-    const matchBranche = !branche || k.branche === branche;
-    const matchPhase   = !phase   || matchByPhase.has(k.unternehmen);
-    return k.email && matchBranche && matchPhase;
+    if(!k.email) return false;
+    if(branche && k.branche !== branche) return false;
+    if(phase && !matchByPhase.has(k.unternehmen)) return false;
+    if(newsletter && k.newsletter !== newsletter) return false;
+    if(aktivtyp && !matchByAktiv.has(k.unternehmen)) return false;
+    return true;
   });
   sel.innerHTML = `<option value="">+ Kontakt hinzufügen…</option>` +
     filtered.map(k => `<option value="${k.id||k.nr}">${k.unternehmen||""} – ${k.vorname||""} ${k.nachname||""}</option>`).join("");

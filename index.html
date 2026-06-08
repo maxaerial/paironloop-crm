@@ -3940,7 +3940,7 @@ function renderJourneyTable() {
         <td style="color:var(--text2);font-size:12px">${j.reaktion||"–"}</td>
         <td><span style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-weight:600">${j.score}/10</span></td>
         <td>
-          <button onclick="openReaktionModal('${j.id}','${(j.kunde||"").replace(/'/g,"\\'")}','${j.touchpoint||""}')" style="background:none;border:1px solid var(--border);cursor:pointer;color:var(--text3);padding:3px 8px;border-radius:4px;font-size:11px" title="Reaktion erfassen" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✉ Reaktion</button>
+          <button data-jid="${j.id}" data-kunde="${(j.kunde||"").replace(/"/g,'&quot;')}" data-touchpoint="${(j.touchpoint||"").replace(/"/g,'&quot;')}" onclick="openReaktionModal(this.dataset.jid,this.dataset.kunde,this.dataset.touchpoint)" style="background:none;border:1px solid var(--border);cursor:pointer;color:var(--text3);padding:3px 8px;border-radius:4px;font-size:11px" title="Reaktion erfassen" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✉ Reaktion</button>
         </td>
     }).join("")}</tbody>
   </table>` : `<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg><p>${t("loading")}</p></div>`;

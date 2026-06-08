@@ -6537,7 +6537,7 @@ async function sendEmailBulkDirect() {
 
 function mapVorlageToJourneyPhase(vorlageName) {
   const n = vorlageName.toLowerCase();
-  if(n.includes("erstkontakt") || n.includes("hallo") || n.includes("newsletter") || n.includes("willkommen")) return "Bewusstsein";
+  if(n.includes("kooperation") || n.includes("cooperation") || n.includes("erstkontakt") || n.includes("hallo") || n.includes("newsletter") || n.includes("willkommen")) return "Bewusstsein";
   if(n.includes("angebot") || n.includes("leistung") || n.includes("übersicht") || n.includes("saison")) return "Interesse";
   if(n.includes("nachfassen") || n.includes("rückfrage")) return "Angebot";
   if(n.includes("empfehlung") || n.includes("feedback") || n.includes("bewertung")) return "Empfehlung";

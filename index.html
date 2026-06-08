@@ -3660,10 +3660,10 @@ let cStatus=null, cPipe=null;
 async function renderDashboard() {
   applyI18n();
   const [k, d, a, allA] = await Promise.all([
-    sb.from("kontakte").select("status"),
-    sb.from("deals").select("wert,wahrscheinlichkeit,phase,status"),
+    sb.from("kontakte").select("unternehmen,vorname,nachname,email,status,ort"),
+    sb.from("deals").select("kunde,wert,wahrscheinlichkeit,phase,status"),
     sb.from("aktivitaeten").select("kunde,typ,datum,prioritaet,status").order("created_at",{ascending:false}).limit(5),
-    sb.from("aktivitaeten").select("status")
+    sb.from("aktivitaeten").select("kunde,typ,status")
   ]);
   const kontakte=k.data||[], deals=d.data||[], acts=a.data||[], allActs=allA.data||[];
   document.getElementById("kpi-kunden").textContent = kontakte.length;

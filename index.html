@@ -6345,9 +6345,10 @@ async function sendEmailBulkDirect() {
 
   for (const k of empfaenger) {
     // Gender-aware salutation
-    const anrede = k.geschlecht === "m" ? `Lieber ${k.vorname||k.unternehmen||""}` :
-                   k.geschlecht === "f" ? `Liebe ${k.vorname||k.unternehmen||""}` :
-                   k.vorname ? `Hallo ${k.vorname}` : `Hallo`;
+    const hasName = k.vorname && k.vorname !== "–" && k.nachname && k.nachname !== "–";
+    const anrede = k.geschlecht === "m" && hasName ? `Lieber ${k.vorname}` :
+                   k.geschlecht === "f" && hasName ? `Liebe ${k.vorname}` :
+                   `Liebes ${k.unternehmen||"Team"}-Team`;
 
     const betreff = vorlage.betreff
       .replace(/{{vorname}}/g, k.vorname||"")

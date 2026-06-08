@@ -2141,6 +2141,7 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="field"><label data-i18n="firstname">Vorname</label><input id="k-vorname"></div>
         <div class="field"><label data-i18n="lastname">Nachname</label><input id="k-nachname"></div>
         <div class="field"><label>Geschlecht</label><select id="k-geschlecht"><option value="">– nicht angegeben –</option><option value="m">Männlich</option><option value="f">Weiblich</option></select></div>
+        <div class="field form-full"><label>Individueller Satz (für E-Mail)</label><input id="k-individueller-satz" placeholder="z.B. die Lage direkt am See mit diesem Panoramablick ist einfach unschlagbar"></div>
         <div class="field"><label>Newsletter</label><select id="k-newsletter"><option value="">– nicht angegeben –</option><option value="ja">Ja</option><option value="nein">Nein</option></select></div>
         <div class="field"><label>Stadt</label><input id="k-ort"></div>
         <div class="field"><label>Land</label><input id="k-land" placeholder="z.B. Deutschland"></div>
@@ -2537,6 +2538,7 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="field"><label>Vorname</label><input id="ek-vorname"></div>
         <div class="field"><label>Nachname</label><input id="ek-nachname"></div>
         <div class="field"><label>Geschlecht</label><select id="ek-geschlecht"><option value="">– nicht angegeben –</option><option value="m">Männlich</option><option value="f">Weiblich</option></select></div>
+        <div class="field form-full"><label>Individueller Satz (für E-Mail)</label><input id="ek-individueller-satz" placeholder="z.B. die Lage direkt am See mit diesem Panoramablick ist einfach unschlagbar"></div>
         <div class="field"><label>Newsletter</label><select id="ek-newsletter"><option value="">– nicht angegeben –</option><option value="ja">Ja</option><option value="nein">Nein</option></select></div>
         <div class="field"><label>Stadt</label><input id="ek-ort"></div>
         <div class="field"><label>Land</label><input id="ek-land" placeholder="z.B. Deutschland"></div>
@@ -3045,7 +3047,7 @@ function editKontaktDemo(id) {
   const k=kontakteData.find(x=>x.id===id); if(!k) return;
   document.getElementById("ek-id").value=k.id;
   document.getElementById("ek-unternehmen").value=k.unternehmen||"";
-  document.getElementById("ek-vorname").value=k.vorname||""; document.getElementById("ek-geschlecht").value=k.geschlecht||""; document.getElementById("ek-newsletter").value=k.newsletter||"";
+  document.getElementById("ek-vorname").value=k.vorname||""; document.getElementById("ek-geschlecht").value=k.geschlecht||""; document.getElementById("ek-newsletter").value=k.newsletter||""; document.getElementById("ek-individueller-satz").value=k.individueller_satz||"";
   document.getElementById("ek-nachname").value=k.nachname||"";
   document.getElementById("ek-ort").value=k.ort||"";
   document.getElementById("ek-land").value=k.land||"";
@@ -4315,6 +4317,7 @@ async function addKontakt() {
     nachname:document.getElementById("k-nachname").value||"–",
     geschlecht:document.getElementById("k-geschlecht").value||null,
     newsletter:document.getElementById("k-newsletter").value||null,
+    individueller_satz:document.getElementById("k-individueller-satz").value||null,
     ort:document.getElementById("k-ort").value,
     land:document.getElementById("k-land").value||null,
     email:document.getElementById("k-email").value||"–",
@@ -5775,7 +5778,7 @@ function editKontakt(id) {
   if(!k) return;
   document.getElementById("ek-id").value = k.id;
   document.getElementById("ek-unternehmen").value = k.unternehmen||"";
-  document.getElementById("ek-vorname").value = k.vorname||""; document.getElementById("ek-geschlecht").value = k.geschlecht||""; document.getElementById("ek-newsletter").value = k.newsletter||"";
+  document.getElementById("ek-vorname").value = k.vorname||""; document.getElementById("ek-geschlecht").value = k.geschlecht||""; document.getElementById("ek-newsletter").value = k.newsletter||""; document.getElementById("ek-individueller-satz").value = k.individueller_satz||"";
   document.getElementById("ek-nachname").value = k.nachname||"";
   document.getElementById("ek-ort").value = k.ort||"";
   document.getElementById("ek-land").value = k.land||"";
@@ -5800,6 +5803,7 @@ async function updateKontakt() {
     nachname:document.getElementById("ek-nachname").value||"–",
     geschlecht:document.getElementById("ek-geschlecht").value||null,
     newsletter:document.getElementById("ek-newsletter").value||null,
+    individueller_satz:document.getElementById("ek-individueller-satz").value||null,
     ort:document.getElementById("ek-ort").value,
     land:document.getElementById("ek-land").value||null,
     email:document.getElementById("ek-email").value||"–",
@@ -6168,6 +6172,11 @@ const DEFAULT_VORLAGEN = [
     id: "v12", name: "📋 Aktivität – neue Zuweisung",
     betreff: "Neue Aufgabe für dich: {{aktivitaet}}",
     text: `Hallo {{verantwortlich}},\n\ndir wurde soeben eine neue Aktivität zugewiesen:\n\n📋 Aufgabe: {{aktivitaet}}\n👤 Kunde: {{kunde}}\n📅 Fällig am: {{datum}}\n⚡ Priorität: {{prioritaet}}\n📝 Beschreibung: {{beschreibung}}\n\nBitte bestätige die Übernahme und aktualisiere den Status im CRM wenn du die Aufgabe bearbeitet hast.`
+  },
+  {
+    id: "v13", name: "🤝 Kooperationsanfrage Hotel",
+    betreff: "Zusammenarbeit mit PairOnLoop – Travel Content & Strategie für {{unternehmen}}",
+    text: `{{anrede}},\n\nmein Name ist Max, ich bin gemeinsam mit meiner Partnerin Elena Travel Content Creator und zusammen betreiben wir PairOnLoop – einen Reisekanal mit einer reisebegeisterten, internationalen Community.\n\nWir sind auf euer Hotel aufmerksam geworden und sofort begeistert – {{individueller_satz}}. Genau solche besonderen Orte lieben wir in Szene zu setzen.\n\nWas wir anbieten, geht über Content hinaus: Wir arbeiten mit unseren Partnern gemeinsam an einer Strategie – von der Zielgruppendefinition über eine Content Roadmap bis hin zu konkreten Marketing-Maßnahmen, die wirklich zu eurem Haus passen. Der visuelle Content – professionelle Fotos, cineastische Instagram & TikTok Reels sowie Drohnenaufnahmen – ist dabei das Ergebnis einer durchdachten Strategie, nicht Selbstzweck.\n\nKurz gesagt: Wir denken mit, nicht nur mit der Kamera.\n\nUnsere Pakete starten ab 299 € – alle Details findet ihr auf unserer Website: 👉 www.paironloop.com\n\nWir würden uns sehr freuen, gemeinsam mit euch etwas Besonderes zu erschaffen. Habt ihr Interesse an einem kurzen Austausch?\n\nViele Grüße aus München,`
   }
 ];
 
@@ -6177,7 +6186,7 @@ let emailSelectedIds = new Set();
 
 async function loadEmailVorlagen() {
   const key = "paironloop_email_vorlagen_" + (window._userId || "demo");
-  const versionKey = key + "_v5";
+  const versionKey = key + "_v6";
   // Force reload defaults if version not set (clears old 4-template cache)
   if (!localStorage.getItem(versionKey)) {
     localStorage.removeItem(key);
@@ -6350,6 +6359,7 @@ async function sendEmailBulkDirect() {
       .replace(/{{nachname}}/g, k.nachname||"")
       .replace(/{{unternehmen}}/g, k.unternehmen||"")
       .replace(/{{anrede}}/g, anrede)
+      .replace(/{{individueller_satz}}/g, k.individueller_satz||"[bitte individuellen Satz eintragen]")
       .replace(/^Hallo {{vorname}},/m, anrede + ",")
       .replace(/^Hallo {{vorname}}/m, anrede);
 

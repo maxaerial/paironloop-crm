@@ -4976,23 +4976,24 @@ function attachKpiTooltip(cardId, title, getItems) {
 }
 
 function initDashboardTooltips(kontakte, deals, allActs) {
+  const kLabel = k => k.unternehmen || [k.vorname, k.nachname].filter(Boolean).join(" ") || k.email || "–";
   attachKpiTooltip('kpi-kunden', 'Alle Kunden', () =>
-    kontakte.slice(0,8).map(k => ({label: k.unternehmen||`${k.vorname} ${k.nachname}`, value: k.status}))
+    kontakte.slice(0,8).map(k => ({label: kLabel(k), value: k.status||''}))
       .concat(kontakte.length > 8 ? [{label: `+ ${kontakte.length-8} weitere`, value:''}] : [])
   );
   attachKpiTooltip('kpi-leads', 'Leads', () => {
     const leads = kontakte.filter(k => k.status==='Lead');
-    return leads.slice(0,8).map(k => ({label: k.unternehmen||`${k.vorname} ${k.nachname}`, value: k.ort||''}))
+    return leads.slice(0,8).map(k => ({label: kLabel(k), value: k.ort||''}))
       .concat(leads.length > 8 ? [{label:`+ ${leads.length-8} weitere`,value:''}] : []);
   });
   attachKpiTooltip('kpi-deals', 'Aktive Deals', () => {
     const active = deals.filter(d => d.status==='Aktiv');
-    return active.slice(0,8).map(d => ({label: d.kunde, value: d.wert ? d.wert.toLocaleString('de-DE')+'€' : ''}))
+    return active.slice(0,8).map(d => ({label: d.kunde||'–', value: d.wert ? d.wert.toLocaleString('de-DE')+'€' : ''}))
       .concat(active.length > 8 ? [{label:`+ ${active.length-8} weitere`,value:''}] : []);
   });
   attachKpiTooltip('kpi-followups', 'Offene Aktivitäten', () => {
     const open = allActs.filter(a => a.status==='Offen');
-    return open.slice(0,8).map(a => ({label: a.kunde, value: a.typ||''}))
+    return open.slice(0,8).map(a => ({label: a.kunde||'–', value: a.typ||''}))
       .concat(open.length > 8 ? [{label:`+ ${open.length-8} weitere`,value:''}] : []);
   });
 }

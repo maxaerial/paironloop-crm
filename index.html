@@ -6372,15 +6372,16 @@ async function sendEmailBulkDirect() {
         email: "info@paironloop.com"
       });
       success++;
-      // Auto-create Journey entry
-      if(!isDemoMode) {
+      // Auto-create Journey entry (skip own email)
+      if(!isDemoMode && k.email !== "info@paironloop.com") {
         const phase = mapVorlageToJourneyPhase(vorlage.name);
         const userId = (await sb.auth.getUser()).data.user?.id;
+        const {count: jCount} = await sb.from("journey").select("*",{count:"exact",head:true});
         await sb.from("journey").insert({
           kunde: k.unternehmen || `${k.vorname||""} ${k.nachname||""}`.trim(),
           datum: today,
           phase,
-          nr: "T"+String(Date.now()).slice(-6),
+          nr: "T"+String((jCount||0)+1).padStart(3,"0"),
           touchpoint: vorlage.name,
           kanal: "E-Mail",
           aktivitaet: betreff,

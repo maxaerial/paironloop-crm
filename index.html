@@ -756,9 +756,24 @@ tbody tr:hover td { background: var(--bg3); }
   font-family: var(--font);
   outline: none;
   transition: var(--transition);
+  width: 100%;
 }
 .field input:focus,.field select:focus,.field textarea:focus { border-color: var(--accent); background: var(--bg4); }
 .field textarea { resize: vertical; }
+
+/* Clearable input wrapper */
+.field-input-wrap { position: relative; display: flex; align-items: center; }
+.field-input-wrap input,
+.field-input-wrap textarea { padding-right: 26px !important; width: 100%; }
+.field-clear-btn {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  color: var(--text3); font-size: 14px; line-height: 1;
+  padding: 2px 3px; display: none; border-radius: 50%;
+  transition: color .15s;
+}
+.field-clear-btn:hover { color: var(--text1); }
+.field-input-wrap textarea ~ .field-clear-btn { top: 10px; transform: none; }
 
 /* ── SETTINGS PANEL ── */
 .settings-panel {
@@ -2964,7 +2979,7 @@ function editKontaktDemo(id) {
   document.getElementById("ek-homepage").value=k.homepage||"";
   document.getElementById("ek-kommentar").value=k.kommentar||"";
   document.getElementById("edit-modal-title").textContent=k.unternehmen+" ändern";
-  openModal("modal-edit-kontakt");
+  openModalEdit("modal-edit-kontakt");
 }
 
 function renderJourneyDemo() {
@@ -3191,6 +3206,7 @@ function onLogin(user) {
   if(theme !== "midnight") document.documentElement.setAttribute("data-theme", theme);
   loadTeamMembers();
   renderAll();
+  setTimeout(initClearableFields, 500);
 }
 
 function renderTeamMembersList() {
@@ -3551,11 +3567,11 @@ function renderAll() { renderDashboard(); renderKontakte(); renderJourney(); ren
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
 function openSettings() {
   document.getElementById("settings-panel").classList.add("open");
-  // Fill current email display
   const emailDisp = document.getElementById("settings-email-display");
   const emailTxt = document.getElementById("settings-email");
   if(emailDisp && emailTxt) emailDisp.textContent = emailTxt.textContent;
   renderTeamMembersList();
+  setTimeout(initClearableFields, 50);
 }
 function closeSettings() { document.getElementById("settings-panel").classList.remove("open"); }
 
@@ -4703,7 +4719,7 @@ const EMAIL_SIGNATURE = `<br><br>
                 <div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#999999;margin-top:4px">Content Creator</div>
               </td>
               <td style="text-align:right;vertical-align:middle;padding-left:20px">
-                <img src="https://paironloop.com/logo.png" alt="Pair On Loop" width="100" style="display:block;border:0px" onerror="this.style.display='none'">
+                <img src="data:image/jpeg;base64,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" alt="Pair On Loop" width="100" style="display:block;border:0px">
               </td>
             </tr>
           </tbody>
@@ -4779,6 +4795,37 @@ function sendReminderForAktivitaet(id) {
   if(!a) return;
   if(!a.verantwortlich) { showToast("⚠ Kein Verantwortlicher eingetragen"); return; }
   sendAktivitaetNotification("remind", a.verantwortlich, a.kunde, a.typ||"Aktivität", a.datum, a.prioritaet, a.beschreibung||"");
+}
+
+// ── CLEARABLE FIELDS ─────────────────────────────────────────────────────────
+function initClearableFields() {
+  document.querySelectorAll('.field input[type="text"], .field input[type="email"], .field input[type="number"], .field input[type="url"], .field input[type="tel"], .field input[type="date"], .field textarea').forEach(el => {
+    if(el.closest('.field-input-wrap')) return; // already wrapped
+    const wrap = document.createElement('div');
+    wrap.className = 'field-input-wrap';
+    el.parentNode.insertBefore(wrap, el);
+    wrap.appendChild(el);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'field-clear-btn';
+    btn.innerHTML = '×';
+    btn.title = 'Leeren';
+    btn.addEventListener('click', () => { el.value = ''; el.focus(); btn.style.display = 'none'; el.dispatchEvent(new Event('input')); });
+    wrap.appendChild(btn);
+    el.addEventListener('input', () => { btn.style.display = el.value ? 'block' : 'none'; });
+    if(el.value) btn.style.display = 'block';
+  });
+}
+
+function resetModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if(!modal) return;
+  modal.querySelectorAll('input:not([type="hidden"]), textarea').forEach(el => {
+    el.value = '';
+    const btn = el.parentNode?.querySelector('.field-clear-btn');
+    if(btn) btn.style.display = 'none';
+  });
+  modal.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
 }
 
 // ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
@@ -5116,7 +5163,7 @@ function editDeal(id) {
   document.getElementById("ed-status").value = d.status||"Aktiv";
   document.getElementById("ed-notizen").value = d.notizen||"";
   document.getElementById("ed-title").textContent = (d.beschreibung||d.kunde||"Deal") + " bearbeiten";
-  openModal("modal-edit-deal");
+  openModalEdit("modal-edit-deal");
 }
 
 // Pipeline Phase → Kontakt Status + Journey Auto-Sync
@@ -5320,7 +5367,7 @@ function editAktivitaet(id) {
     eaInp.style.display = "none";
   }
   document.getElementById("ea-title").textContent = (a.kunde||"Aktivität") + " bearbeiten";
-  openModal("modal-edit-aktivitaet");
+  openModalEdit("modal-edit-aktivitaet");
 }
 
 async function updateAktivitaet() {
@@ -5467,7 +5514,7 @@ function editJourney(id) {
   document.getElementById("ej-aktivitaet").value = j.aktivitaet||"";
   document.getElementById("ej-reaktion").value = j.reaktion||"";
   document.getElementById("ej-title").textContent = (j.kunde||"Touchpoint") + " bearbeiten";
-  openModal("modal-edit-journey");
+  openModalEdit("modal-edit-journey");
 }
 
 async function updateJourney() {
@@ -5509,7 +5556,7 @@ function editKontakt(id) {
   document.getElementById("ek-homepage").value = k.homepage||"";
   document.getElementById("ek-kommentar").value = k.kommentar||"";
   document.getElementById("edit-modal-title").textContent = k.unternehmen + " bearbeiten";
-  openModal("modal-edit-kontakt");
+  openModalEdit("modal-edit-kontakt");
 }
 
 async function updateKontakt() {
@@ -5795,7 +5842,15 @@ async function moveDeal(id, direction) {
   showToast(`✓ ${deal.beschreibung||deal.kunde} → ${newPhase}`);
 }
 
-function openModal(id) { document.getElementById(id).classList.add("open"); }
+function openModal(id) {
+  resetModal(id);
+  document.getElementById(id).classList.add("open");
+  setTimeout(initClearableFields, 50);
+}
+function openModalEdit(id) {
+  document.getElementById(id).classList.add("open");
+  setTimeout(initClearableFields, 50);
+}
 function closeModal(id) { document.getElementById(id).classList.remove("open"); }
 document.querySelectorAll(".modal-overlay").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open");}));
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){document.querySelectorAll(".modal-overlay.open").forEach(m=>m.classList.remove("open"));closeSettings();}});
@@ -6029,6 +6084,7 @@ async function sendEmailBulkDirect() {
 
   showToast(`⏳ Sende ${empfaenger.length} E-Mail(s)…`);
   let success = 0, failed = 0;
+  const today = new Date().toISOString().split("T")[0];
 
   for (const k of empfaenger) {
     const betreff = vorlage.betreff
@@ -6048,6 +6104,22 @@ async function sendEmailBulkDirect() {
         email: "info@paironloop.com"
       });
       success++;
+      // Auto-create Journey entry
+      if(!isDemoMode) {
+        const phase = mapVorlageToJourneyPhase(vorlage.name);
+        const userId = (await sb.auth.getUser()).data.user?.id;
+        await sb.from("journey").insert({
+          kunde: k.unternehmen || `${k.vorname||""} ${k.nachname||""}`.trim(),
+          datum: today,
+          phase,
+          touchpoint: vorlage.name,
+          kanal: "E-Mail",
+          aktivitaet: betreff,
+          reaktion: "–",
+          score: 5,
+          user_id: userId
+        });
+      }
     } catch(err) {
       failed++;
       console.error("EmailJS error for", k.email, err);
@@ -6055,10 +6127,21 @@ async function sendEmailBulkDirect() {
   }
 
   if(failed === 0) {
-    showToast(`✓ ${success} E-Mail(s) erfolgreich gesendet`);
+    showToast(`✓ ${success} E-Mail(s) gesendet + Journey eingetragen`);
   } else {
     showToast(`⚠ ${success} gesendet, ${failed} fehlgeschlagen`);
   }
+  if(!isDemoMode && success > 0) renderJourney();
+}
+
+function mapVorlageToJourneyPhase(vorlageName) {
+  const n = vorlageName.toLowerCase();
+  if(n.includes("erstkontakt") || n.includes("hallo") || n.includes("newsletter") || n.includes("willkommen")) return "Bewusstsein";
+  if(n.includes("angebot") || n.includes("leistung") || n.includes("übersicht") || n.includes("saison")) return "Interesse";
+  if(n.includes("nachfassen") || n.includes("rückfrage")) return "Angebot";
+  if(n.includes("empfehlung") || n.includes("feedback") || n.includes("bewertung")) return "Empfehlung";
+  if(n.includes("weihnacht") || n.includes("neujahr") || n.includes("ostern")) return "Empfehlung";
+  return "Interesse"; // default
 }
 
 function filterEmailKontakte() {
@@ -6134,7 +6217,7 @@ function openEmailVorlageModal(id) {
   document.getElementById("email-vorlage-betreff").value = "";
   document.getElementById("email-vorlage-text").value = "";
   document.getElementById("email-vorlage-modal-title").textContent = "Neue Vorlage";
-  openModal("modal-email-vorlage");
+  openModalEdit("modal-email-vorlage");
 }
 
 function editEmailVorlage(id) {
@@ -6145,7 +6228,7 @@ function editEmailVorlage(id) {
   document.getElementById("email-vorlage-betreff").value = v.betreff;
   document.getElementById("email-vorlage-text").value = v.text;
   document.getElementById("email-vorlage-modal-title").textContent = "Vorlage bearbeiten";
-  openModal("modal-email-vorlage");
+  openModalEdit("modal-email-vorlage");
 }
 
 function saveEmailVorlage() {

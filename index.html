@@ -4129,8 +4129,10 @@ async function addJourney() {
   }
 
   // 2. Insert journey touchpoint
+  const {count: jCount} = await sb.from("journey").select("*",{count:"exact",head:true});
+  const journeyNr = "T" + String((jCount||0)+1).padStart(3,"0");
   const {error} = await sb.from("journey").insert({
-    kunde, kontakt_id: kontaktId,
+    nr: journeyNr, kunde, kontakt_id: kontaktId,
     datum, phase, touchpoint, kanal,
     aktivitaet, reaktion, score,
     user_id: userId

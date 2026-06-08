@@ -2090,6 +2090,7 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="field"><label data-i18n="company">Unternehmen</label><input id="k-unternehmen"></div>
         <div class="field"><label data-i18n="firstname">Vorname</label><input id="k-vorname"></div>
         <div class="field"><label data-i18n="lastname">Nachname</label><input id="k-nachname"></div>
+        <div class="field"><label>Geschlecht</label><select id="k-geschlecht"><option value="">– nicht angegeben –</option><option value="m">Männlich</option><option value="f">Weiblich</option></select></div>
         <div class="field"><label>Stadt</label><input id="k-ort"></div>
         <div class="field"><label>Land</label><input id="k-land" placeholder="z.B. Deutschland"></div>
         <div class="field"><label data-i18n="email">E-Mail</label><input id="k-email" type="email"></div>
@@ -2460,6 +2461,7 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="field"><label>Unternehmen</label><input id="ek-unternehmen"></div>
         <div class="field"><label>Vorname</label><input id="ek-vorname"></div>
         <div class="field"><label>Nachname</label><input id="ek-nachname"></div>
+        <div class="field"><label>Geschlecht</label><select id="ek-geschlecht"><option value="">– nicht angegeben –</option><option value="m">Männlich</option><option value="f">Weiblich</option></select></div>
         <div class="field"><label>Stadt</label><input id="ek-ort"></div>
         <div class="field"><label>Land</label><input id="ek-land" placeholder="z.B. Deutschland"></div>
         <div class="field"><label>E-Mail</label><input id="ek-email" type="email"></div>
@@ -2966,7 +2968,7 @@ function editKontaktDemo(id) {
   const k=kontakteData.find(x=>x.id===id); if(!k) return;
   document.getElementById("ek-id").value=k.id;
   document.getElementById("ek-unternehmen").value=k.unternehmen||"";
-  document.getElementById("ek-vorname").value=k.vorname||"";
+  document.getElementById("ek-vorname").value=k.vorname||""; document.getElementById("ek-geschlecht").value=k.geschlecht||"";
   document.getElementById("ek-nachname").value=k.nachname||"";
   document.getElementById("ek-ort").value=k.ort||"";
   document.getElementById("ek-land").value=k.land||"";
@@ -4207,6 +4209,7 @@ async function addKontakt() {
     nr, unternehmen:document.getElementById("k-unternehmen").value,
     vorname:document.getElementById("k-vorname").value||"–",
     nachname:document.getElementById("k-nachname").value||"–",
+    geschlecht:document.getElementById("k-geschlecht").value||null,
     ort:document.getElementById("k-ort").value,
     land:document.getElementById("k-land").value||null,
     email:document.getElementById("k-email").value||"–",
@@ -4799,8 +4802,9 @@ function sendReminderForAktivitaet(id) {
 
 // ── CLEARABLE FIELDS ─────────────────────────────────────────────────────────
 function initClearableFields() {
-  document.querySelectorAll('.field input[type="text"], .field input[type="email"], .field input[type="number"], .field input[type="url"], .field input[type="tel"], .field input[type="date"], .field textarea').forEach(el => {
-    if(el.closest('.field-input-wrap')) return; // already wrapped
+  const selector = '.field input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), .field textarea';
+  document.querySelectorAll(selector).forEach(el => {
+    if(el.closest('.field-input-wrap')) return;
     const wrap = document.createElement('div');
     wrap.className = 'field-input-wrap';
     el.parentNode.insertBefore(wrap, el);
@@ -4810,10 +4814,17 @@ function initClearableFields() {
     btn.className = 'field-clear-btn';
     btn.innerHTML = '×';
     btn.title = 'Leeren';
-    btn.addEventListener('click', () => { el.value = ''; el.focus(); btn.style.display = 'none'; el.dispatchEvent(new Event('input')); });
+    btn.addEventListener('click', () => {
+      el.value = '';
+      el.focus();
+      btn.style.display = 'none';
+      el.dispatchEvent(new Event('input'));
+    });
     wrap.appendChild(btn);
-    el.addEventListener('input', () => { btn.style.display = el.value ? 'block' : 'none'; });
-    if(el.value) btn.style.display = 'block';
+    const update = () => { btn.style.display = el.value ? 'block' : 'none'; };
+    el.addEventListener('input', update);
+    el.addEventListener('change', update);
+    update();
   });
 }
 
@@ -5543,7 +5554,7 @@ function editKontakt(id) {
   if(!k) return;
   document.getElementById("ek-id").value = k.id;
   document.getElementById("ek-unternehmen").value = k.unternehmen||"";
-  document.getElementById("ek-vorname").value = k.vorname||"";
+  document.getElementById("ek-vorname").value = k.vorname||""; document.getElementById("ek-geschlecht").value = k.geschlecht||"";
   document.getElementById("ek-nachname").value = k.nachname||"";
   document.getElementById("ek-ort").value = k.ort||"";
   document.getElementById("ek-land").value = k.land||"";
@@ -5566,6 +5577,7 @@ async function updateKontakt() {
     unternehmen:document.getElementById("ek-unternehmen").value,
     vorname:document.getElementById("ek-vorname").value||"–",
     nachname:document.getElementById("ek-nachname").value||"–",
+    geschlecht:document.getElementById("ek-geschlecht").value||null,
     ort:document.getElementById("ek-ort").value,
     land:document.getElementById("ek-land").value||null,
     email:document.getElementById("ek-email").value||"–",
@@ -6087,14 +6099,23 @@ async function sendEmailBulkDirect() {
   const today = new Date().toISOString().split("T")[0];
 
   for (const k of empfaenger) {
+    // Gender-aware salutation
+    const anrede = k.geschlecht === "m" ? `Lieber ${k.vorname||k.unternehmen||""}` :
+                   k.geschlecht === "f" ? `Liebe ${k.vorname||k.unternehmen||""}` :
+                   k.vorname ? `Hallo ${k.vorname}` : `Hallo`;
+
     const betreff = vorlage.betreff
       .replace(/{{vorname}}/g, k.vorname||"")
       .replace(/{{nachname}}/g, k.nachname||"")
-      .replace(/{{unternehmen}}/g, k.unternehmen||"");
+      .replace(/{{unternehmen}}/g, k.unternehmen||"")
+      .replace(/{{anrede}}/g, anrede);
     const text = vorlage.text
       .replace(/{{vorname}}/g, k.vorname||"")
       .replace(/{{nachname}}/g, k.nachname||"")
-      .replace(/{{unternehmen}}/g, k.unternehmen||"");
+      .replace(/{{unternehmen}}/g, k.unternehmen||"")
+      .replace(/{{anrede}}/g, anrede)
+      .replace(/^Hallo {{vorname}},/m, anrede + ",")
+      .replace(/^Hallo {{vorname}}/m, anrede);
 
     try {
       await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {

@@ -1435,6 +1435,10 @@ tbody td { font-feature-settings: "zero" 0; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
         <span>E-Mail</span>
       </div>
+      <div class="nav-item" onclick="showPage('hilfe',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Hilfe</span>
+      </div>
     </nav>
     <div class="sidebar-actions">
       <button class="sidebar-action-btn" onclick="openSettings()">
@@ -1932,6 +1936,11 @@ tbody td { font-feature-settings: "zero" 0; }
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="page" id="page-hilfe">
+      <div class="page-header"><h1 id="hilfe-title">Hilfe & Anleitung</h1></div>
+      <div id="hilfe-content" style="max-width:800px;padding:0 24px 40px"></div>
     </div>
 
   </div><!-- /main -->
@@ -3676,6 +3685,7 @@ function showPage(id, el) {
     if(id==="pipeline")     renderPipelineDemo();
     if(id==="aktivitaeten") renderAktivitaetenDemo();
     if(id==="email")        renderEmail();
+    if(id==="hilfe")        renderHilfe();
   } else {
     if(id==="dashboard")    renderDashboard();
     if(id==="journey")      renderJourney();
@@ -3683,6 +3693,7 @@ function showPage(id, el) {
     if(id==="pipeline")     renderPipeline();
     if(id==="aktivitaeten") renderAktivitaeten();
     if(id==="email")        renderEmail();
+    if(id==="hilfe")        renderHilfe();
   }
 }
 function renderAll() { renderDashboard(); renderKontakte(); renderJourney(); renderPipeline(); renderAktivitaeten(); checkNotifications(); }
@@ -5139,6 +5150,181 @@ async function saveReaktion() {
   closeModal("modal-reaktion");
   showToast("✓ Reaktion gespeichert + neuer Touchpoint angelegt");
   renderJourney();
+}
+
+// ── HILFE ─────────────────────────────────────────────────────────────────────
+const HILFE_CONTENT = {
+  de: `
+<style>
+.hilfe-section { margin-bottom: 32px; }
+.hilfe-section h2 { font-size: 16px; font-weight: 700; color: var(--text1); margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.hilfe-section h3 { font-size: 13px; font-weight: 600; color: var(--accent2); margin: 16px 0 6px; }
+.hilfe-section p, .hilfe-section li { font-size: 13px; color: var(--text2); line-height: 1.7; }
+.hilfe-section ul { padding-left: 18px; margin: 6px 0; }
+.hilfe-badge { display: inline-block; background: var(--accent-soft); color: var(--accent2); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; margin-right: 4px; }
+.hilfe-tip { background: var(--bg2); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 8px 0; font-size: 12px; color: var(--text2); }
+</style>
+
+<div class="hilfe-section">
+  <h2>🚀 Schnellstart</h2>
+  <p>Paironloop CRM hilft dir, Kontakte, Deals, Aktivitäten und die Customer Journey zentral zu verwalten. So startest du:</p>
+  <ul>
+    <li><strong>Kontakt anlegen</strong> → Kontakte → + Kontakt</li>
+    <li><strong>Deal erstellen</strong> → Pipeline → + Deal</li>
+    <li><strong>Aktivität planen</strong> → Aktivitäten → + Aktivität</li>
+    <li><strong>E-Mail senden</strong> → E-Mail → Vorlage wählen → Empfänger hinzufügen → Direkt senden via Titan</li>
+  </ul>
+</div>
+
+<div class="hilfe-section">
+  <h2>👥 Kontakte</h2>
+  <h3>Kontakt anlegen</h3>
+  <p>Klicke auf <span class="hilfe-badge">+ Kontakt</span> und fülle die Felder aus. Pflichtfelder: Unternehmen, Vorname, Nachname. Wichtige Felder für E-Mail-Versand: <strong>Sprache</strong>, <strong>Geschlecht</strong> und <strong>Individueller Satz</strong>.</p>
+  <h3>Massenänderung</h3>
+  <p>Mehrere Kontakte auswählen → <span class="hilfe-badge">Massenänderung</span> → Felder ausfüllen → Auf alle anwenden. Nur ausgefüllte Felder werden geändert.</p>
+  <h3>Filter</h3>
+  <p>Suche, Status, Branche, Unternehmen und Sprache können kombiniert gefiltert werden.</p>
+  <div class="hilfe-tip">💡 Tipp: Hinterlege immer Sprache (DE/EN) und Geschlecht damit die Anrede bei E-Mails automatisch korrekt ist.</div>
+</div>
+
+<div class="hilfe-section">
+  <h2>📊 Customer Journey</h2>
+  <p>Die Customer Journey zeigt alle Touchpoints mit einem Kunden — von der ersten Kontaktaufnahme bis zum Abschluss.</p>
+  <h3>Touchpoint anlegen</h3>
+  <p>Klicke auf <span class="hilfe-badge">+ Touchpoint</span> und wähle Kunde, Phase und Kanal. Jeder Touchpoint bekommt automatisch eine eindeutige ID (T001, T002, …).</p>
+  <h3>Phasen</h3>
+  <ul>
+    <li><strong>Bewusstsein</strong> — Erstkontakt, Newsletter-Anmeldung, Kooperationsanfrage</li>
+    <li><strong>Interesse</strong> — Antwort erhalten, Interesse bestätigt</li>
+    <li><strong>Angebot</strong> — Angebot verschickt, Termin vereinbart</li>
+    <li><strong>Kauf</strong> — Deal abgeschlossen</li>
+    <li><strong>Empfehlung</strong> — Feedback, Bewertung, Weiterempfehlung</li>
+  </ul>
+  <h3>Reaktion erfassen</h3>
+  <p>Klicke auf <span class="hilfe-badge">✉ Reaktion</span> in einer Zeile → wähle die Reaktion → automatisch wird ein neuer Touchpoint mit der passenden Phase angelegt.</p>
+  <div class="hilfe-tip">💡 Tipp: Nach dem E-Mail-Versand via Titan wird automatisch ein Touchpoint in der Phase „Bewusstsein" oder „Interesse" angelegt.</div>
+</div>
+
+<div class="hilfe-section">
+  <h2>📧 E-Mail</h2>
+  <h3>Empfänger filtern</h3>
+  <p>Nutze die Filter oben (Branche, Phase, Newsletter, Sprache, Aktivitäten) um die richtige Zielgruppe zu finden. Mit <span class="hilfe-badge">Alle</span> werden alle gefilterten Kontakte gleichzeitig ausgewählt.</p>
+  <h3>Vorlage auswählen</h3>
+  <p>Wähle eine der 14 vorbereiteten Vorlagen. Die Anrede wird automatisch angepasst: Deutsch → „Liebes Hotel-Team" / Englisch → „Dear Hotel Team".</p>
+  <h3>Versand</h3>
+  <p><span class="hilfe-badge">Direkt senden via Titan</span> sendet die E-Mail direkt. Nach dem Versand wird automatisch ein Journey-Touchpoint angelegt. Eine BCC-Kopie geht an info@paironloop.com.</p>
+  <h3>Vorlagen-Platzhalter</h3>
+  <ul>
+    <li><code>{{anrede}}</code> — automatische Anrede je nach Geschlecht & Sprache</li>
+    <li><code>{{unternehmen}}</code> — Unternehmensname</li>
+    <li><code>{{individueller_satz}}</code> — individueller Satz aus dem Kontaktstamm</li>
+  </ul>
+</div>
+
+<div class="hilfe-section">
+  <h2>🔄 Pipeline</h2>
+  <p>Die Pipeline zeigt alle aktiven Deals nach Phasen (Erstgespräch → Angebot → Verhandlung → Abschluss). Deals können per Pfeil-Buttons zwischen Phasen verschoben werden. Bei jedem Phasenwechsel wird automatisch ein Journey-Touchpoint angelegt.</p>
+</div>
+
+<div class="hilfe-section">
+  <h2>✅ Aktivitäten</h2>
+  <p>Aktivitäten sind geplante Aufgaben mit Fälligkeitsdatum. Bei Fälligkeit bekommt der Verantwortliche automatisch eine Reminder-E-Mail. Jede Aktivität bekommt eine eindeutige ID (A001, A002, …).</p>
+  <div class="hilfe-tip">💡 Tipp: Über den E-Mail-Filter „Fällige Aktivitäten" kannst du gezielt Kunden anschreiben, bei denen eine Aktivität überfällig ist.</div>
+</div>
+
+<div class="hilfe-section">
+  <h2>🌐 Newsletter-Automation</h2>
+  <p>Wenn sich jemand auf paironloop.com für den Newsletter anmeldet, wird automatisch ein Kontakt angelegt und ein Journey-Touchpoint „Newsletter-Anmeldung / Bewusstsein" erstellt. Dies läuft über WP Webhooks → Make.com → Supabase Edge Function.</p>
+</div>
+
+<div class="hilfe-section">
+  <h2>⚙️ Einstellungen</h2>
+  <ul>
+    <li><strong>Teammitglieder</strong> — Verantwortliche für Aktivitäten verwalten</li>
+    <li><strong>Newsletter-Anmeldung</strong> — manuell eine Newsletter-Anmeldung erfassen</li>
+    <li><strong>Erscheinungsbild</strong> — Theme wechseln (Dark/Light/Arctic/Rose)</li>
+    <li><strong>Sprache</strong> — CRM-Sprache (DE/EN/FR/IT/ES)</li>
+  </ul>
+</div>`,
+
+  en: `
+<style>
+.hilfe-section { margin-bottom: 32px; }
+.hilfe-section h2 { font-size: 16px; font-weight: 700; color: var(--text1); margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.hilfe-section h3 { font-size: 13px; font-weight: 600; color: var(--accent2); margin: 16px 0 6px; }
+.hilfe-section p, .hilfe-section li { font-size: 13px; color: var(--text2); line-height: 1.7; }
+.hilfe-section ul { padding-left: 18px; margin: 6px 0; }
+.hilfe-badge { display: inline-block; background: var(--accent-soft); color: var(--accent2); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; margin-right: 4px; }
+.hilfe-tip { background: var(--bg2); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 8px 0; font-size: 12px; color: var(--text2); }
+</style>
+
+<div class="hilfe-section">
+  <h2>🚀 Quick Start</h2>
+  <p>Paironloop CRM helps you manage contacts, deals, activities and the customer journey in one place. Here's how to get started:</p>
+  <ul>
+    <li><strong>Add a contact</strong> → Contacts → + Contact</li>
+    <li><strong>Create a deal</strong> → Pipeline → + Deal</li>
+    <li><strong>Plan an activity</strong> → Activities → + Activity</li>
+    <li><strong>Send an email</strong> → Email → Select template → Add recipients → Send via Titan</li>
+  </ul>
+</div>
+
+<div class="hilfe-section">
+  <h2>👥 Contacts</h2>
+  <h3>Adding a contact</h3>
+  <p>Click <span class="hilfe-badge">+ Contact</span> and fill in the fields. Required: Company, First name, Last name. Important for email: <strong>Language</strong>, <strong>Gender</strong> and <strong>Individual sentence</strong>.</p>
+  <h3>Bulk edit</h3>
+  <p>Select multiple contacts → <span class="hilfe-badge">Bulk edit</span> → fill in fields → Apply to all. Only filled fields will be updated.</p>
+  <div class="hilfe-tip">💡 Tip: Always set Language (DE/EN) and Gender so salutations in emails are generated correctly.</div>
+</div>
+
+<div class="hilfe-section">
+  <h2>📊 Customer Journey</h2>
+  <p>The customer journey tracks all touchpoints with a customer — from first contact to closing.</p>
+  <h3>Phases</h3>
+  <ul>
+    <li><strong>Awareness</strong> — first contact, newsletter signup, cooperation request</li>
+    <li><strong>Interest</strong> — reply received, interest confirmed</li>
+    <li><strong>Offer</strong> — offer sent, appointment scheduled</li>
+    <li><strong>Purchase</strong> — deal closed</li>
+    <li><strong>Recommendation</strong> — feedback, review, referral</li>
+  </ul>
+  <h3>Tracking reactions</h3>
+  <p>Click <span class="hilfe-badge">✉ Reaction</span> on any row → select reaction → a new touchpoint with the matching phase is created automatically.</p>
+</div>
+
+<div class="hilfe-section">
+  <h2>📧 Email</h2>
+  <h3>Filtering recipients</h3>
+  <p>Use the filters (Industry, Phase, Newsletter, Language, Activities) to find the right audience. Click <span class="hilfe-badge">All</span> to select all filtered contacts at once.</p>
+  <h3>Templates & placeholders</h3>
+  <ul>
+    <li><code>{{anrede}}</code> — automatic salutation based on gender & language</li>
+    <li><code>{{unternehmen}}</code> — company name</li>
+    <li><code>{{individueller_satz}}</code> — individual sentence from the contact record</li>
+  </ul>
+  <p>After sending via Titan, a journey touchpoint is created automatically. A BCC copy goes to info@paironloop.com.</p>
+</div>
+
+<div class="hilfe-section">
+  <h2>⚙️ Settings</h2>
+  <ul>
+    <li><strong>Team members</strong> — manage responsible persons for activities</li>
+    <li><strong>Newsletter signup</strong> — manually record a newsletter signup</li>
+    <li><strong>Appearance</strong> — switch theme (Dark/Light/Arctic/Rose)</li>
+    <li><strong>Language</strong> — CRM language (DE/EN/FR/IT/ES)</li>
+  </ul>
+</div>`
+};
+
+function renderHilfe() {
+  const lang = currentLang || "de";
+  const content = HILFE_CONTENT[lang] || HILFE_CONTENT["de"];
+  const title = lang === "en" ? "Help & Guide" : "Hilfe & Anleitung";
+  const el = document.getElementById("hilfe-content");
+  const titleEl = document.getElementById("hilfe-title");
+  if(el) el.innerHTML = content;
+  if(titleEl) titleEl.textContent = title;
 }
 
 // ── NOTIFICATIONS ─────────────────────────────────────────────────────────────

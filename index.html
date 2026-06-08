@@ -6373,9 +6373,7 @@ async function sendEmailBulkDirect() {
     const hasName = k.vorname && k.vorname !== "–" && k.nachname && k.nachname !== "–";
     const isEn = k.sprache === "en";
     const anrede = isEn
-      ? (k.geschlecht === "m" && hasName ? `Dear ${k.vorname}` :
-         k.geschlecht === "f" && hasName ? `Dear ${k.vorname}` :
-         `Dear ${k.unternehmen||"Team"} Team`)
+      ? (hasName ? `Dear ${k.vorname}` : `Dear ${k.unternehmen||"Team"} Team`)
       : (k.geschlecht === "m" && hasName ? `Lieber ${k.vorname}` :
          k.geschlecht === "f" && hasName ? `Liebe ${k.vorname}` :
          `Liebes ${k.unternehmen||"Team"}-Team`);

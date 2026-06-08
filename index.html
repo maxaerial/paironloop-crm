@@ -1894,6 +1894,13 @@ tbody td { font-feature-settings: "zero" 0; }
               <option value="ja">Newsletter: Ja</option>
               <option value="nein">Newsletter: Nein</option>
             </select>
+            <select id="email-sprache-filter" class="filter-select" onchange="filterEmailKontakte()">
+              <option value="">Alle Sprachen</option>
+              <option value="de">Deutsch</option>
+              <option value="en">Englisch</option>
+              <option value="it">Italienisch</option>
+              <option value="fr">Französisch</option>
+            </select>
             <select id="email-aktivtyp-filter" class="filter-select" onchange="filterEmailKontakte()">
               <option value="">Alle Aktivitäten</option>
               <option value="faellig">Fällige Aktivitäten</option>
@@ -2407,7 +2414,7 @@ tbody td { font-feature-settings: "zero" 0; }
 </div>
 <div class="modal-overlay" id="modal-bulk-kontakt">
   <div class="modal">
-    <div class="modal-head"><h3>Massänderung Kontakte</h3><button class="modal-close" onclick="closeModal('modal-bulk-kontakt')">×</button></div>
+    <div class="modal-head"><h3>Massenänderung Kontakte</h3><button class="modal-close" onclick="closeModal('modal-bulk-kontakt')">×</button></div>
     <div class="modal-body">
       <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Nur ausgefüllte Felder werden geändert.</p>
       <div class="form-grid">
@@ -2418,16 +2425,19 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="field"><label>Branche</label>
           <select id="bk-branche">
             <option value="">— unverändert —</option>
-            <option>Hospitality</option>
-            <option>Restaurant</option>
-            <option>Weingut</option>
-            <option>Freizeitaktivität</option>
-            <option>Café</option>
-            <option>Bar</option>
-            <option>Sonstiges</option>
+            <option>Hospitality</option><option>Restaurant</option><option>Weingut</option>
+            <option>Freizeitaktivität</option><option>Café</option><option>Bar</option><option>Sonstiges</option>
           </select>
         </div>
         <div class="field"><label>Land</label><input id="bk-land" placeholder="— unverändert —"></div>
+        <div class="field"><label>Stadt</label><input id="bk-ort" placeholder="— unverändert —"></div>
+        <div class="field"><label>Geschlecht</label><select id="bk-geschlecht"><option value="">— unverändert —</option><option value="m">Männlich</option><option value="f">Weiblich</option></select></div>
+        <div class="field"><label>Sprache</label><select id="bk-sprache"><option value="">— unverändert —</option><option value="de">Deutsch</option><option value="en">Englisch</option><option value="it">Italienisch</option><option value="fr">Französisch</option></select></div>
+        <div class="field"><label>Newsletter</label><select id="bk-newsletter"><option value="">— unverändert —</option><option value="ja">Ja</option><option value="nein">Nein</option></select></div>
+        <div class="field"><label>Telefon</label><input id="bk-telefon" placeholder="— unverändert —"></div>
+        <div class="field"><label>Homepage</label><input id="bk-homepage" placeholder="— unverändert —"></div>
+        <div class="field form-full"><label>Individueller Satz</label><input id="bk-individueller-satz" placeholder="— unverändert —"></div>
+        <div class="field form-full"><label>Kommentar</label><textarea id="bk-kommentar" rows="2" placeholder="— unverändert —"></textarea></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -5924,14 +5934,18 @@ function bulkEditKontakte() {
 }
 async function applyBulkKontakte() {
   const updates = {};
-  const status = document.getElementById("bk-status").value;
-  const kanal  = document.getElementById("bk-kanal").value;
-  const branche= document.getElementById("bk-branche").value.trim();
-  const land   = document.getElementById("bk-land").value.trim();
-  if(status)  updates.status  = status;
-  if(kanal)   updates.kanal   = kanal;
-  if(branche) updates.branche = branche;
-  if(land)    updates.land    = land;
+  const fields = [
+    ["bk-status","status"], ["bk-kanal","kanal"], ["bk-branche","branche"],
+    ["bk-land","land"], ["bk-ort","ort"], ["bk-geschlecht","geschlecht"],
+    ["bk-sprache","sprache"], ["bk-newsletter","newsletter"],
+    ["bk-telefon","telefon"], ["bk-homepage","homepage"],
+    ["bk-individueller-satz","individueller_satz"], ["bk-kommentar","kommentar"]
+  ];
+  fields.forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    const val = el?.value?.trim?.() ?? el?.value ?? "";
+    if(val) updates[key] = val;
+  });
   if(!Object.keys(updates).length) { showToast("Nichts zu ändern", true); return; }
   const btn = document.querySelector("#modal-bulk-kontakt .btn-primary"); btn.disabled = true;
   for(const id of bulkSelected.kontakte) {
@@ -6235,6 +6249,7 @@ function populateEmailKontakteDropdown() {
   const phase     = document.getElementById("email-phase-filter")?.value || "";
   const newsletter= document.getElementById("email-newsletter-filter")?.value || "";
   const aktivtyp  = document.getElementById("email-aktivtyp-filter")?.value || "";
+  const sprache   = document.getElementById("email-sprache-filter")?.value || "";
   const sel = document.getElementById("email-search-kontakte");
   if(!sel) return;
   const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
@@ -6261,6 +6276,7 @@ function populateEmailKontakteDropdown() {
     if(phase && !matchByPhase.has(k.unternehmen)) return false;
     if(newsletter && k.newsletter !== newsletter) return false;
     if(aktivtyp && !matchByAktiv.has(k.unternehmen)) return false;
+    if(sprache && k.sprache !== sprache) return false;
     return true;
   });
   sel.innerHTML = `<option value="">+ Kontakt hinzufügen…</option>` +
@@ -6472,18 +6488,32 @@ function updateEmailSelectedCount() {
 }
 
 function emailSelectAll() {
-  const branche = document.getElementById("email-branche-filter")?.value || "";
-  const phase   = document.getElementById("email-phase-filter")?.value || "";
+  const branche   = document.getElementById("email-branche-filter")?.value || "";
+  const phase     = document.getElementById("email-phase-filter")?.value || "";
+  const newsletter= document.getElementById("email-newsletter-filter")?.value || "";
+  const aktivtyp  = document.getElementById("email-aktivtyp-filter")?.value || "";
+  const sprache   = document.getElementById("email-sprache-filter")?.value || "";
   const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
   let matchByPhase = new Set();
   if(phase) {
     const jSrc = isDemoMode ? (window.DEMO_DATA?.journey || []) : (journeyData || []);
     jSrc.filter(j => j.phase === phase).forEach(j => matchByPhase.add(j.kunde));
   }
+  let matchByAktiv = new Set();
+  if(aktivtyp) {
+    const aSrc = isDemoMode ? (window.DEMO_DATA?.aktivitaeten || []) : (aktivData || []);
+    const today = new Date().toISOString().split("T")[0];
+    const filtered = aktivtyp === "faellig" ? aSrc.filter(a => a.datum <= today && a.status === "Offen") : aSrc.filter(a => a.typ === aktivtyp);
+    filtered.forEach(a => matchByAktiv.add(a.kunde));
+  }
   src.filter(k => {
-    const matchBranche = !branche || k.branche === branche;
-    const matchPhase   = !phase   || matchByPhase.has(k.unternehmen);
-    return k.email && matchBranche && matchPhase;
+    if(!k.email) return false;
+    if(branche && k.branche !== branche) return false;
+    if(phase && !matchByPhase.has(k.unternehmen)) return false;
+    if(newsletter && k.newsletter !== newsletter) return false;
+    if(aktivtyp && !matchByAktiv.has(k.unternehmen)) return false;
+    if(sprache && k.sprache !== sprache) return false;
+    return true;
   }).forEach(k => emailSelectedIds.add(String(k.id || k.nr)));
   renderEmailKontakteList();
   updateEmailSelectedCount();

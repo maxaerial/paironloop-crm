@@ -423,6 +423,21 @@ body {
   transition: var(--transition);
 }
 .kpi-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+
+/* KPI Tooltip */
+.kpi-tooltip {
+  position: fixed; z-index: 9999;
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); padding: 8px 12px;
+  box-shadow: var(--shadow-lg); font-size: 12px; color: var(--text1);
+  pointer-events: none; max-width: 260px; min-width: 160px;
+  opacity: 0; transition: opacity .15s;
+  line-height: 1.6;
+}
+.kpi-tooltip.visible { opacity: 1; }
+.kpi-tooltip-title { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+.kpi-tooltip-item { display: flex; justify-content: space-between; gap: 12px; padding: 1px 0; }
+.kpi-tooltip-item span:last-child { color: var(--text3); font-size: 11px; }
 .kpi-card::before {
   content: '';
   position: absolute;
@@ -559,6 +574,12 @@ tbody tr:hover td { background: var(--bg3); }
 }
 .search-box input { background: none; border: none; outline: none; color: var(--text); font-size: 13px; font-family: var(--font); width: 100%; }
 .search-box svg { width: 14px; height: 14px; stroke: var(--text3); flex-shrink: 0; }
+.search-box { position: relative; }
+.search-clear-btn {
+  background: none; border: none; cursor: pointer; color: var(--text3);
+  font-size: 16px; line-height: 1; padding: 0 4px; display: none; flex-shrink: 0;
+}
+.search-clear-btn:hover { color: var(--text1); }
 .filter-select {
   padding: 7px 12px;
   background: var(--bg3);
@@ -1446,7 +1467,7 @@ tbody td { font-feature-settings: "zero" 0; }
       <div class="topbar-right">
         <div class="topbar-search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input id="global-search" placeholder="Suchen..." oninput="globalSearch(this.value)" data-i18n-placeholder="search">
+          <input id="global-search" placeholder="Suchen..." oninput="globalSearch(this.value);updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="global-search-clear" type="button" onclick="clearSearch('global-search',()=>globalSearch(''))">×</button>
         </div>
         <button class="icon-btn" onclick="openSettings()" title="Einstellungen">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
@@ -1585,7 +1606,7 @@ tbody td { font-feature-settings: "zero" 0; }
           <div class="toolbar">
             <div class="search-box">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input id="journey-search" oninput="filterJourney(this.value)" data-i18n-placeholder="search">
+              <input id="journey-search" oninput="filterJourney(this.value);updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="journey-search-clear" type="button" onclick="clearSearch('journey-search',()=>filterJourney(''))">×</button>
             </div>
             <select class="filter-select" id="journey-kunde-filter" onchange="filterJourneyKundeSelect(this.value)">
               <option value="">Alle Kunden</option>
@@ -1653,8 +1674,11 @@ tbody td { font-feature-settings: "zero" 0; }
           <div class="toolbar">
             <div class="search-box" style="flex:1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input id="kontakte-search" oninput="filterKontakte(this.value)" data-i18n-placeholder="search">
+              <input id="kontakte-search" oninput="filterKontakte(this.value);updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="kontakte-search-clear" type="button" onclick="clearSearch('kontakte-search',()=>filterKontakte(''))">×</button>
             </div>
+            <select class="filter-select" id="kontakte-unternehmen-filter" onchange="filterKontakteUnternehmen(this.value)">
+              <option value="">Alle Unternehmen</option>
+            </select>
             <select class="filter-select" id="kontakte-status-filter" onchange="filterKontakteStatus(this.value)">
               <option value="" data-i18n="all_status">Alle Status</option>
             </select>
@@ -1808,7 +1832,7 @@ tbody td { font-feature-settings: "zero" 0; }
         <div class="toolbar">
             <div class="search-box" style="flex:1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input oninput="searchAktivitaeten(this.value)" data-i18n-placeholder="search">
+              <input id="aktiv-search" oninput="searchAktivitaeten(this.value);updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="aktiv-search-clear" type="button" onclick="clearSearch('aktiv-search',()=>searchAktivitaeten(''))">×</button>
             </div>
             <select class="filter-select" onchange="filterAktivitaeten(this.value)">
               <option value="" data-i18n="all_status">Alle Status</option>
@@ -2794,24 +2818,24 @@ const DEMO_DATA = {
     {id:"d-k10",nr:"010",unternehmen:"Boutique Hotel Florhof",vorname:"Stefan",nachname:"König",ort:"München",land:"Deutschland",email:"info@florhof.de",telefon:"+49 89 284084",kanal:"Empfehlung",status:"Lead",branche:"Hospitality",dealwert:3200,letzter_kontakt:"2026-05-20",kommentar:"Neues Hotel — Eröffnungsfilm geplant"}
   ],
   journey: [
-    {id:"d-j1",nr:"J001",kunde:"Weingut Loacker",datum:"2026-03-10",phase:"Bewusstsein",touchpoint:"Instagram Post",kanal:"Instagram",aktivitaet:"Post über Weinberge gesehen",reaktion:"Like + Kommentar",score:6},
-    {id:"d-j2",nr:"J002",kunde:"Weingut Loacker",datum:"2026-03-18",phase:"Interesse",touchpoint:"Instagram DM",kanal:"Instagram",aktivitaet:"Anfrage nach Preisliste",reaktion:"Positiv, schnelle Antwort",score:8},
-    {id:"d-j3",nr:"J003",kunde:"Weingut Loacker",datum:"2026-04-05",phase:"Bewertung",touchpoint:"Angebot verschickt",kanal:"E-Mail",aktivitaet:"Angebot 3.500€ für Herbstfilm",reaktion:"Angebot gefällt, Fragen",score:7},
-    {id:"d-j4",nr:"J004",kunde:"Weingut Loacker",datum:"2026-04-20",phase:"Kauf",touchpoint:"Vertrag unterschrieben",kanal:"E-Mail",aktivitaet:"Auftrag bestätigt",reaktion:"Sehr zufrieden",score:10},
-    {id:"d-j5",nr:"J005",kunde:"Hotel Adler Resort",datum:"2026-04-01",phase:"Bewusstsein",touchpoint:"Instagram Post",kanal:"Instagram",aktivitaet:"Story über Hotelfilm geteilt",reaktion:"DM mit Interesse",score:7},
-    {id:"d-j6",nr:"J006",kunde:"Hotel Adler Resort",datum:"2026-04-15",phase:"Interesse",touchpoint:"Erstgespräch",kanal:"Telefon",aktivitaet:"Briefing für Imagefilm",reaktion:"Sehr engagiert",score:9},
-    {id:"d-j7",nr:"J007",kunde:"Hotel Adler Resort",datum:"2026-05-02",phase:"Bewertung",touchpoint:"Angebot verschickt",kanal:"E-Mail",aktivitaet:"Angebot 8.500€",reaktion:"In Prüfung",score:8},
-    {id:"d-j8",nr:"J008",kunde:"Hotel Adler Resort",datum:"2026-05-20",phase:"Kauf",touchpoint:"Auftrag bestätigt",kanal:"E-Mail",aktivitaet:"Produktionsplanung gestartet",reaktion:"Begeistert",score:10},
-    {id:"d-j9",nr:"J009",kunde:"Restaurant Tantris",datum:"2026-05-01",phase:"Bewusstsein",touchpoint:"Instagram Story",kanal:"Instagram",aktivitaet:"Story liked",reaktion:"Kein Kommentar",score:5},
-    {id:"d-j10",nr:"J010",kunde:"Restaurant Tantris",datum:"2026-05-10",phase:"Interesse",touchpoint:"Instagram DM",kanal:"Instagram",aktivitaet:"Fragt nach Verfügbarkeit",reaktion:"Wartet auf Angebot",score:7},
-    {id:"d-j11",nr:"J011",kunde:"Alpin Wellness Spa",datum:"2026-02-15",phase:"Interesse",touchpoint:"Website Kontaktform",kanal:"Website",aktivitaet:"Interesse an Jahrespaket",reaktion:"Detaillierte Anfrage",score:8},
-    {id:"d-j12",nr:"J012",kunde:"Alpin Wellness Spa",datum:"2026-03-01",phase:"Bewertung",touchpoint:"Meeting vor Ort",kanal:"Meeting",aktivitaet:"Drehplanung für 4 Jahreszeiten",reaktion:"Sehr positiv",score:9},
-    {id:"d-j13",nr:"J013",kunde:"Alpin Wellness Spa",datum:"2026-04-01",phase:"Kauf",touchpoint:"Jahresvertrag",kanal:"E-Mail",aktivitaet:"Vertrag für 4 Saisonfilme",reaktion:"Partnerschaft langfristig",score:10},
-    {id:"d-j14",nr:"J014",kunde:"Schloss Schönbrunn",datum:"2026-05-15",phase:"Interesse",touchpoint:"Website Anfrage",kanal:"Website",aktivitaet:"Anfrage Saisonfilm + Social",reaktion:"Sehr professionell",score:9},
-    {id:"d-j15",nr:"J015",kunde:"Schloss Schönbrunn",datum:"2026-05-28",phase:"Bewertung",touchpoint:"Präsentation",kanal:"Meeting",aktivitaet:"Portfolio präsentiert",reaktion:"Beeindruckt",score:9},
-    {id:"d-j16",nr:"J016",kunde:"Freizeit Arena GmbH",datum:"2026-01-20",phase:"Kauf",touchpoint:"Auftrag erteilt",kanal:"E-Mail",aktivitaet:"Sommersaison Clip produziert",reaktion:"Sehr zufrieden",score:9},
-    {id:"d-j17",nr:"J017",kunde:"Freizeit Arena GmbH",datum:"2026-04-05",phase:"Empfehlung",touchpoint:"Weiterempfehlung",kanal:"Instagram",aktivitaet:"Hat Café Central empfohlen",reaktion:"Treuer Kunde",score:10},
-    {id:"d-j18",nr:"J018",kunde:"Café Central Wien",datum:"2026-05-20",phase:"Interesse",touchpoint:"Empfehlung erhalten",kanal:"Empfehlung",aktivitaet:"Freizeit Arena hat empfohlen",reaktion:"Positiv überrascht",score:8}
+    {id:"d-j1",nr:"T001",kunde:"Weingut Loacker",datum:"2026-03-10",phase:"Bewusstsein",touchpoint:"Instagram Post",kanal:"Instagram",aktivitaet:"Post über Weinberge gesehen",reaktion:"Like + Kommentar",score:6},
+    {id:"d-j2",nr:"T002",kunde:"Weingut Loacker",datum:"2026-03-18",phase:"Interesse",touchpoint:"Instagram DM",kanal:"Instagram",aktivitaet:"Anfrage nach Preisliste",reaktion:"Positiv, schnelle Antwort",score:8},
+    {id:"d-j3",nr:"T003",kunde:"Weingut Loacker",datum:"2026-04-05",phase:"Bewertung",touchpoint:"Angebot verschickt",kanal:"E-Mail",aktivitaet:"Angebot 3.500€ für Herbstfilm",reaktion:"Angebot gefällt, Fragen",score:7},
+    {id:"d-j4",nr:"T004",kunde:"Weingut Loacker",datum:"2026-04-20",phase:"Kauf",touchpoint:"Vertrag unterschrieben",kanal:"E-Mail",aktivitaet:"Auftrag bestätigt",reaktion:"Sehr zufrieden",score:10},
+    {id:"d-j5",nr:"T005",kunde:"Hotel Adler Resort",datum:"2026-04-01",phase:"Bewusstsein",touchpoint:"Instagram Post",kanal:"Instagram",aktivitaet:"Story über Hotelfilm geteilt",reaktion:"DM mit Interesse",score:7},
+    {id:"d-j6",nr:"T006",kunde:"Hotel Adler Resort",datum:"2026-04-15",phase:"Interesse",touchpoint:"Erstgespräch",kanal:"Telefon",aktivitaet:"Briefing für Imagefilm",reaktion:"Sehr engagiert",score:9},
+    {id:"d-j7",nr:"T007",kunde:"Hotel Adler Resort",datum:"2026-05-02",phase:"Bewertung",touchpoint:"Angebot verschickt",kanal:"E-Mail",aktivitaet:"Angebot 8.500€",reaktion:"In Prüfung",score:8},
+    {id:"d-j8",nr:"T008",kunde:"Hotel Adler Resort",datum:"2026-05-20",phase:"Kauf",touchpoint:"Auftrag bestätigt",kanal:"E-Mail",aktivitaet:"Produktionsplanung gestartet",reaktion:"Begeistert",score:10},
+    {id:"d-j9",nr:"T009",kunde:"Restaurant Tantris",datum:"2026-05-01",phase:"Bewusstsein",touchpoint:"Instagram Story",kanal:"Instagram",aktivitaet:"Story liked",reaktion:"Kein Kommentar",score:5},
+    {id:"d-j10",nr:"T010",kunde:"Restaurant Tantris",datum:"2026-05-10",phase:"Interesse",touchpoint:"Instagram DM",kanal:"Instagram",aktivitaet:"Fragt nach Verfügbarkeit",reaktion:"Wartet auf Angebot",score:7},
+    {id:"d-j11",nr:"T011",kunde:"Alpin Wellness Spa",datum:"2026-02-15",phase:"Interesse",touchpoint:"Website Kontaktform",kanal:"Website",aktivitaet:"Interesse an Jahrespaket",reaktion:"Detaillierte Anfrage",score:8},
+    {id:"d-j12",nr:"T012",kunde:"Alpin Wellness Spa",datum:"2026-03-01",phase:"Bewertung",touchpoint:"Meeting vor Ort",kanal:"Meeting",aktivitaet:"Drehplanung für 4 Jahreszeiten",reaktion:"Sehr positiv",score:9},
+    {id:"d-j13",nr:"T013",kunde:"Alpin Wellness Spa",datum:"2026-04-01",phase:"Kauf",touchpoint:"Jahresvertrag",kanal:"E-Mail",aktivitaet:"Vertrag für 4 Saisonfilme",reaktion:"Partnerschaft langfristig",score:10},
+    {id:"d-j14",nr:"T014",kunde:"Schloss Schönbrunn",datum:"2026-05-15",phase:"Interesse",touchpoint:"Website Anfrage",kanal:"Website",aktivitaet:"Anfrage Saisonfilm + Social",reaktion:"Sehr professionell",score:9},
+    {id:"d-j15",nr:"T015",kunde:"Schloss Schönbrunn",datum:"2026-05-28",phase:"Bewertung",touchpoint:"Präsentation",kanal:"Meeting",aktivitaet:"Portfolio präsentiert",reaktion:"Beeindruckt",score:9},
+    {id:"d-j16",nr:"T016",kunde:"Freizeit Arena GmbH",datum:"2026-01-20",phase:"Kauf",touchpoint:"Auftrag erteilt",kanal:"E-Mail",aktivitaet:"Sommersaison Clip produziert",reaktion:"Sehr zufrieden",score:9},
+    {id:"d-j17",nr:"T017",kunde:"Freizeit Arena GmbH",datum:"2026-04-05",phase:"Empfehlung",touchpoint:"Weiterempfehlung",kanal:"Instagram",aktivitaet:"Hat Café Central empfohlen",reaktion:"Treuer Kunde",score:10},
+    {id:"d-j18",nr:"T018",kunde:"Café Central Wien",datum:"2026-05-20",phase:"Interesse",touchpoint:"Empfehlung erhalten",kanal:"Empfehlung",aktivitaet:"Freizeit Arena hat empfohlen",reaktion:"Positiv überrascht",score:8}
   ],
   deals: [
     {id:"d-d1",nr:"P001",kunde:"Hotel Adler Resort",beschreibung:"Imagefilm + Social Content Paket",wert:8500,wahrscheinlichkeit:90,phase:"Abschluss",abschluss_datum:"2026-06-15",quelle:"Instagram",status:"Aktiv",notizen:"Drehstart 20. Juni geplant"},
@@ -2893,6 +2917,7 @@ function renderDemoDashboard() {
   document.getElementById("kpi-leads").textContent=k.filter(x=>x.status==="Lead").length;
   document.getElementById("kpi-deals").textContent=d.filter(x=>x.status==="Aktiv").length;
   document.getElementById("kpi-followups").textContent=a.filter(x=>x.status==="Offen").length;
+  initDashboardTooltips(k, d, a);
 
   const cs=getComputedStyle(document.documentElement);
   const accent=cs.getPropertyValue("--accent").trim();
@@ -3011,6 +3036,7 @@ function filterPipelineDemo() {
     document.getElementById("pipeline-open").textContent=rows.filter(d=>d.status==="Aktiv").length;
     document.getElementById("pipeline-won").textContent=won;
     document.getElementById("pipeline-rate").textContent=(total>0?Math.round(won/total*100):0)+"%";
+    initPipelineTooltips(rows);
   }
   const cs=getComputedStyle(document.documentElement);
   const text3=cs.getPropertyValue("--text3").trim();
@@ -3592,6 +3618,7 @@ async function renderDashboard() {
   document.getElementById("kpi-leads").textContent = kontakte.filter(x=>x.status==="Lead").length;
   document.getElementById("kpi-deals").textContent = deals.filter(x=>x.status==="Aktiv"||x.status==="Active"||x.status==="Activo"||x.status==="Actif").length;
   document.getElementById("kpi-followups").textContent = allActs.filter(x=>x.status==="Offen"||x.status==="Open"||x.status==="Abierto"||x.status==="Ouvert").length;
+  initDashboardTooltips(kontakte, deals, allActs);
 
   const sc={}; ["Lead","Aktiv","Lead","Inaktiv","Abgeschlossen"].forEach(s=>sc[s]=0);
   kontakte.forEach(x=>{if(sc[x.status]!==undefined)sc[x.status]++;else sc["Lead"]++;});
@@ -4067,7 +4094,7 @@ async function addJourney() {
 }
 
 // ── KONTAKTE ────────────────────────────────────────────────────────────────────
-let kSearch="", kStatus="", kBranche="", kSort="nr_asc", kSortCol="nr_k", kSortDir="asc", kontakteData=[];
+let kSearch="", kStatus="", kBranche="", kUnternehmen="", kSort="nr_asc", kSortCol="nr_k", kSortDir="asc", kontakteData=[];
 let cKStatus=null, cKLand=null, cKBranche=null;
 let jSortCol="datum_j", jSortDir="desc";
 let aSortCol="datum_a", aSortDir="desc";
@@ -4104,10 +4131,17 @@ async function renderKontakte(s,st) {
   const {data}=await sb.from("kontakte").select("*").order("created_at",{ascending:false});
   kontakteData=data||[];
   renderKontakteCharts(kontakteData);
+  // Populate Unternehmen filter dropdown
+  const uSel = document.getElementById("kontakte-unternehmen-filter");
+  if(uSel) {
+    const names = [...new Set(kontakteData.map(k=>k.unternehmen).filter(Boolean))].sort();
+    uSel.innerHTML = `<option value="">Alle Unternehmen</option>` + names.map(n=>`<option value="${n}"${kUnternehmen===n?" selected":""}>${n}</option>`).join("");
+  }
   let rows=kontakteData;
   if(kSearch) rows=rows.filter(k=>k.unternehmen?.toLowerCase().includes(kSearch.toLowerCase())||k.vorname?.toLowerCase().includes(kSearch.toLowerCase()));
   if(kStatus) rows=rows.filter(k=>k.status===kStatus);
   if(kBranche) rows=rows.filter(k=>k.branche===kBranche);
+  if(kUnternehmen) rows=rows.filter(k=>k.unternehmen===kUnternehmen);
   // Column sort
   const kColMap = {
     "nr_k":      r => r.nr||"",
@@ -4198,9 +4232,24 @@ function renderKontakteCharts(data) {
   if(elB) cKBranche = new Chart(elB, donut(Object.keys(brancheCount), Object.values(brancheCount)));
 }
 
-function filterKontakte(v) { renderKontakte(v,kStatus); }
+function filterKontakte(v) { kSearch=v||""; renderKontakte(v,kStatus); }
 function filterKontakteBranche(v) { kBranche=v; renderKontakte(); }
 function filterKontakteStatus(v) { renderKontakte(kSearch,v); }
+function filterKontakteUnternehmen(v) {
+  kUnternehmen = v;
+  renderKontakte(kSearch, kStatus);
+}
+
+// Search clear button helpers
+function updateSearchClear(input) {
+  const btn = document.getElementById(input.id + '-clear');
+  if(btn) btn.style.display = input.value ? 'block' : 'none';
+}
+function clearSearch(inputId, callback) {
+  const el = document.getElementById(inputId);
+  if(el) { el.value = ''; updateSearchClear(el); }
+  if(callback) callback();
+}
 
 async function addKontakt() {
   const btn=document.getElementById("btn-save-kontakt"); btn.disabled=true;
@@ -4276,6 +4325,7 @@ function filterPipeline() {
     const elWV=document.getElementById("pipeline-won-val");
     if(elOV) elOV.textContent=openVal>0?openVal.toLocaleString("de-DE")+"€":"–";
     if(elWV) elWV.textContent=wonVal>0?wonVal.toLocaleString("de-DE")+"€":"–";
+    initPipelineTooltips(rows);
   }
 
   // Funnel chart
@@ -4660,7 +4710,8 @@ let aktivKundeIsNew = false;
 
 async function addAktivitaet() {
   const btn=document.getElementById("btn-save-aktivitaet"); btn.disabled=true;
-  const nr=String(aktivData.length+1).padStart(3,"0");
+  const {count: aktivCount}=await sb.from("aktivitaeten").select("*",{count:"exact",head:true});
+  const nr="A"+String((aktivCount||0)+1).padStart(3,"0");
   const kundeName = document.getElementById("a-kunde").value.trim();
   const userId = (await sb.auth.getUser()).data.user?.id;
 
@@ -4837,6 +4888,79 @@ function resetModal(modalId) {
     if(btn) btn.style.display = 'none';
   });
   modal.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+}
+
+// ── KPI TOOLTIPS ─────────────────────────────────────────────────────────────
+const _tt = document.createElement('div');
+_tt.className = 'kpi-tooltip';
+document.body.appendChild(_tt);
+
+function showKpiTooltip(e, title, items) {
+  // items: [{label, value}]
+  _tt.innerHTML = `<div class="kpi-tooltip-title">${title}</div>` +
+    items.map(i => `<div class="kpi-tooltip-item"><span>${i.label}</span><span>${i.value||''}</span></div>`).join('');
+  _tt.classList.add('visible');
+  positionTooltip(e);
+}
+function hideKpiTooltip() { _tt.classList.remove('visible'); }
+function positionTooltip(e) {
+  const x = e.clientX + 14, y = e.clientY + 14;
+  const r = _tt.getBoundingClientRect();
+  _tt.style.left = (x + r.width > window.innerWidth ? x - r.width - 28 : x) + 'px';
+  _tt.style.top  = (y + r.height > window.innerHeight ? y - r.height - 28 : y) + 'px';
+}
+document.addEventListener('mousemove', e => { if(_tt.classList.contains('visible')) positionTooltip(e); });
+
+function attachKpiTooltip(cardId, title, getItems) {
+  const card = document.getElementById(cardId)?.closest('.kpi-card');
+  if(!card) return;
+  card.addEventListener('mouseenter', e => showKpiTooltip(e, title, getItems()));
+  card.addEventListener('mousemove',  e => positionTooltip(e));
+  card.addEventListener('mouseleave', hideKpiTooltip);
+}
+
+function initDashboardTooltips(kontakte, deals, allActs) {
+  attachKpiTooltip('kpi-kunden', 'Alle Kunden', () =>
+    kontakte.slice(0,8).map(k => ({label: k.unternehmen||`${k.vorname} ${k.nachname}`, value: k.status}))
+      .concat(kontakte.length > 8 ? [{label: `+ ${kontakte.length-8} weitere`, value:''}] : [])
+  );
+  attachKpiTooltip('kpi-leads', 'Leads', () => {
+    const leads = kontakte.filter(k => k.status==='Lead');
+    return leads.slice(0,8).map(k => ({label: k.unternehmen||`${k.vorname} ${k.nachname}`, value: k.ort||''}))
+      .concat(leads.length > 8 ? [{label:`+ ${leads.length-8} weitere`,value:''}] : []);
+  });
+  attachKpiTooltip('kpi-deals', 'Aktive Deals', () => {
+    const active = deals.filter(d => d.status==='Aktiv');
+    return active.slice(0,8).map(d => ({label: d.kunde, value: d.wert ? d.wert.toLocaleString('de-DE')+'€' : ''}))
+      .concat(active.length > 8 ? [{label:`+ ${active.length-8} weitere`,value:''}] : []);
+  });
+  attachKpiTooltip('kpi-followups', 'Offene Aktivitäten', () => {
+    const open = allActs.filter(a => a.status==='Offen');
+    return open.slice(0,8).map(a => ({label: a.kunde, value: a.typ||''}))
+      .concat(open.length > 8 ? [{label:`+ ${open.length-8} weitere`,value:''}] : []);
+  });
+}
+
+function initPipelineTooltips(rows) {
+  attachKpiTooltip('pipeline-total', 'Alle Deals', () =>
+    rows.slice(0,8).map(d => ({label: d.kunde, value: d.wert ? d.wert.toLocaleString('de-DE')+'€' : ''}))
+      .concat(rows.length > 8 ? [{label:`+ ${rows.length-8} weitere`,value:''}] : [])
+  );
+  attachKpiTooltip('pipeline-open', 'Offene Deals', () => {
+    const open = rows.filter(d => d.status!=='Gewonnen' && d.status!=='Verloren');
+    return open.slice(0,8).map(d => ({label: d.kunde, value: d.wert ? d.wert.toLocaleString('de-DE')+'€' : ''}))
+      .concat(open.length > 8 ? [{label:`+ ${open.length-8} weitere`,value:''}] : []);
+  });
+  attachKpiTooltip('pipeline-won', 'Gewonnene Deals', () => {
+    const won = rows.filter(d => d.status==='Gewonnen');
+    return won.slice(0,8).map(d => ({label: d.kunde, value: d.wert ? d.wert.toLocaleString('de-DE')+'€' : ''}))
+      .concat(won.length > 8 ? [{label:`+ ${won.length-8} weitere`,value:''}] : []);
+  });
+  attachKpiTooltip('pipeline-rate', 'Abschlussquote', () => {
+    const won = rows.filter(d => d.status==='Gewonnen');
+    const closed = rows.filter(d => d.status==='Gewonnen'||d.status==='Verloren');
+    return [{label:'Gewonnen', value: won.length}, {label:'Abgeschlossen', value: closed.length}, {label:'Offen', value: rows.filter(d=>d.status!=='Gewonnen'&&d.status!=='Verloren').length}];
+  });
 }
 
 // ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
@@ -5238,7 +5362,7 @@ async function syncDealToKontakt(kunde, newPhase, newStatus, oldPhase, oldStatus
   // Auto-create journey touchpoint if phase changed meaningfully
   if(newJourneyPhase && newPhase !== oldPhase) {
     const {count} = await sb.from("journey").select("*",{count:"exact",head:true});
-    const nr = "J"+String((count||0)+1).padStart(3,"0");
+    const nr = "T"+String((count||0)+1).padStart(3,"0");
     await sb.from("journey").insert({
       nr, kunde, kontakt_id: kontakt.id,
       datum: today,
@@ -6133,6 +6257,7 @@ async function sendEmailBulkDirect() {
           kunde: k.unternehmen || `${k.vorname||""} ${k.nachname||""}`.trim(),
           datum: today,
           phase,
+          nr: "T"+String(Date.now()).slice(-6),
           touchpoint: vorlage.name,
           kanal: "E-Mail",
           aktivitaet: betreff,

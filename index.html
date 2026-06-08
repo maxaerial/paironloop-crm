@@ -4107,9 +4107,8 @@ async function addJourney() {
   if(journeyKundeIsNew) {
     const existing = kontakteData.find(k=>k.unternehmen.toLowerCase()===kunde.toLowerCase());
     if(!existing) {
-      const {count}=await sb.from("kontakte").select("*",{count:"exact",head:true});
       await sb.from("kontakte").insert({
-        nr:String((count||0)+1).padStart(3,"0"),
+        nr: await getNextKontaktNr(),
         unternehmen:kunde, vorname:"–", nachname:"–",
         status:"Lead", letzter_kontakt:new Date().toISOString().split("T")[0],
         kommentar:"Automatisch angelegt via Journey-Touchpoint",
@@ -4132,8 +4131,7 @@ async function addJourney() {
   if(!existing) {
     // Auto-create new contact
     isNewKontakt = true;
-    const {count} = await sb.from("kontakte").select("*",{count:"exact",head:true});
-    const nr = String((count||0)+1).padStart(3,"0");
+    const nr = await getNextKontaktNr();
     const {data: newK} = await sb.from("kontakte").insert({
       nr, unternehmen: kunde,
       vorname:"–", nachname:"–",
@@ -4354,7 +4352,7 @@ function clearSearch(inputId, callback) {
 
 async function addKontakt() {
   const btn=document.getElementById("btn-save-kontakt"); btn.disabled=true;
-  const nr=String(kontakteData.length+1).padStart(3,"0");
+  const nr = await getNextKontaktNr();
   const {error}=await sb.from("kontakte").insert({
     nr, unternehmen:document.getElementById("k-unternehmen").value,
     vorname:document.getElementById("k-vorname").value||"–",
@@ -4682,7 +4680,7 @@ async function addDeal() {
     const existing = kontakteData.find(k => k.unternehmen.toLowerCase() === kundeName.toLowerCase());
     if(!existing) {
       const {count} = await sb.from("kontakte").select("*",{count:"exact",head:true});
-      const knr = String((count||0)+1).padStart(3,"0");
+      const knr = await getNextKontaktNr();
       await sb.from("kontakte").insert({
         nr: knr,
         unternehmen: kundeName,
@@ -4815,7 +4813,7 @@ let aktivKundeIsNew = false;
 async function addAktivitaet() {
   const btn=document.getElementById("btn-save-aktivitaet"); btn.disabled=true;
   const {count: aktivCount}=await sb.from("aktivitaeten").select("*",{count:"exact",head:true});
-  const nr="A"+String((aktivCount||0)+1).padStart(3,"0");
+  const nr = await getNextAktivitaetNr();
   const kundeName = document.getElementById("a-kunde").value.trim();
   const userId = (await sb.auth.getUser()).data.user?.id;
 
@@ -4823,9 +4821,8 @@ async function addAktivitaet() {
   if(aktivKundeIsNew && kundeName) {
     const existing = kontakteData.find(k=>k.unternehmen.toLowerCase()===kundeName.toLowerCase());
     if(!existing) {
-      const {count}=await sb.from("kontakte").select("*",{count:"exact",head:true});
       await sb.from("kontakte").insert({
-        nr:String((count||0)+1).padStart(3,"0"),
+        nr: await getNextKontaktNr(),
         unternehmen:kundeName, vorname:"–", nachname:"–",
         status:"Lead", letzter_kontakt:new Date().toISOString().split("T")[0],
         kommentar:"Automatisch angelegt via Aktivität",
@@ -5075,6 +5072,20 @@ async function getNextJourneyNr() {
   const max = nums.length ? Math.max(...nums) : 0;
   return "T" + String(max + 1).padStart(3, "0");
 }
+
+async function getNextKontaktNr() {
+  const {data} = await sb.from("kontakte").select("nr").order("created_at", {ascending:false}).limit(100);
+  const nums = (data||[]).map(r => parseInt((r.nr||"").replace(/\D/g,""))||0);
+  const max = nums.length ? Math.max(...nums) : 0;
+  return String(max + 1).padStart(3, "0");
+}
+
+async function getNextAktivitaetNr() {
+  const {data} = await sb.from("aktivitaeten").select("nr").order("created_at", {ascending:false}).limit(100);
+  const nums = (data||[]).map(r => parseInt((r.nr||"").replace(/\D/g,""))||0);
+  const max = nums.length ? Math.max(...nums) : 0;
+  return "A" + String(max + 1).padStart(3, "0");
+}
 let _reaktionJourneyId = null;
 let _reaktionKunde = null;
 
@@ -5139,9 +5150,8 @@ async function handleNewsletterSignup(email, vorname, nachname, unternehmen) {
   let kontakt = kontakteData.find(k => k.email?.toLowerCase() === email.toLowerCase());
 
   if(!kontakt) {
-    const {count} = await sb.from("kontakte").select("*",{count:"exact",head:true});
     const {data} = await sb.from("kontakte").insert({
-      nr: String((count||0)+1).padStart(3,"0"),
+      nr: await getNextKontaktNr(),
       unternehmen: unternehmen || vorname + " " + nachname,
       vorname: vorname||"–", nachname: nachname||"–",
       email, status: "Lead", newsletter: "ja",

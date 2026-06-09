@@ -1960,6 +1960,45 @@ tbody td { font-feature-settings: "zero" 0; }
       <div id="detail-content" style="padding:0 24px 40px"></div>
     </div>
 
+    <div class="page" id="page-journey-detail">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <button onclick="showPage(_detailPrevPage||'journey')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <h1 id="jdetail-name" style="margin:0;font-size:18px">Touchpoint</h1>
+          <button onclick="editCurrentJourney()" class="btn btn-ghost" style="font-size:11px;padding:4px 10px;margin-left:auto">✏ Bearbeiten</button>
+        </div>
+      </div>
+      <div id="jdetail-content" style="padding:0 24px 40px"></div>
+    </div>
+
+    <div class="page" id="page-aktivitaet-detail">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <button onclick="showPage(_detailPrevPage||'aktivitaeten')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <h1 id="adetail-name" style="margin:0;font-size:18px">Aktivität</h1>
+          <button onclick="editCurrentAktivitaet()" class="btn btn-ghost" style="font-size:11px;padding:4px 10px;margin-left:auto">✏ Bearbeiten</button>
+        </div>
+      </div>
+      <div id="adetail-content" style="padding:0 24px 40px"></div>
+    </div>
+
+    <div class="page" id="page-deal-detail">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <button onclick="showPage(_detailPrevPage||'pipeline')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <h1 id="ddetail-name" style="margin:0;font-size:18px">Deal</h1>
+          <button onclick="editCurrentDeal()" class="btn btn-ghost" style="font-size:11px;padding:4px 10px;margin-left:auto">✏ Bearbeiten</button>
+        </div>
+      </div>
+      <div id="ddetail-content" style="padding:0 24px 40px"></div>
+    </div>
+
     <div class="page" id="page-hilfe">
       <div class="page-header"><h1 id="hilfe-title">Hilfe & Anleitung</h1></div>
       <div id="hilfe-content" style="max-width:800px;padding:0 24px 40px"></div>
@@ -3715,8 +3754,11 @@ function showPage(id, el) {
     if(id==="pipeline")     renderPipeline();
     if(id==="aktivitaeten") renderAktivitaeten();
     if(id==="email")        renderEmail();
-    if(id==="hilfe")        renderHilfe();
-    if(id==="kontakt-detail") {} // rendered separately
+    if(id==="hilfe")           renderHilfe();
+    if(id==="kontakt-detail")  {}
+    if(id==="journey-detail")  {}
+    if(id==="aktivitaet-detail") {}
+    if(id==="deal-detail")     {}
   }
   syncAllSearchClears();
 }
@@ -3964,7 +4006,7 @@ function renderJourneyTable() {
       const slug=(j.phase||"").toLowerCase().replace(/[éèêëàâäîïôöùûü\s]/g,c=>({é:"e",è:"e",ê:"e",ë:"e",à:"a",â:"a",ä:"a",î:"i",ï:"i",ô:"o",ö:"o",ù:"u",û:"u",ü:"u"," ":"-"}[c]||c));
       return `<tr>
         <td><input type="checkbox" class="row-checkbox bulk-check-journey" data-id="${j.id}" onchange="updateBulk('journey')"></td>
-        <td style="font-size:11px;color:var(--text3)">${j.nr||"–"}</td>
+        <td style="font-size:11px;color:var(--accent2);cursor:pointer;font-weight:600" onclick="openJourneyDetail('${j.id}','journey')">${j.nr||"–"}</td>
         <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(j.datum)}</td>
         <td><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${j.kunde}')">${j.kunde}</strong></td>
         <td><span style="
@@ -4591,7 +4633,7 @@ function renderPipelineBoard(rows) {
             </button>
             <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">
               <input type="checkbox" class="row-checkbox bulk-check-deals" data-id="${d.id}" onchange="updateBulk('deals')" style="flex-shrink:0">
-              <div class="deal-card-name" onclick="editDeal('${d.id}')" style="cursor:pointer;font-size:12px;font-weight:600;flex:1;min-width:0">${d.beschreibung||"–"}</div>
+              <div class="deal-card-name" onclick="openDealDetail('${d.id}','pipeline')" style="cursor:pointer;font-size:12px;font-weight:600;flex:1;min-width:0;color:var(--accent2)">${d.beschreibung||d.kunde||"–"}</div>
             </div>
             <button onclick="moveDeal('${d.id}',1)" ${phases.indexOf(ph)===phases.length-1?'style="visibility:hidden"':''}
               style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;width:24px;height:24px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);transition:var(--transition);padding:0"
@@ -4844,7 +4886,7 @@ async function renderAktivitaeten(f) {
       </tr></thead>
     <tbody>${rows.map(a=>`<tr>
       <td><input type="checkbox" class="row-checkbox bulk-check-aktivitaeten" data-id="${a.id}" onchange="updateBulk('aktivitaeten')"></td>
-      <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:11px;color:var(--text3)">${a.nr||"–"}</td>
+      <td style="font-size:11px;color:var(--accent2);cursor:pointer;font-weight:600" onclick="openAktivitaetDetail('${a.id}','aktivitaeten')">${a.nr||"–"}</td>
       <td><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${a.kunde}')">${a.kunde}</strong></td>
       <td style="color:var(--text2)">${a.typ}</td>
       <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(a.datum)}</td>
@@ -5316,11 +5358,11 @@ async function renderKontaktDetail(id) {
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px">
     <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:8px">Customer Journey (${journey.length})</div>
     ${journey.length ? journey.map(j => `
-      <div style="display:flex;gap:10px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <div style="display:flex;gap:10px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer" onclick="openJourneyDetail('${j.id}','kontakt-detail')">
+        <span style="color:var(--accent2);font-weight:600;min-width:45px;flex-shrink:0">${j.nr||"–"}</span>
         <span style="color:var(--text3);min-width:75px;flex-shrink:0">${fmtDate(j.datum)}</span>
         <span style="min-width:90px;flex-shrink:0">${badge(j.phase||"–","var(--accent2)")}</span>
         <span style="flex:1;color:var(--text2)">${j.touchpoint||"–"}</span>
-        <span style="color:var(--text3)">${j.kanal||""}</span>
         <span style="font-weight:600;min-width:35px;text-align:right">${j.score||0}/10</span>
       </div>`).join("") : `<div style="font-size:12px;color:var(--text3)">Noch keine Touchpoints</div>`}
   </div>
@@ -5330,9 +5372,9 @@ async function renderKontaktDetail(id) {
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
       <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:8px">Aktivitäten (${aktivs.length})</div>
       ${aktivs.length ? aktivs.map(a => `
-        <div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer" onclick="openAktivitaetDetail('${a.id}','kontakt-detail')">
           <div style="display:flex;justify-content:space-between">
-            <span style="font-weight:600">${a.typ||"–"}</span>
+            <span style="font-weight:600;color:var(--accent2)">${a.nr||""} ${a.typ||"–"}</span>
             <span style="color:var(--text3)">${fmtDate(a.datum)}</span>
           </div>
           <div style="color:var(--text3);margin-top:1px">${a.status||""} · ${a.prioritaet||""}</div>
@@ -5341,14 +5383,188 @@ async function renderKontaktDetail(id) {
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
       <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:8px">Deals (${deals.length})</div>
       ${deals.length ? deals.map(d => `
-        <div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer" onclick="openDealDetail('${d.id}','kontakt-detail')">
           <div style="display:flex;justify-content:space-between">
-            <span style="font-weight:600">${d.phase||"–"}</span>
+            <span style="font-weight:600;color:var(--accent2)">${d.phase||"–"}</span>
             <span style="font-weight:700;color:var(--green)">${d.wert ? d.wert.toLocaleString("de-DE")+"€" : "–"}</span>
           </div>
           <div style="color:var(--text3);margin-top:1px">${d.status||""}</div>
         </div>`).join("") : `<div style="font-size:12px;color:var(--text3)">Keine Deals</div>`}
     </div>
+  </div>`;
+}
+
+// ── JOURNEY DETAIL ────────────────────────────────────────────────────────────
+let _detailJourneyId = null;
+
+async function openJourneyDetail(id, fromPage) {
+  _detailJourneyId = id;
+  _detailPrevPage = fromPage || "journey";
+  showPage("journey-detail");
+  await renderJourneyDetail(id);
+}
+
+function editCurrentJourney() {
+  if(_detailJourneyId) editJourney(_detailJourneyId);
+}
+
+async function renderJourneyDetail(id) {
+  const {data: j} = await sb.from("journey").select("*").eq("id", id).single();
+  if(!j) return;
+  document.getElementById("jdetail-name").textContent = j.touchpoint || "Touchpoint";
+  const k = kontakteData.find(c => c.unternehmen === j.kunde);
+  const badge = (label, color) => `<span style="display:inline-block;background:${color}22;color:${color};font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px">${label}</span>`;
+
+  document.getElementById("jdetail-content").innerHTML = `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Touchpoint Details</div>
+      ${[
+        ["Nr", j.nr||"–"],
+        ["Datum", fmtDate(j.datum)],
+        ["Phase", badge(j.phase||"–","var(--accent2)")],
+        ["Touchpoint", j.touchpoint||"–"],
+        ["Kanal", j.kanal||"–"],
+        ["Aktivität", j.aktivitaet||"–"],
+        ["Reaktion", j.reaktion||"–"],
+        ["Score", (j.score||0)+"/10"],
+      ].map(([l,v]) => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--text3)">${l}</span><span>${v}</span></div>`).join("")}
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Verknüpfter Kontakt</div>
+      ${k ? `
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-weight:600;font-size:14px;cursor:pointer;color:var(--accent2)" onclick="openKontaktDetail('${k.id}','journey-detail')">${k.unternehmen}</div>
+          <div style="font-size:12px;color:var(--text3)">${k.vorname||""} ${k.nachname||""}</div>
+          <div style="font-size:12px;color:var(--text3)">${k.email||""}</div>
+          <div style="font-size:12px">${badge(k.status||"–","var(--blue)")}</div>
+        </div>` : `<div style="font-size:12px;color:var(--text3)">Kein Kontakt verknüpft</div>`}
+    </div>
+  </div>`;
+}
+
+// ── AKTIVITAET DETAIL ─────────────────────────────────────────────────────────
+let _detailAktivitaetId = null;
+
+async function openAktivitaetDetail(id, fromPage) {
+  _detailAktivitaetId = id;
+  _detailPrevPage = fromPage || "aktivitaeten";
+  showPage("aktivitaet-detail");
+  await renderAktivitaetDetail(id);
+}
+
+function editCurrentAktivitaet() {
+  if(_detailAktivitaetId) editAktivitaet(_detailAktivitaetId);
+}
+
+async function renderAktivitaetDetail(id) {
+  const a = aktivData.find(x => String(x.id) === String(id));
+  if(!a) return;
+  document.getElementById("adetail-name").textContent = a.typ || "Aktivität";
+  const k = kontakteData.find(c => c.unternehmen === a.kunde);
+  const badge = (label, color) => `<span style="display:inline-block;background:${color}22;color:${color};font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px">${label}</span>`;
+  const statusColor = {Offen:"var(--orange)",Erledigt:"var(--green)",Abgesagt:"var(--red)"};
+
+  document.getElementById("adetail-content").innerHTML = `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Aktivität Details</div>
+      ${[
+        ["Nr", a.nr||"–"],
+        ["Typ", a.typ||"–"],
+        ["Status", badge(a.status||"–", statusColor[a.status]||"var(--text3)")],
+        ["Fällig am", fmtDate(a.datum)],
+        ["Priorität", a.prioritaet||"–"],
+        ["Verantwortlich", a.verantwortlich||"–"],
+        ["Beschreibung", a.beschreibung||"–"],
+      ].map(([l,v]) => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--text3)">${l}</span><span style="text-align:right;max-width:180px">${v}</span></div>`).join("")}
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Verknüpfter Kontakt</div>
+      ${k ? `
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-weight:600;font-size:14px;cursor:pointer;color:var(--accent2)" onclick="openKontaktDetail('${k.id}','aktivitaet-detail')">${k.unternehmen}</div>
+          <div style="font-size:12px;color:var(--text3)">${k.vorname||""} ${k.nachname||""}</div>
+          <div style="font-size:12px;color:var(--text3)">${k.email||""}</div>
+          <div style="font-size:12px">${badge(k.status||"–","var(--blue)")}</div>
+        </div>` : `<div style="font-size:12px;color:var(--text3)">Kein Kontakt verknüpft</div>`}
+    </div>
+  </div>`;
+}
+
+// ── DEAL DETAIL ───────────────────────────────────────────────────────────────
+let _detailDealId = null;
+
+async function openDealDetail(id, fromPage) {
+  _detailDealId = id;
+  _detailPrevPage = fromPage || "pipeline";
+  showPage("deal-detail");
+  await renderDealDetail(id);
+}
+
+function editCurrentDeal() {
+  if(_detailDealId) editDeal(_detailDealId);
+}
+
+async function renderDealDetail(id) {
+  const d = dealsData.find(x => String(x.id) === String(id));
+  if(!d) return;
+  document.getElementById("ddetail-name").textContent = d.kunde || "Deal";
+  const k = kontakteData.find(c => c.unternehmen === d.kunde);
+  const badge = (label, color) => `<span style="display:inline-block;background:${color}22;color:${color};font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px">${label}</span>`;
+
+  // Fetch related journey + aktivitaeten
+  const [jRes, aRes] = await Promise.all([
+    sb.from("journey").select("*").eq("kunde", d.kunde).order("created_at",{ascending:false}),
+    sb.from("aktivitaeten").select("*").eq("kunde", d.kunde).order("created_at",{ascending:false})
+  ]);
+  const journey = jRes.data || [];
+  const aktivs  = aRes.data || [];
+
+  document.getElementById("ddetail-content").innerHTML = `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Deal Details</div>
+      ${[
+        ["Nr", d.nr||"–"],
+        ["Kunde", `<span style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${d.kunde}')">${d.kunde}</span>`],
+        ["Phase", badge(d.phase||"–","var(--accent2)")],
+        ["Status", badge(d.status||"–","var(--blue)")],
+        ["Wert", d.wert ? d.wert.toLocaleString("de-DE")+"€" : "–"],
+        ["Wahrscheinlichkeit", d.wahrscheinlichkeit ? d.wahrscheinlichkeit+"%" : "–"],
+        ["Datum", fmtDate(d.datum)],
+        ["Beschreibung", d.beschreibung||"–"],
+      ].map(([l,v]) => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--text3)">${l}</span><span style="text-align:right;max-width:200px">${v}</span></div>`).join("")}
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Verknüpfter Kontakt</div>
+      ${k ? `
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-weight:600;font-size:14px;cursor:pointer;color:var(--accent2)" onclick="openKontaktDetail('${k.id}','deal-detail')">${k.unternehmen}</div>
+          <div style="font-size:12px;color:var(--text3)">${k.vorname||""} ${k.nachname||""}</div>
+          <div style="font-size:12px;color:var(--text3)">${k.email||""}</div>
+          <div style="font-size:12px">${badge(k.status||"–","var(--blue)")}</div>
+        </div>` : `<div style="font-size:12px;color:var(--text3)">Kein Kontakt verknüpft</div>`}
+    </div>
+  </div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px">
+    <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:8px">Customer Journey (${journey.length})</div>
+    ${journey.length ? journey.map(j => `
+      <div style="display:flex;gap:10px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer" onclick="openJourneyDetail('${j.id}','deal-detail')">
+        <span style="color:var(--text3);min-width:75px;flex-shrink:0">${fmtDate(j.datum)}</span>
+        <span style="min-width:90px;flex-shrink:0">${badge(j.phase||"–","var(--accent2)")}</span>
+        <span style="flex:1;color:var(--text2)">${j.touchpoint||"–"}</span>
+        <span style="font-weight:600">${j.score||0}/10</span>
+      </div>`).join("") : `<div style="font-size:12px;color:var(--text3)">Keine Touchpoints</div>`}
+  </div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+    <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:8px">Aktivitäten (${aktivs.length})</div>
+    ${aktivs.length ? aktivs.map(a => `
+      <div style="display:flex;gap:10px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer" onclick="openAktivitaetDetail('${a.id}','deal-detail')">
+        <span style="color:var(--text3);min-width:75px;flex-shrink:0">${fmtDate(a.datum)}</span>
+        <span style="flex:1;font-weight:600">${a.typ||"–"}</span>
+        <span style="color:var(--text3)">${a.status||""}</span>
+      </div>`).join("") : `<div style="font-size:12px;color:var(--text3)">Keine Aktivitäten</div>`}
   </div>`;
 }
 

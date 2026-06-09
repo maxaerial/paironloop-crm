@@ -1944,7 +1944,7 @@ tbody td { font-feature-settings: "zero" 0; }
     <div class="page" id="page-kontakt-detail">
       <div class="page-header">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <button onclick="showPage(_detailPrevPage||'kontakte')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px" title="Zurück">
+          <button onclick="showPage('kontakte')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px" title="Zurück">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <h1 id="detail-name" style="margin:0;font-size:18px">Kontakt</h1>
@@ -4147,8 +4147,7 @@ async function syncJourneyToPipeline(kunde, phase, datum, userId) {
     return null; // already at same or further phase
   } else {
     // Create new deal
-    const {data: dealCount} = await sb.from("deals").select("*",{count:"exact",head:true});
-    const nr = "P" + String((dealCount?.count||0)+1).padStart(3,"0");
+    const nr = await getNextDealNr();
     const dealStatus = phase === "Kauf" ? "Gewonnen" : "Aktiv";
     await sb.from("deals").insert({
       nr,
@@ -5186,6 +5185,13 @@ async function getNextAktivitaetNr() {
   const max = nums.length ? Math.max(...nums) : 0;
   return "A" + String(max + 1).padStart(3, "0");
 }
+
+async function getNextDealNr() {
+  const {data} = await sb.from("deals").select("nr").order("created_at", {ascending:false}).limit(100);
+  const nums = (data||[]).map(r => parseInt((r.nr||"").replace(/\D/g,""))||0);
+  const max = nums.length ? Math.max(...nums) : 0;
+  return "D" + String(max + 1).padStart(3, "0");
+}
 let _reaktionJourneyId = null;
 let _reaktionKunde = null;
 
@@ -5238,10 +5244,10 @@ async function saveReaktion() {
 
   // Auto-create deal if reaction is "Deal entstanden"
   if(reaktion === "Deal entstanden" && !isDemoMode) {
-    const dealNr = "P" + String(Date.now()).slice(-4);
+    const dealNr = "D" + String(Date.now()).slice(-4);
     const {count: dc} = await sb.from("deals").select("*",{count:"exact",head:true});
     await sb.from("deals").insert({
-      nr: "P" + String((dc||0)+1).padStart(3,"0"),
+      nr: "D" + String((dc||0)+1).padStart(3,"0"),
       kunde: _reaktionKunde,
       phase: "Erstgespräch",
       status: "Aktiv",

@@ -5318,7 +5318,7 @@ const HILFE_CONTENT = {
 };
 
 function renderHilfe() {
-  const lang = currentLang || "de";
+  const lang = (typeof window !== 'undefined' && window.lang) || localStorage.getItem("crm_lang") || "de";
   const content = HILFE_CONTENT[lang] || HILFE_CONTENT["de"];
   const title = lang === "en" ? "Help & Guide" : "Hilfe & Anleitung";
   const el = document.getElementById("hilfe-content");

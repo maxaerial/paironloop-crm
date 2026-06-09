@@ -1957,7 +1957,7 @@ tbody td { font-feature-settings: "zero" 0; }
           <button onclick="detailSendEmail()" class="btn btn-primary" style="font-size:12px;padding:5px 12px">✉ E-Mail</button>
         </div>
       </div>
-      <div id="detail-content" style="padding:0 24px 40px;max-width:900px"></div>
+      <div id="detail-content" style="padding:0 24px 40px"></div>
     </div>
 
     <div class="page" id="page-hilfe">
@@ -5292,7 +5292,7 @@ async function renderKontaktDetail(id) {
   const statusColor = {Lead:"var(--blue)",Aktiv:"var(--green)",Abgeschlossen:"var(--text3)",Inaktiv:"var(--red)"};
 
   document.getElementById("detail-content").innerHTML = `
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px">
       <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Stammdaten</div>
       ${[
@@ -5303,8 +5303,8 @@ async function renderKontaktDetail(id) {
         ["Stadt", k.ort||"–"], ["Land", k.land||"–"],
         ["Branche", k.branche||"–"], ["Kanal", k.kanal||"–"],
         ["Sprache", k.sprache||"–"], ["Geschlecht", k.geschlecht === "m" ? "Männlich" : k.geschlecht === "f" ? "Weiblich" : "–"],
-        ["Newsletter", k.newsletter||"–"], ["Letzter Kontakt", k.letzter_kontakt||"–"]
-      ].map(([l,v]) => `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--text3)">${l}</span><span style="text-align:right;max-width:200px">${v}</span></div>`).join("")}
+        ["Newsletter", k.newsletter||"–"], ["Letzter Kontakt", fmtDate(k.letzter_kontakt)]
+      ].map(([l,v]) => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--text3);flex-shrink:0;margin-right:8px">${l}</span><span style="text-align:right">${v}</span></div>`).join("")}
     </div>
     <div>
       ${k.individueller_satz ? `<div style="background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);padding:16px;margin-bottom:16px;font-size:13px;color:var(--text2)"><div style="font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:6px">INDIVIDUELLER SATZ</div>${k.individueller_satz}</div>` : ""}
@@ -5313,41 +5313,41 @@ async function renderKontaktDetail(id) {
   </div>
 
   <!-- Journey -->
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px">
-    <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:12px">Customer Journey (${journey.length})</div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px">
+    <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:8px">Customer Journey (${journey.length})</div>
     ${journey.length ? journey.map(j => `
-      <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
-        <span style="color:var(--text3);min-width:70px">${fmtDate(j.datum)}</span>
-        <span style="min-width:80px">${badge(j.phase||"–","var(--accent2)")}</span>
+      <div style="display:flex;gap:10px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <span style="color:var(--text3);min-width:75px;flex-shrink:0">${fmtDate(j.datum)}</span>
+        <span style="min-width:90px;flex-shrink:0">${badge(j.phase||"–","var(--accent2)")}</span>
         <span style="flex:1;color:var(--text2)">${j.touchpoint||"–"}</span>
         <span style="color:var(--text3)">${j.kanal||""}</span>
-        <span style="font-weight:600">${j.score||0}/10</span>
-      </div>`).join("") : `<div style="font-size:13px;color:var(--text3)">Noch keine Touchpoints</div>`}
+        <span style="font-weight:600;min-width:35px;text-align:right">${j.score||0}/10</span>
+      </div>`).join("") : `<div style="font-size:12px;color:var(--text3)">Noch keine Touchpoints</div>`}
   </div>
 
-  <!-- Aktivitäten -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px">
-      <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:12px">Aktivitäten (${aktivs.length})</div>
+  <!-- Aktivitäten + Deals -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+      <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:8px">Aktivitäten (${aktivs.length})</div>
       ${aktivs.length ? aktivs.map(a => `
-        <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
           <div style="display:flex;justify-content:space-between">
             <span style="font-weight:600">${a.typ||"–"}</span>
             <span style="color:var(--text3)">${fmtDate(a.datum)}</span>
           </div>
-          <div style="color:var(--text3);margin-top:2px">${a.status||""} · ${a.prioritaet||""}</div>
-        </div>`).join("") : `<div style="font-size:13px;color:var(--text3)">Keine Aktivitäten</div>`}
+          <div style="color:var(--text3);margin-top:1px">${a.status||""} · ${a.prioritaet||""}</div>
+        </div>`).join("") : `<div style="font-size:12px;color:var(--text3)">Keine Aktivitäten</div>`}
     </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px">
-      <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:12px">Deals (${deals.length})</div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+      <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:8px">Deals (${deals.length})</div>
       ${deals.length ? deals.map(d => `
-        <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
           <div style="display:flex;justify-content:space-between">
             <span style="font-weight:600">${d.phase||"–"}</span>
             <span style="font-weight:700;color:var(--green)">${d.wert ? d.wert.toLocaleString("de-DE")+"€" : "–"}</span>
           </div>
-          <div style="color:var(--text3);margin-top:2px">${d.status||""}</div>
-        </div>`).join("") : `<div style="font-size:13px;color:var(--text3)">Keine Deals</div>`}
+          <div style="color:var(--text3);margin-top:1px">${d.status||""}</div>
+        </div>`).join("") : `<div style="font-size:12px;color:var(--text3)">Keine Deals</div>`}
     </div>
   </div>`;
 }

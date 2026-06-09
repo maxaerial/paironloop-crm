@@ -580,6 +580,8 @@ tbody tr:hover td { background: var(--bg3); }
   font-size: 16px; line-height: 1; padding: 0 4px; display: none; flex-shrink: 0;
 }
 .search-clear-btn:hover { color: var(--text1); }
+.field-input-wrap:has(input:not(:placeholder-shown)) ~ .search-clear-btn,
+.search-box input:not(:placeholder-shown) + .search-clear-btn { display: block; }
 .filter-select {
   padding: 7px 12px;
   background: var(--bg3);

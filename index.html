@@ -1940,6 +1940,23 @@ tbody td { font-feature-settings: "zero" 0; }
       </div>
     </div>
 
+    <div class="page" id="page-kontakt-detail">
+      <div class="page-header" style="display:flex;align-items:center;gap:12px">
+        <button onclick="showPage('kontakte')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px" title="Zurück">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1 id="detail-name">Kontakt</h1>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+          <button onclick="detailNewTouchpoint()" class="btn btn-primary" style="font-size:12px;padding:6px 14px">+ Touchpoint</button>
+          <button onclick="detailNewAktivitaet()" class="btn btn-primary" style="font-size:12px;padding:6px 14px">+ Aktivität</button>
+          <button onclick="detailNewDeal()" class="btn btn-primary" style="font-size:12px;padding:6px 14px">+ Deal</button>
+          <button onclick="detailSendEmail()" class="btn btn-primary" style="font-size:12px;padding:6px 14px">✉ E-Mail</button>
+          <button onclick="editCurrentKontakt()" class="btn btn-ghost" style="font-size:12px">✏ Bearbeiten</button>
+        </div>
+      </div>
+      <div id="detail-content" style="padding:0 24px 40px;max-width:900px"></div>
+    </div>
+
     <div class="page" id="page-hilfe">
       <div class="page-header"><h1 id="hilfe-title">Hilfe & Anleitung</h1></div>
       <div id="hilfe-content" style="max-width:800px;padding:0 24px 40px"></div>
@@ -3696,6 +3713,7 @@ function showPage(id, el) {
     if(id==="aktivitaeten") renderAktivitaeten();
     if(id==="email")        renderEmail();
     if(id==="hilfe")        renderHilfe();
+    if(id==="kontakt-detail") {} // rendered separately
   }
   syncAllSearchClears();
 }
@@ -4290,7 +4308,7 @@ async function renderKontakte(s,st) {
       return `<tr>
         <td><input type="checkbox" class="row-checkbox bulk-check-kontakte" data-id="${k.id}" onchange="updateBulk('kontakte')"></td>
         <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:11px;color:var(--text3)">${k.nr||"–"}</td>
-        <td><strong style="cursor:pointer;color:var(--accent2)" onclick="editKontakt('${k.id}')">${k.unternehmen}</strong></td>
+        <td><strong style="cursor:pointer;color:var(--accent2)" onclick="openKontaktDetail('${k.id}')">${k.unternehmen}</strong></td>
         <td style="color:var(--text2)">${k.vorname&&k.vorname!=="–"?k.vorname+" "+(k.nachname||""):"–"}</td>
         <td style="color:var(--text2)">${k.ort||"–"}</td>
         <td style="color:var(--text2)">${k.land||"–"}</td>
@@ -4373,6 +4391,22 @@ function clearSearch(inputId, callback) {
 
 async function addKontakt() {
   const btn=document.getElementById("btn-save-kontakt"); btn.disabled=true;
+  const unternehmen = document.getElementById("k-unternehmen").value.trim();
+  const email = document.getElementById("k-email").value.trim();
+
+  // Duplikat-Erkennung
+  if(!isDemoMode) {
+    const dupes = kontakteData.filter(k =>
+      (email && email !== "–" && k.email?.toLowerCase() === email.toLowerCase()) ||
+      (unternehmen && k.unternehmen?.toLowerCase() === unternehmen.toLowerCase())
+    );
+    if(dupes.length > 0) {
+      const names = dupes.map(k => k.unternehmen || k.email).join(", ");
+      const ok = confirm(`⚠️ Mögliches Duplikat gefunden:\n${names}\n\nTrotzdem anlegen?`);
+      if(!ok) { btn.disabled=false; return; }
+    }
+  }
+
   const nr = await getNextKontaktNr();
   const {error}=await sb.from("kontakte").insert({
     nr, unternehmen:document.getElementById("k-unternehmen").value,
@@ -5157,9 +5191,160 @@ async function saveReaktion() {
     });
   }
 
+  // Auto-create deal if reaction is "Deal entstanden"
+  if(reaktion === "Deal entstanden" && !isDemoMode) {
+    const dealNr = "P" + String(Date.now()).slice(-4);
+    const {count: dc} = await sb.from("deals").select("*",{count:"exact",head:true});
+    await sb.from("deals").insert({
+      nr: "P" + String((dc||0)+1).padStart(3,"0"),
+      kunde: _reaktionKunde,
+      phase: "Erstgespräch",
+      status: "Aktiv",
+      wert: 0,
+      wahrscheinlichkeit: 25,
+      datum: today,
+      user_id: userId
+    });
+    showToast("✓ Deal automatisch in Pipeline angelegt");
+  }
+
   closeModal("modal-reaktion");
   showToast("✓ Reaktion gespeichert + neuer Touchpoint angelegt");
   renderJourney();
+}
+
+// ── KONTAKT DETAIL ────────────────────────────────────────────────────────────
+let _detailKontaktId = null;
+
+async function openKontaktDetail(id) {
+  _detailKontaktId = id;
+  showPage('kontakt-detail');
+  await renderKontaktDetail(id);
+}
+
+function editCurrentKontakt() {
+  if(_detailKontaktId) editKontakt(_detailKontaktId);
+}
+
+function detailNewTouchpoint() {
+  const k = kontakteData.find(c => String(c.id) === String(_detailKontaktId));
+  if(!k) return;
+  openModal("modal-journey");
+  setTimeout(() => {
+    const el = document.getElementById("j-kunde");
+    if(el) { el.value = k.unternehmen; journeyKundeIsNew = false; }
+  }, 50);
+}
+
+function detailNewAktivitaet() {
+  const k = kontakteData.find(c => String(c.id) === String(_detailKontaktId));
+  if(!k) return;
+  openModal("modal-aktivitaet");
+  setTimeout(() => {
+    const el = document.getElementById("a-kunde");
+    if(el) { el.value = k.unternehmen; aktivKundeIsNew = false; }
+  }, 50);
+}
+
+function detailNewDeal() {
+  const k = kontakteData.find(c => String(c.id) === String(_detailKontaktId));
+  if(!k) return;
+  openModal("modal-deal");
+  setTimeout(() => {
+    const el = document.getElementById("d-kunde");
+    if(el) { el.value = k.unternehmen; dealKundeIsNew = false; }
+  }, 50);
+}
+
+function detailSendEmail() {
+  const k = kontakteData.find(c => String(c.id) === String(_detailKontaktId));
+  if(!k || !k.email) { showToast("⚠ Kein E-Mail für diesen Kontakt"); return; }
+  showPage("email");
+  setTimeout(() => {
+    emailSelectedIds.add(String(k.id || k.nr));
+    renderEmailKontakteList();
+    updateEmailSelectedCount();
+  }, 100);
+}
+
+async function renderKontaktDetail(id) {
+  const k = kontakteData.find(c => String(c.id) === String(id));
+  if(!k) return;
+
+  document.getElementById("detail-name").textContent = k.unternehmen || `${k.vorname} ${k.nachname}`;
+
+  // Fetch related data
+  const [jRes, aRes, dRes] = await Promise.all([
+    sb.from("journey").select("*").eq("kunde", k.unternehmen).order("created_at",{ascending:false}),
+    sb.from("aktivitaeten").select("*").eq("kunde", k.unternehmen).order("created_at",{ascending:false}),
+    sb.from("deals").select("*").eq("kunde", k.unternehmen).order("created_at",{ascending:false})
+  ]);
+  const journey = jRes.data || [];
+  const aktivs  = aRes.data || [];
+  const deals   = dRes.data || [];
+
+  const badge = (label, color) => `<span style="display:inline-block;background:${color}22;color:${color};font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px">${label}</span>`;
+  const statusColor = {Lead:"var(--blue)",Aktiv:"var(--green)",Abgeschlossen:"var(--text3)",Inaktiv:"var(--red)"};
+
+  document.getElementById("detail-content").innerHTML = `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Stammdaten</div>
+      ${[
+        ["Nr", k.nr||"–"], ["Status", badge(k.status||"–", statusColor[k.status]||"var(--text3)")],
+        ["Vorname", k.vorname||"–"], ["Nachname", k.nachname||"–"],
+        ["E-Mail", k.email ? `<a href="mailto:${k.email}" style="color:var(--accent2)">${k.email}</a>` : "–"],
+        ["Telefon", k.telefon||"–"], ["Website", k.homepage ? `<a href="${k.homepage}" target="_blank" style="color:var(--accent2)">${k.homepage}</a>` : "–"],
+        ["Stadt", k.ort||"–"], ["Land", k.land||"–"],
+        ["Branche", k.branche||"–"], ["Kanal", k.kanal||"–"],
+        ["Sprache", k.sprache||"–"], ["Geschlecht", k.geschlecht === "m" ? "Männlich" : k.geschlecht === "f" ? "Weiblich" : "–"],
+        ["Newsletter", k.newsletter||"–"], ["Letzter Kontakt", k.letzter_kontakt||"–"]
+      ].map(([l,v]) => `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--text3)">${l}</span><span style="text-align:right;max-width:200px">${v}</span></div>`).join("")}
+    </div>
+    <div>
+      ${k.individueller_satz ? `<div style="background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);padding:16px;margin-bottom:16px;font-size:13px;color:var(--text2)"><div style="font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:6px">INDIVIDUELLER SATZ</div>${k.individueller_satz}</div>` : ""}
+      ${k.kommentar ? `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;font-size:13px;color:var(--text2)"><div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">KOMMENTAR</div>${k.kommentar}</div>` : ""}
+    </div>
+  </div>
+
+  <!-- Journey -->
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px">
+    <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:12px">Customer Journey (${journey.length})</div>
+    ${journey.length ? journey.map(j => `
+      <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <span style="color:var(--text3);min-width:70px">${j.datum||""}</span>
+        <span style="min-width:80px">${badge(j.phase||"–","var(--accent2)")}</span>
+        <span style="flex:1;color:var(--text2)">${j.touchpoint||"–"}</span>
+        <span style="color:var(--text3)">${j.kanal||""}</span>
+        <span style="font-weight:600">${j.score||0}/10</span>
+      </div>`).join("") : `<div style="font-size:13px;color:var(--text3)">Noch keine Touchpoints</div>`}
+  </div>
+
+  <!-- Aktivitäten -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px">
+      <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:12px">Aktivitäten (${aktivs.length})</div>
+      ${aktivs.length ? aktivs.map(a => `
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+          <div style="display:flex;justify-content:space-between">
+            <span style="font-weight:600">${a.typ||"–"}</span>
+            <span style="color:var(--text3)">${a.datum||""}</span>
+          </div>
+          <div style="color:var(--text3);margin-top:2px">${a.status||""} · ${a.prioritaet||""}</div>
+        </div>`).join("") : `<div style="font-size:13px;color:var(--text3)">Keine Aktivitäten</div>`}
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px">
+      <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:12px">Deals (${deals.length})</div>
+      ${deals.length ? deals.map(d => `
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+          <div style="display:flex;justify-content:space-between">
+            <span style="font-weight:600">${d.phase||"–"}</span>
+            <span style="font-weight:700;color:var(--green)">${d.wert ? d.wert.toLocaleString("de-DE")+"€" : "–"}</span>
+          </div>
+          <div style="color:var(--text3);margin-top:2px">${d.status||""}</div>
+        </div>`).join("") : `<div style="font-size:13px;color:var(--text3)">Keine Deals</div>`}
+    </div>
+  </div>`;
 }
 
 // ── HILFE ─────────────────────────────────────────────────────────────────────
@@ -6662,6 +6847,17 @@ async function sendEmailBulkDirect() {
 
   if(typeof emailjs === "undefined") { showToast("⚠ EmailJS nicht geladen"); return; }
   emailjs.init({ publicKey: EMAILJS_PUBLIC });
+
+  // Vorlagen-Variablen prüfen
+  if(vorlage.text.includes("{{individueller_satz}}")) {
+    const missing = empfaenger.filter(k => !k.individueller_satz?.trim());
+    if(missing.length > 0) {
+      const names = missing.slice(0,3).map(k => k.unternehmen||k.email).join(", ");
+      const more = missing.length > 3 ? ` +${missing.length-3} weitere` : "";
+      const ok = confirm(`⚠️ ${missing.length} Empfänger haben keinen individuellen Satz:\n${names}${more}\n\nTrotzdem senden? (Platzhalter bleibt leer)`);
+      if(!ok) return;
+    }
+  }
 
   showToast(`⏳ Sende ${empfaenger.length} E-Mail(s)…`);
   let success = 0, failed = 0;

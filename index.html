@@ -1678,7 +1678,7 @@ tbody td { font-feature-settings: "zero" 0; }
           <div class="toolbar">
             <div class="search-box" style="flex:1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input id="kontakte-search" oninput="filterKontakte(this.value);updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="kontakte-search-clear" type="button" onclick="clearSearch('kontakte-search',()=>filterKontakte(''))">×</button>
+              <input id="kontakte-search" oninput="filterKontakte(this.value);updateSearchClear(this)" onchange="updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="kontakte-search-clear" type="button" onclick="clearSearch('kontakte-search',()=>filterKontakte(''))">×</button>
             </div>
             <select class="filter-select" id="kontakte-unternehmen-filter" onchange="filterKontakteUnternehmen(this.value)">
               <option value="">Alle Unternehmen</option>
@@ -3695,8 +3695,9 @@ function showPage(id, el) {
     if(id==="email")        renderEmail();
     if(id==="hilfe")        renderHilfe();
   }
+  syncAllSearchClears();
 }
-function renderAll() { renderDashboard(); renderKontakte(); renderJourney(); renderPipeline(); renderAktivitaeten(); checkNotifications(); }
+function renderAll() { renderDashboard(); renderKontakte(); renderJourney(); renderPipeline(); renderAktivitaeten(); checkNotifications(); syncAllSearchClears(); }
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
 function openSettings() {
@@ -3827,7 +3828,7 @@ function renderJourneyCharts() {
   phases.forEach(p => {
     phaseCustomerNames[p] = Object.entries(customerLatestPhase)
       .filter(([,idx]) => phases[idx] === p)
-      .map(([name]) => name.charAt(0).toUpperCase() + name.slice(1));
+      .map(([name]) => name.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "));
   });
 
   const phaseCounts2 = phases.map(p => counts[p] || 0);
@@ -4354,6 +4355,13 @@ function filterKontakteUnternehmen(v) {
 function updateSearchClear(input) {
   const btn = document.getElementById(input.id + '-clear');
   if(btn) btn.style.display = input.value ? 'block' : 'none';
+}
+
+function syncAllSearchClears() {
+  ['kontakte-search','journey-search','aktiv-search','global-search'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) updateSearchClear(el);
+  });
 }
 function clearSearch(inputId, callback) {
   const el = document.getElementById(inputId);

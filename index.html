@@ -5894,7 +5894,7 @@ async function handleImport(input) {
   console.log("ColMap:", tmpl.cols.map((c,i)=>`${c}→${colMap[i]}`));
 
   const userId = (await sb.auth.getUser()).data.user?.id;
-  let inserted = 0, errors = 0, skipped = 0;
+  let inserted = 0, errors = 0, skipped = 0, enriched = 0;
 
   for(let i=1; i<lines.length; i++) {
     const rawLine = lines[i];
@@ -5948,6 +5948,39 @@ async function handleImport(input) {
     if(meaningfulKeys.length === 0) { skipped++; continue; }
 
     console.log(`Row ${i}:`, row);
+
+    // Duplicate detection for kontakte: match by email OR company name, enrich only null fields
+    if(table === "kontakte") {
+      let existing = null;
+      if(row.email) {
+        const {data} = await sb.from("kontakte").select("*").eq("email", row.email.toLowerCase().trim()).maybeSingle();
+        existing = data;
+      }
+      if(!existing && row.unternehmen) {
+        const {data} = await sb.from("kontakte").select("*").ilike("unternehmen", row.unternehmen.trim()).maybeSingle();
+        existing = data;
+      }
+      if(existing) {
+        // Only update fields that are null/empty in DB
+        const patch = {};
+        Object.keys(row).forEach(k => {
+          if(k === "user_id" || k === "id") return;
+          const dbVal = existing[k];
+          if(dbVal === null || dbVal === undefined || dbVal === "" || dbVal === "–") {
+            if(row[k]) patch[k] = row[k];
+          }
+        });
+        if(Object.keys(patch).length > 0) {
+          const {error} = await sb.from("kontakte").update(patch).eq("id", existing.id);
+          if(error) { console.error(`Enrich error row ${i}:`, error.message); errors++; }
+          else { enriched = (enriched||0) + 1; }
+        } else {
+          skipped++;
+        }
+        continue;
+      }
+    }
+
     const {error} = await sb.from(table).insert(row);
     if(error) {
       console.error(`Import error row ${i}:`, error.message, row);
@@ -5963,9 +5996,10 @@ async function handleImport(input) {
   if(table==="deals")       { await renderPipeline(); renderDashboard(); }
   if(table==="aktivitaeten"){ await renderAktivitaeten(); renderDashboard(); }
 
-  let msg = `✓ ${inserted} Einträge importiert`;
-  if(skipped > 0) msg += ` (${skipped} übersprungen)`;
-  if(errors > 0)  msg += ` · ${errors} Fehler`;
+  let msg = `✓ ${inserted} neu importiert`;
+  if(enriched > 0) msg += ` · ${enriched} angereichert`;
+  if(skipped > 0)  msg += ` · ${skipped} übersprungen`;
+  if(errors > 0)   msg += ` · ${errors} Fehler`;
   showToast(msg, errors > 0);
 }
 

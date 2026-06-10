@@ -6612,6 +6612,24 @@ function toggleAllBulk(table, checked) {
   updateBulk(table);
 }
 
+// Shift+Click range selection
+const _lastChecked = {};
+document.addEventListener("click", function(e) {
+  const cb = e.target;
+  if(!cb.matches(".row-checkbox[data-id]")) return;
+  const table = [...cb.classList].find(c => c.startsWith("bulk-check-"))?.replace("bulk-check-","");
+  if(!table) return;
+  if(e.shiftKey && _lastChecked[table] && _lastChecked[table] !== cb) {
+    const all = [...document.querySelectorAll(`.bulk-check-${table}`)];
+    const a = all.indexOf(_lastChecked[table]);
+    const b = all.indexOf(cb);
+    const [from, to] = a < b ? [a,b] : [b,a];
+    all.slice(from, to+1).forEach(c => c.checked = cb.checked);
+    updateBulk(table);
+  }
+  _lastChecked[table] = cb;
+});
+
 function clearBulk(table) {
   document.querySelectorAll(`.bulk-check-${table}`).forEach(c => c.checked = false);
   bulkSelected[table] = [];

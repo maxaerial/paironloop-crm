@@ -5930,6 +5930,7 @@ async function handleImport(input) {
       const vi = colMap[ci];
       if(vi >= 0 && vi < vals.length) {
         let v = vals[vi].trim().replace(/^"|"$/g, "");
+        if(col === "nr" && v && /^\d+$/.test(v)) v = v.padStart(3, "0");
         if(v) row[col] = v;
       }
     });

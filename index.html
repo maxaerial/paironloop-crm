@@ -4912,7 +4912,7 @@ async function addAktivitaet() {
   const prio    = document.getElementById("a-prioritaet").value||"";
   const beschr  = document.getElementById("a-beschreibung").value||"";
   const typ     = document.getElementById("a-typ").value||"";
-  if(verantw) sendAktivitaetNotification("assign", verantw, kunde, typ, datum, prio, beschr);
+  // if(verantw) sendAktivitaetNotification("assign", verantw, kunde, typ, datum, prio, beschr); // deaktiviert
   closeModal("modal-aktivitaet"); renderAktivitaeten(); renderKontakte(); renderDashboard(); checkNotifications();
   showToast("✓ Aktivität gespeichert");
 }
@@ -5812,8 +5812,8 @@ function autoSendReminders(faelligeAktiv, today) {
     const email = member && typeof member === "object" ? member.email : "";
     if(!email) return; // no email stored
 
-    // Send reminder
-    sendAktivitaetNotification("remind", a.verantwortlich, a.kunde, a.typ||"Aktivität", a.datum, a.prioritaet||"–", a.beschreibung||"");
+    // Send reminder (deaktiviert)
+    // sendAktivitaetNotification("remind", a.verantwortlich, a.kunde, a.typ||"Aktivität", a.datum, a.prioritaet||"–", a.beschreibung||"");
     sentIds.push(a.id);
   });
 
@@ -7249,6 +7249,21 @@ async function sendEmailBulkDirect() {
           aktivitaet: betreff,
           reaktion: "–",
           score: 5,
+          user_id: userId
+        });
+        // Auto-create follow-up activity in 7 days
+        const followUpDate = new Date();
+        followUpDate.setDate(followUpDate.getDate() + 7);
+        const followUpNr = await getNextAktivitaetNr();
+        await sb.from("aktivitaeten").insert({
+          nr: followUpNr,
+          kunde: k.unternehmen || `${k.vorname||""} ${k.nachname||""}`.trim(),
+          typ: "Nachfassen",
+          datum: followUpDate.toISOString().split("T")[0],
+          prioritaet: "Mittel",
+          beschreibung: `Nachfassen nach Kooperationsanfrage via E-Mail (${vorlage.name})`,
+          verantwortlich: "Max",
+          status: "Offen",
           user_id: userId
         });
       }

@@ -5221,6 +5221,12 @@ async function saveReaktion() {
     showToast("✓ Deal automatisch in Pipeline angelegt");
   }
 
+  // Auto-set kontakt status to Inaktiv if "Kein Interesse"
+  if(reaktion === "Kein Interesse" && !isDemoMode && _reaktionKunde) {
+    const {data: k} = await sb.from("kontakte").select("id").ilike("unternehmen", _reaktionKunde).maybeSingle();
+    if(k) await sb.from("kontakte").update({ status: "Inaktiv" }).eq("id", k.id);
+  }
+
   closeModal("modal-reaktion");
   showToast("✓ Reaktion gespeichert + neuer Touchpoint angelegt");
   renderJourney();

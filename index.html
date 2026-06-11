@@ -5225,6 +5225,12 @@ async function saveReaktion() {
   if(reaktion === "Kein Interesse" && !isDemoMode && _reaktionKunde) {
     const {data: k} = await sb.from("kontakte").select("id").ilike("unternehmen", _reaktionKunde).maybeSingle();
     if(k) await sb.from("kontakte").update({ status: "Inaktiv" }).eq("id", k.id);
+    // Mark open Nachfassen activities as done
+    await sb.from("aktivitaeten")
+      .update({ status: "Erledigt" })
+      .ilike("kunde", _reaktionKunde)
+      .eq("typ", "Nachfassen")
+      .eq("status", "Offen");
   }
 
   closeModal("modal-reaktion");

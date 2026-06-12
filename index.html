@@ -5206,31 +5206,47 @@ async function saveReaktion() {
 
   // Auto-create deal if reaction is "Deal entstanden"
   if(reaktion === "Deal entstanden" && !isDemoMode) {
-    const dealNr = "D" + String(Date.now()).slice(-4);
-    const {count: dc} = await sb.from("deals").select("*",{count:"exact",head:true});
-    await sb.from("deals").insert({
-      nr: "D" + String((dc||0)+1).padStart(3,"0"),
+    const dealNr = await getNextDealNr();
+    const {error: dealErr} = await sb.from("deals").insert({
+      nr: dealNr,
       kunde: _reaktionKunde,
+      beschreibung: "Automatisch aus Journey erstellt",
       phase: "Erstgespräch",
       status: "Aktiv",
       wert: 0,
       wahrscheinlichkeit: 25,
-      datum: today,
+      abschluss_datum: today,
+      quelle: "Journey",
       user_id: userId
     });
-    showToast("✓ Deal automatisch in Pipeline angelegt");
+    if(dealErr) { console.error("Deal insert error:", dealErr); showToast("⚠ Deal konnte nicht angelegt werden: " + dealErr.message, true); }
+    else { showToast("✓ Deal automatisch in Pipeline angelegt"); await renderPipeline(); }
   }
 
-  // Auto-set kontakt status to Inaktiv if "Kein Interesse"
-  if(reaktion === "Kein Interesse" && !isDemoMode && _reaktionKunde) {
-    const {data: k} = await sb.from("kontakte").select("id").ilike("unternehmen", _reaktionKunde).maybeSingle();
-    if(k) await sb.from("kontakte").update({ status: "Inaktiv" }).eq("id", k.id);
-    // Mark open Nachfassen activities as done
-    await sb.from("aktivitaeten")
-      .update({ status: "Erledigt" })
-      .ilike("kunde", _reaktionKunde)
-      .eq("typ", "Nachfassen")
-      .eq("status", "Offen");
+  // Auto-update kontakt status based on reaktion
+  if(!isDemoMode && _reaktionKunde) {
+    const statusMap = {
+      "Geantwortet":            "Aktiv",
+      "Interesse signalisiert": "Aktiv",
+      "Kein Interesse":         "Inaktiv",
+      "Deal entstanden":        "Aktiv",
+      "Wartet auf Antwort":     "Lead",
+      "Termin vereinbart":      "Aktiv",
+    };
+    const newStatus = statusMap[reaktion];
+    if(newStatus) {
+      const {data: ks} = await sb.from("kontakte").select("id").ilike("unternehmen", _reaktionKunde).limit(1);
+      const k = ks && ks[0];
+      if(k) await sb.from("kontakte").update({ status: newStatus }).eq("id", k.id);
+    }
+    // Mark open Nachfassen activities as done if Kein Interesse
+    if(reaktion === "Kein Interesse") {
+      await sb.from("aktivitaeten")
+        .update({ status: "Erledigt" })
+        .ilike("kunde", _reaktionKunde)
+        .eq("typ", "Nachfassen")
+        .eq("status", "Offen");
+    }
   }
 
   closeModal("modal-reaktion");
@@ -5923,7 +5939,7 @@ async function handleImport(input) {
   console.log("ColMap:", tmpl.cols.map((c,i)=>`${c}→${colMap[i]}`));
 
   const userId = (await sb.auth.getUser()).data.user?.id;
-  let inserted = 0, errors = 0, skipped = 0, enriched = 0;
+  let inserted = 0, errors = 0, skipped = 0, enriched = 0, _importMaxNr = 0;
 
   for(let i=1; i<lines.length; i++) {
     const rawLine = lines[i];
@@ -5970,6 +5986,14 @@ async function handleImport(input) {
         const raw = String(row.dealwert).replace(/[^0-9,.-]/g,"").replace(",",".");
         row.dealwert = parseFloat(raw) || 0;
       }
+      // Auto-increment nr based on highest existing nr
+      if(!_importMaxNr) {
+        const {data: nrData} = await sb.from("kontakte").select("nr");
+        const nums = (nrData||[]).map(r => parseInt((r.nr||"").replace(/\D/g,""))||0);
+        _importMaxNr = nums.length ? Math.max(...nums) : 0;
+      }
+      _importMaxNr++;
+      row.nr = String(_importMaxNr).padStart(3, "0");
     }
 
     // Skip rows with no meaningful content
@@ -5982,12 +6006,12 @@ async function handleImport(input) {
     if(table === "kontakte") {
       let existing = null;
       if(row.email) {
-        const {data} = await sb.from("kontakte").select("*").eq("email", row.email.toLowerCase().trim()).maybeSingle();
-        existing = data;
+        const {data} = await sb.from("kontakte").select("*").eq("email", row.email.toLowerCase().trim()).limit(1);
+        existing = data && data[0];
       }
       if(!existing && row.unternehmen) {
-        const {data} = await sb.from("kontakte").select("*").ilike("unternehmen", row.unternehmen.trim()).maybeSingle();
-        existing = data;
+        const {data} = await sb.from("kontakte").select("*").ilike("unternehmen", row.unternehmen.trim()).limit(1);
+        existing = data && data[0];
       }
       if(existing) {
         // Only update fields that are null/empty in DB

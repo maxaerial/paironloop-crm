@@ -5215,8 +5215,6 @@ async function saveReaktion() {
       status: "Aktiv",
       wert: 0,
       wahrscheinlichkeit: 25,
-      abschluss_datum: today,
-      quelle: "Journey",
       user_id: userId
     });
     if(dealErr) { console.error("Deal insert error:", dealErr); showToast("⚠ Deal konnte nicht angelegt werden: " + dealErr.message, true); }

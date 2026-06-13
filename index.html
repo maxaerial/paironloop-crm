@@ -3525,7 +3525,7 @@ async function loadProfile() {
   if(data) {
     profileData = data;
     applyProfileToUI(data);
-    prefillProfileForm(data);
+    await prefillProfileForm(data);
   }
   // Fill email display if settings open
   const emailDisp = document.getElementById("settings-email-display");

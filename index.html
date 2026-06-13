@@ -1601,7 +1601,7 @@ tbody td { font-feature-settings: "zero" 0; }
           <div class="toolbar">
             <div class="search-box" style="flex:1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input id="journey-search" oninput="filterJourney(this.value);updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="journey-search-clear" type="button" onclick="clearSearch('journey-search',()=>filterJourney(''))">×</button>
+              <input id="journey-search" oninput="debounce('js',()=>filterJourney(this.value));updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="journey-search-clear" type="button" onclick="clearSearch('journey-search',()=>filterJourney(''))">×</button>
             </div>
             <select class="filter-select" id="journey-kunde-filter" onchange="filterJourneyKundeSelect(this.value)">
               <option value="">Alle Kunden</option>
@@ -1660,7 +1660,7 @@ tbody td { font-feature-settings: "zero" 0; }
           <div class="toolbar">
             <div class="search-box" style="flex:1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input id="kontakte-search" oninput="filterKontakte(this.value);updateSearchClear(this)" onchange="updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="kontakte-search-clear" type="button" onclick="clearSearch('kontakte-search',()=>filterKontakte(''))">×</button>
+              <input id="kontakte-search" oninput="debounce('ks',()=>filterKontakte(this.value));updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="kontakte-search-clear" type="button" onclick="clearSearch('kontakte-search',()=>filterKontakte(''))">×</button>
             </div>
             <select class="filter-select" id="kontakte-unternehmen-filter" onchange="filterKontakteUnternehmen(this.value)">
               <option value="">Alle Unternehmen</option>
@@ -1745,7 +1745,7 @@ tbody td { font-feature-settings: "zero" 0; }
 <div class="toolbar" style="margin-bottom:16px">
           <div class="search-box" style="flex:1">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input id="pipeline-search" oninput="renderPipeline();updateSearchClear(this)" placeholder="Suchen..." data-i18n-placeholder="search"><button class="search-clear-btn" id="pipeline-search-clear" type="button" onclick="clearSearch('pipeline-search',()=>renderPipeline())">×</button>
+            <input id="pipeline-search" oninput="debounce('ps',()=>renderPipeline());updateSearchClear(this)" placeholder="Suchen..." data-i18n-placeholder="search"><button class="search-clear-btn" id="pipeline-search-clear" type="button" onclick="clearSearch('pipeline-search',()=>renderPipeline())">×</button>
           </div>
           <select class="filter-select" id="pipeline-status-filter" onchange="renderPipeline()">
             <option value="">Alle Status</option>
@@ -1820,7 +1820,7 @@ tbody td { font-feature-settings: "zero" 0; }
           <div class="toolbar">
             <div class="search-box" style="flex:1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input id="aktiv-search" oninput="searchAktivitaeten(this.value);updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="aktiv-search-clear" type="button" onclick="clearSearch('aktiv-search',()=>searchAktivitaeten(''))">×</button>
+              <input id="aktiv-search" oninput="debounce('as',()=>searchAktivitaeten(this.value));updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="aktiv-search-clear" type="button" onclick="clearSearch('aktiv-search',()=>searchAktivitaeten(''))">×</button>
             </div>
             <select class="filter-select" onchange="filterAktivitaeten(this.value)">
               <option value="" data-i18n="all_status">Alle Status</option>
@@ -2880,7 +2880,7 @@ function applyI18n() {
   if(ksf) {
     const cur = ksf.value;
     ksf.innerHTML = `<option value="">${t("all_status")}</option>` +
-      ["Lead",t("active"),"Lead",t("inactive"),t("closed")].map(s=>`<option>${s}</option>`).join("");
+      ["Lead",t("active"),t("inactive"),t("closed")].map(s=>`<option>${s}</option>`).join("");
   }
   // Login button
   const lb = document.getElementById("login-btn");
@@ -3228,19 +3228,17 @@ function renderAktivitaetenDemo() {
   const dLegSize  = isMobileD ? 8 : 9;
   const donutOpts=()=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",align:dLegAlign,labels:{color:text3,font:{size:dLegSize},padding:4,usePointStyle:true,pointStyle:"circle",pointStyleWidth:5,boxWidth:5,boxHeight:5}}}}});
   const statusCnt={};rows.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
-  if(cAktivTyp)cAktivTyp.destroy();
   const elS=document.getElementById("chart-aktiv-status");
-  if(elS){const o=donutOpts();o.data={labels:Object.keys(statusCnt),datasets:[{data:Object.values(statusCnt),backgroundColor:getColors(Object.keys(statusCnt)),borderWidth:0,hoverOffset:4}]};cAktivTyp=new Chart(elS,o);}
+  if(elS){const sL=Object.keys(statusCnt),sV=Object.values(statusCnt),sC=getColors(sL);if(cAktivTyp){cAktivTyp.data.labels=sL;cAktivTyp.data.datasets[0].data=sV;cAktivTyp.data.datasets[0].backgroundColor=sC;cAktivTyp.update();}else{const o=donutOpts();o.data={labels:sL,datasets:[{data:sV,backgroundColor:sC,borderWidth:0,hoverOffset:4}]};cAktivTyp=new Chart(elS,o);}}
   const prioCnt={};rows.forEach(a=>{const p=a.prioritaet||"–";prioCnt[p]=(prioCnt[p]||0)+1;});
-  if(cAktivPrio)cAktivPrio.destroy();
   const elP=document.getElementById("chart-aktiv-prio2");
-  if(elP){const o=donutOpts();o.data={labels:Object.keys(prioCnt),datasets:[{data:Object.values(prioCnt),backgroundColor:getColors(Object.keys(prioCnt)),borderWidth:0,hoverOffset:4}]};cAktivPrio=new Chart(elP,o);}
+  if(elP){const pL=Object.keys(prioCnt),pV=Object.values(prioCnt),pC=getColors(pL);if(cAktivPrio){cAktivPrio.data.labels=pL;cAktivPrio.data.datasets[0].data=pV;cAktivPrio.data.datasets[0].backgroundColor=pC;cAktivPrio.update();}else{const o=donutOpts();o.data={labels:pL,datasets:[{data:pV,backgroundColor:pC,borderWidth:0,hoverOffset:4}]};cAktivPrio=new Chart(elP,o);}}
   const typCnt={};rows.forEach(a=>{const t=a.typ||"–";typCnt[t]=(typCnt[t]||0)+1;});
   const elT=document.getElementById("chart-aktiv-typ2");
-  if(elT){if(window._cAktivTyp2)window._cAktivTyp2.destroy();const o=donutOpts();o.data={labels:Object.keys(typCnt),datasets:[{data:Object.values(typCnt),backgroundColor:getColors(Object.keys(typCnt)),borderWidth:0,hoverOffset:4}]};window._cAktivTyp2=new Chart(elT,o);}
+  if(elT){const tL=Object.keys(typCnt),tV=Object.values(typCnt),tC=getColors(tL);if(window._cAktivTyp2){window._cAktivTyp2.data.labels=tL;window._cAktivTyp2.data.datasets[0].data=tV;window._cAktivTyp2.data.datasets[0].backgroundColor=tC;window._cAktivTyp2.update();}else{const o=donutOpts();o.data={labels:tL,datasets:[{data:tV,backgroundColor:tC,borderWidth:0,hoverOffset:4}]};window._cAktivTyp2=new Chart(elT,o);}}
   const vCnt={};rows.forEach(a=>{const v=a.verantwortlich||"–";vCnt[v]=(vCnt[v]||0)+1;});
   const elV=document.getElementById("chart-aktiv-verantw");
-  if(elV){if(window._cAktivV)window._cAktivV.destroy();const o=donutOpts();o.data={labels:Object.keys(vCnt),datasets:[{data:Object.values(vCnt),backgroundColor:getColors(Object.keys(vCnt)),borderWidth:0,hoverOffset:4}]};window._cAktivV=new Chart(elV,o);}
+  if(elV){const vL=Object.keys(vCnt),vV=Object.values(vCnt),vC=getColors(vL);if(window._cAktivV){window._cAktivV.data.labels=vL;window._cAktivV.data.datasets[0].data=vV;window._cAktivV.data.datasets[0].backgroundColor=vC;window._cAktivV.update();}else{const o=donutOpts();o.data={labels:vL,datasets:[{data:vV,backgroundColor:vC,borderWidth:0,hoverOffset:4}]};window._cAktivV=new Chart(elV,o);}}
   const pBg={"Hoch":"rgba(240,110,110,.1)","Mittel":"rgba(240,168,110,.1)","Niedrig":"rgba(110,240,160,.1)"};
   const pC={"Hoch":"var(--red)","Mittel":"var(--orange)","Niedrig":"var(--green)"};
   document.getElementById("aktivitaeten-table-wrap").innerHTML=`<table><thead><tr>
@@ -3880,19 +3878,30 @@ async function renderDashboard() {
   const textColor = cs.getPropertyValue("--text2").trim();
   const borderCol = cs.getPropertyValue("--border").trim();
 
-  if(cStatus) cStatus.destroy();
-  cStatus = new Chart(document.getElementById("chart-status"), {type:"doughnut",
-    data:{labels:Object.keys(sc),datasets:[{data:Object.values(sc),backgroundColor:[blue,green,orange,text3,purple],borderWidth:0,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{display:true,position:"bottom",labels:{color:textColor,font:{size:11,family:"DM Sans"},padding:8,usePointStyle:true,pointStyle:"circle",pointStyleWidth:5,boxWidth:5,boxHeight:5}}}}});
+  const statusLabels = Object.keys(sc), statusVals = Object.values(sc);
+  if(cStatus) {
+    cStatus.data.labels = statusLabels;
+    cStatus.data.datasets[0].data = statusVals;
+    cStatus.data.datasets[0].backgroundColor = [blue,green,orange,text3,purple];
+    cStatus.update();
+  } else {
+    cStatus = new Chart(document.getElementById("chart-status"), {type:"doughnut",
+      data:{labels:statusLabels,datasets:[{data:statusVals,backgroundColor:[blue,green,orange,text3,purple],borderWidth:0,hoverOffset:4}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{display:true,position:"bottom",labels:{color:textColor,font:{size:11,family:"DM Sans"},padding:8,usePointStyle:true,pointStyle:"circle",pointStyleWidth:5,boxWidth:5,boxHeight:5}}}}});
+  }
 
   const phases=["Erstgespräch","Angebot","Verhandlung","Abschluss"];
   const pv=phases.map(p=>deals.filter(d=>d.phase===p||d.phase==="First talk"||d.phase===p).reduce((s,d)=>s+(d.wert||0),0));
-  if(cPipe) cPipe.destroy();
-  cPipe = new Chart(document.getElementById("chart-pipeline"), {type:"bar",
-    data:{labels:phases,datasets:[{data:pv,backgroundColor:"#6EB8F0",borderRadius:8,borderSkipped:false,borderWidth:0}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{family:"DM Sans",size:11}},grid:{color:borderCol},border:{display:false}},
-              x:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
+  if(cPipe) {
+    cPipe.data.datasets[0].data = pv;
+    cPipe.update();
+  } else {
+    cPipe = new Chart(document.getElementById("chart-pipeline"), {type:"bar",
+      data:{labels:phases,datasets:[{data:pv,backgroundColor:"#6EB8F0",borderRadius:8,borderSkipped:false,borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{family:"DM Sans",size:11}},grid:{color:borderCol},border:{display:false}},
+                x:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
+  }
 
   const pBg={"Hoch":"rgba(240,110,110,.1)","Mittel":"rgba(240,168,110,.1)","Niedrig":"rgba(110,240,160,.1)"};
   const pC={"Hoch":"var(--red)","Mittel":"var(--orange)","Niedrig":"var(--green)"};
@@ -4468,22 +4477,19 @@ function renderKontakteCharts(data) {
   const statusLabelsK = statusOrderK.filter(s=>statusCountRaw[s]>0);
   const statusValsK   = statusLabelsK.map(s=>statusCountRaw[s]);
   const statusColorsK = {"Lead":"#6EB8F0","Aktiv":"#6EF0A0","Abgeschlossen":"#B06EF0","Inaktiv":"#9090A8"};
-  if(cKStatus) cKStatus.destroy();
   const elS = document.getElementById("chart-k-status");
-  if(elS) cKStatus = new Chart(elS, {type:"doughnut",data:{labels:statusLabelsK,datasets:[{data:statusValsK,backgroundColor:statusLabelsK.map(s=>statusColorsK[s]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:legendOpts}}});
+  if(elS){const sBg=statusLabelsK.map(s=>statusColorsK[s]||"#9090A8");if(cKStatus){cKStatus.data.labels=statusLabelsK;cKStatus.data.datasets[0].data=statusValsK;cKStatus.data.datasets[0].backgroundColor=sBg;cKStatus.update();}else{cKStatus=new Chart(elS,{type:"doughnut",data:{labels:statusLabelsK,datasets:[{data:statusValsK,backgroundColor:sBg,borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:legendOpts}}});}}
 
   const landCount = {};
   data.forEach(k => { const l=k.land||"–"; landCount[l]=(landCount[l]||0)+1; });
   const topLand = Object.entries(landCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  if(cKLand) cKLand.destroy();
   const elL = document.getElementById("chart-k-land");
-  if(elL) cKLand = new Chart(elL, donut(topLand.map(e=>e[0]), topLand.map(e=>e[1])));
+  if(elL){const lL=topLand.map(e=>e[0]),lV=topLand.map(e=>e[1]);if(cKLand){cKLand.data.labels=lL;cKLand.data.datasets[0].data=lV;cKLand.data.datasets[0].backgroundColor=getColors(lL);cKLand.update();}else{cKLand=new Chart(elL,donut(lL,lV));}}
 
   const brancheCount = {};
   data.forEach(k => { const b=k.branche||"–"; brancheCount[b]=(brancheCount[b]||0)+1; });
-  if(cKBranche) cKBranche.destroy();
   const elB = document.getElementById("chart-k-branche");
-  if(elB) cKBranche = new Chart(elB, donut(Object.keys(brancheCount), Object.values(brancheCount)));
+  if(elB){const bL=Object.keys(brancheCount),bV=Object.values(brancheCount);if(cKBranche){cKBranche.data.labels=bL;cKBranche.data.datasets[0].data=bV;cKBranche.data.datasets[0].backgroundColor=getColors(bL);cKBranche.update();}else{cKBranche=new Chart(elB,donut(bL,bV));}}
 }
 
 function filterKontakte(v) { kSearch=v||""; renderKontakte(v,kStatus); }
@@ -4912,29 +4918,26 @@ async function renderAktivitaeten(f) {
 
   // Status
   const statusCnt={};aktivData.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
-  if(cAktivTyp)cAktivTyp.destroy();
   const elS=document.getElementById("chart-aktiv-status");
-  if(elS) cAktivTyp=new Chart(elS,mkDonut(Object.keys(statusCnt),Object.values(statusCnt)));
+  if(elS){const sL=Object.keys(statusCnt),sV=Object.values(statusCnt);if(cAktivTyp){cAktivTyp.data.labels=sL;cAktivTyp.data.datasets[0].data=sV;cAktivTyp.data.datasets[0].backgroundColor=getColors(sL);cAktivTyp.update();}else{cAktivTyp=new Chart(elS,mkDonut(sL,sV));}}
 
   // Priorität
   const prioCntD={};aktivData.forEach(a=>{const p=a.prioritaet||"–";prioCntD[p]=(prioCntD[p]||0)+1;});
   const prioOrdD=["Niedrig","Mittel","Hoch"];
   const prioLblD=prioOrdD.filter(p=>prioCntD[p]>0);
   const prioClrD={"Niedrig":"#6EF0A0","Mittel":"#F0A86E","Hoch":"#F06E6E"};
-  if(cAktivPrio)cAktivPrio.destroy();
   const elP=document.getElementById("chart-aktiv-prio2");
-  if(elP) cAktivPrio=new Chart(elP,{type:"doughnut",data:{labels:prioLblD,datasets:[{data:prioLblD.map(p=>prioCntD[p]),backgroundColor:prioLblD.map(p=>prioClrD[p]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",align:isMobileA?"start":"center",labels:{color:text3,font:{size:isMobileA?7:9},padding:isMobileA?2:4,usePointStyle:true,pointStyle:"circle",pointStyleWidth:isMobileA?4:5,boxWidth:isMobileA?4:5,boxHeight:isMobileA?4:5}}}}});
+  if(elP){const pV=prioLblD.map(p=>prioCntD[p]),pBg=prioLblD.map(p=>prioClrD[p]||"#9090A8");if(cAktivPrio){cAktivPrio.data.labels=prioLblD;cAktivPrio.data.datasets[0].data=pV;cAktivPrio.data.datasets[0].backgroundColor=pBg;cAktivPrio.update();}else{cAktivPrio=new Chart(elP,{type:"doughnut",data:{labels:prioLblD,datasets:[{data:pV,backgroundColor:pBg,borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",align:isMobileA?"start":"center",labels:{color:text3,font:{size:isMobileA?7:9},padding:isMobileA?2:4,usePointStyle:true,pointStyle:"circle",pointStyleWidth:isMobileA?4:5,boxWidth:isMobileA?4:5,boxHeight:isMobileA?4:5}}}}}});}}
 
   // Typ
   const typCnt={};aktivData.forEach(a=>{const t=a.typ||"–";typCnt[t]=(typCnt[t]||0)+1;});
-  let cAktivTyp2=null;
   const elT=document.getElementById("chart-aktiv-typ2");
-  if(elT){if(window._cAktivTyp2)window._cAktivTyp2.destroy(); window._cAktivTyp2=new Chart(elT,mkDonut(Object.keys(typCnt),Object.values(typCnt)));}
+  if(elT){const tL=Object.keys(typCnt),tV=Object.values(typCnt);if(window._cAktivTyp2){window._cAktivTyp2.data.labels=tL;window._cAktivTyp2.data.datasets[0].data=tV;window._cAktivTyp2.data.datasets[0].backgroundColor=getColors(tL);window._cAktivTyp2.update();}else{window._cAktivTyp2=new Chart(elT,mkDonut(tL,tV));}}
 
   // Verantwortlich
   const vCnt={};aktivData.forEach(a=>{const v=a.verantwortlich||"–";vCnt[v]=(vCnt[v]||0)+1;});
   const elV=document.getElementById("chart-aktiv-verantw");
-  if(elV){if(window._cAktivV)window._cAktivV.destroy(); window._cAktivV=new Chart(elV,mkDonut(Object.keys(vCnt),Object.values(vCnt)));}
+  if(elV){const vL=Object.keys(vCnt),vV=Object.values(vCnt);if(window._cAktivV){window._cAktivV.data.labels=vL;window._cAktivV.data.datasets[0].data=vV;window._cAktivV.data.datasets[0].backgroundColor=getColors(vL);window._cAktivV.update();}else{window._cAktivV=new Chart(elV,mkDonut(vL,vV));}}
 
   let rows=aktivData;
   if(aFilter) rows=rows.filter(a=>a.status===aFilter);
@@ -7092,6 +7095,9 @@ async function moveDeal(id, direction) {
   renderPipeline(); renderKontakte(); renderJourney(); renderDashboard();
   showToast(`✓ ${deal.beschreibung||deal.kunde} → ${newPhase}`);
 }
+
+const _dbt = {};
+function debounce(key, fn, ms = 250) { clearTimeout(_dbt[key]); _dbt[key] = setTimeout(fn, ms); }
 
 function openModal(id) {
   resetModal(id);

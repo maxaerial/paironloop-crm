@@ -1601,7 +1601,7 @@ tbody td { font-feature-settings: "zero" 0; }
           <div class="toolbar">
             <div class="search-box" style="flex:1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input id="journey-search" oninput="debounce('js',()=>filterJourney(this.value));updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="journey-search-clear" type="button" onclick="clearSearch('journey-search',()=>filterJourney(''))">×</button>
+              <input id="journey-search" oninput="filterJourney(this.value);updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="journey-search-clear" type="button" onclick="clearSearch('journey-search',()=>filterJourney(''))">×</button>
             </div>
             <select class="filter-select" id="journey-kunde-filter" onchange="filterJourneyKundeSelect(this.value)">
               <option value="">Alle Kunden</option>
@@ -1660,7 +1660,7 @@ tbody td { font-feature-settings: "zero" 0; }
           <div class="toolbar">
             <div class="search-box" style="flex:1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input id="kontakte-search" oninput="debounce('ks',()=>filterKontakte(this.value));updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="kontakte-search-clear" type="button" onclick="clearSearch('kontakte-search',()=>filterKontakte(''))">×</button>
+              <input id="kontakte-search" oninput="filterKontakte(this.value);updateSearchClear(this)" onchange="updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="kontakte-search-clear" type="button" onclick="clearSearch('kontakte-search',()=>filterKontakte(''))">×</button>
             </div>
             <select class="filter-select" id="kontakte-unternehmen-filter" onchange="filterKontakteUnternehmen(this.value)">
               <option value="">Alle Unternehmen</option>
@@ -1745,7 +1745,7 @@ tbody td { font-feature-settings: "zero" 0; }
 <div class="toolbar" style="margin-bottom:16px">
           <div class="search-box" style="flex:1">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input id="pipeline-search" oninput="debounce('ps',()=>renderPipeline());updateSearchClear(this)" placeholder="Suchen..." data-i18n-placeholder="search"><button class="search-clear-btn" id="pipeline-search-clear" type="button" onclick="clearSearch('pipeline-search',()=>renderPipeline())">×</button>
+            <input id="pipeline-search" oninput="renderPipeline();updateSearchClear(this)" placeholder="Suchen..." data-i18n-placeholder="search"><button class="search-clear-btn" id="pipeline-search-clear" type="button" onclick="clearSearch('pipeline-search',()=>renderPipeline())">×</button>
           </div>
           <select class="filter-select" id="pipeline-status-filter" onchange="renderPipeline()">
             <option value="">Alle Status</option>
@@ -1820,7 +1820,7 @@ tbody td { font-feature-settings: "zero" 0; }
           <div class="toolbar">
             <div class="search-box" style="flex:1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input id="aktiv-search" oninput="debounce('as',()=>searchAktivitaeten(this.value));updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="aktiv-search-clear" type="button" onclick="clearSearch('aktiv-search',()=>searchAktivitaeten(''))">×</button>
+              <input id="aktiv-search" oninput="searchAktivitaeten(this.value);updateSearchClear(this)" data-i18n-placeholder="search"><button class="search-clear-btn" id="aktiv-search-clear" type="button" onclick="clearSearch('aktiv-search',()=>searchAktivitaeten(''))">×</button>
             </div>
             <select class="filter-select" onchange="filterAktivitaeten(this.value)">
               <option value="" data-i18n="all_status">Alle Status</option>
@@ -1862,7 +1862,6 @@ tbody td { font-feature-settings: "zero" 0; }
           <div style="display:flex;gap:8px">
             <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="previewEmailVorlage()" id="btn-preview-vorlage">Vorschau</button>
             <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="editEmailVorlageSelected()">Bearbeiten</button>
-            <button class="btn btn-sm" style="background:var(--bg3);color:var(--red)" onclick="deleteEmailVorlageSelected()">Löschen</button>
             <button class="btn btn-primary btn-sm" onclick="openEmailVorlageModal()">+ Neue Vorlage</button>
             <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="importEmailVorlagen()">↑ Importieren</button>
           </div>
@@ -2190,6 +2189,57 @@ tbody td { font-feature-settings: "zero" 0; }
       </button>
     </div>
   </div>
+  <div class="settings-section">
+    <div class="settings-section-title">🚀 Ersteinrichtung</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.7">
+
+      <div style="font-weight:700;color:var(--text1);margin-bottom:6px">1. Profil vervollständigen</div>
+      <div style="color:var(--text3);margin-bottom:12px">Vorname, Nachname und Firma oben eintragen und speichern. Diese Daten erscheinen unten links in der Sidebar.</div>
+
+      <div style="font-weight:700;color:var(--text1);margin-bottom:6px">2. E-Mail Konfiguration einrichten</div>
+      <div style="color:var(--text3);margin-bottom:4px">Für den direkten E-Mail-Versand aus dem CRM brauchst du einen kostenlosen <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent2)">EmailJS</a>-Account.</div>
+      <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:4px">
+        <div style="color:var(--text1);font-weight:600;margin-bottom:4px">So richtest du EmailJS ein:</div>
+        <ol style="color:var(--text3);padding-left:16px;margin:0;line-height:1.9">
+          <li>Gehe zu <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent2)">emailjs.com</a> → Sign Up (kostenlos)</li>
+          <li><strong>Email Services</strong> → Add New Service → Gmail / Outlook wählen → verbinden</li>
+          <li><strong>Email Templates</strong> → Create New Template</li>
+          <li>Template so konfigurieren:</li>
+        </ol>
+        <div style="background:var(--bg4);border-radius:6px;padding:8px 10px;margin:6px 0;font-family:monospace;font-size:11px;color:var(--text2);line-height:1.7">
+          To: <span style="color:var(--accent2)">{{to_email}}</span><br>
+          From: <span style="color:var(--accent2)">{{from_name}}</span><br>
+          Reply-to: <span style="color:var(--accent2)">{{reply_to}}</span><br>
+          Subject: <span style="color:var(--accent2)">{{subject}}</span><br>
+          Body: <span style="color:var(--accent2)">{{message}}</span>
+        </div>
+        <ol start="5" style="color:var(--text3);padding-left:16px;margin:0;line-height:1.9">
+          <li>Service ID, Template ID und Public Key kopieren</li>
+          <li>Oben in „E-Mail Konfiguration" eintragen und speichern</li>
+        </ol>
+      </div>
+      <div style="color:var(--text3);margin-bottom:12px;font-size:11px">💡 Der kostenlose Plan erlaubt 200 E-Mails/Monat. Jede Einzelmail verbraucht 1 Request.</div>
+
+      <div style="font-weight:700;color:var(--text1);margin-bottom:6px">3. Team einrichten</div>
+      <div style="color:var(--text3);margin-bottom:12px">Unter „Team / Verantwortliche" Teammitglieder mit Namen und E-Mail eintragen. Diese Namen erscheinen im Dropdown bei Aktivitäten.</div>
+
+      <div style="font-weight:700;color:var(--text1);margin-bottom:6px">4. Erste Kontakte anlegen</div>
+      <div style="color:var(--text3);margin-bottom:4px">Kontakte → + Kontakt oder CSV-Import nutzen. Wichtige Felder für E-Mail-Versand:</div>
+      <ul style="color:var(--text3);padding-left:16px;margin:0 0 12px;line-height:1.9">
+        <li><strong style="color:var(--text2)">Sprache</strong> — DE oder EN für automatische Anrede</li>
+        <li><strong style="color:var(--text2)">Geschlecht</strong> — für „Lieber Max" / „Liebe Sandra"</li>
+        <li><strong style="color:var(--text2)">Individueller Satz</strong> — z.B. „die Lage direkt am See ist unschlagbar" → wird in Kooperations-Vorlagen eingesetzt</li>
+      </ul>
+
+      <div style="font-weight:700;color:var(--text1);margin-bottom:6px">5. E-Mails versenden</div>
+      <div style="color:var(--text3);margin-bottom:4px">E-Mail → Vorlage wählen → Filter setzen → Empfänger auswählen → <strong style="color:var(--text2)">Direkt senden via Titan</strong>. Nach dem Versand wird automatisch:</div>
+      <ul style="color:var(--text3);padding-left:16px;margin:0;line-height:1.9">
+        <li>Ein Journey-Touchpoint angelegt</li>
+        <li>Eine Nachfassen-Aktivität in 7 Tagen erstellt</li>
+      </ul>
+    </div>
+  </div>
+
   <div class="settings-section">
     <div class="settings-section-title" data-i18n="account">Account</div>
     <div style="font-size:13px;color:var(--text2)" id="settings-email"></div>
@@ -2880,7 +2930,7 @@ function applyI18n() {
   if(ksf) {
     const cur = ksf.value;
     ksf.innerHTML = `<option value="">${t("all_status")}</option>` +
-      ["Lead",t("active"),t("inactive"),t("closed")].map(s=>`<option>${s}</option>`).join("");
+      ["Lead",t("active"),"Lead",t("inactive"),t("closed")].map(s=>`<option>${s}</option>`).join("");
   }
   // Login button
   const lb = document.getElementById("login-btn");
@@ -3228,17 +3278,19 @@ function renderAktivitaetenDemo() {
   const dLegSize  = isMobileD ? 8 : 9;
   const donutOpts=()=>({type:"doughnut",options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",align:dLegAlign,labels:{color:text3,font:{size:dLegSize},padding:4,usePointStyle:true,pointStyle:"circle",pointStyleWidth:5,boxWidth:5,boxHeight:5}}}}});
   const statusCnt={};rows.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
+  if(cAktivTyp)cAktivTyp.destroy();
   const elS=document.getElementById("chart-aktiv-status");
-  if(elS){const sL=Object.keys(statusCnt),sV=Object.values(statusCnt),sC=getColors(sL);if(cAktivTyp){cAktivTyp.data.labels=sL;cAktivTyp.data.datasets[0].data=sV;cAktivTyp.data.datasets[0].backgroundColor=sC;cAktivTyp.update();}else{const o=donutOpts();o.data={labels:sL,datasets:[{data:sV,backgroundColor:sC,borderWidth:0,hoverOffset:4}]};cAktivTyp=new Chart(elS,o);}}
+  if(elS){const o=donutOpts();o.data={labels:Object.keys(statusCnt),datasets:[{data:Object.values(statusCnt),backgroundColor:getColors(Object.keys(statusCnt)),borderWidth:0,hoverOffset:4}]};cAktivTyp=new Chart(elS,o);}
   const prioCnt={};rows.forEach(a=>{const p=a.prioritaet||"–";prioCnt[p]=(prioCnt[p]||0)+1;});
+  if(cAktivPrio)cAktivPrio.destroy();
   const elP=document.getElementById("chart-aktiv-prio2");
-  if(elP){const pL=Object.keys(prioCnt),pV=Object.values(prioCnt),pC=getColors(pL);if(cAktivPrio){cAktivPrio.data.labels=pL;cAktivPrio.data.datasets[0].data=pV;cAktivPrio.data.datasets[0].backgroundColor=pC;cAktivPrio.update();}else{const o=donutOpts();o.data={labels:pL,datasets:[{data:pV,backgroundColor:pC,borderWidth:0,hoverOffset:4}]};cAktivPrio=new Chart(elP,o);}}
+  if(elP){const o=donutOpts();o.data={labels:Object.keys(prioCnt),datasets:[{data:Object.values(prioCnt),backgroundColor:getColors(Object.keys(prioCnt)),borderWidth:0,hoverOffset:4}]};cAktivPrio=new Chart(elP,o);}
   const typCnt={};rows.forEach(a=>{const t=a.typ||"–";typCnt[t]=(typCnt[t]||0)+1;});
   const elT=document.getElementById("chart-aktiv-typ2");
-  if(elT){const tL=Object.keys(typCnt),tV=Object.values(typCnt),tC=getColors(tL);if(window._cAktivTyp2){window._cAktivTyp2.data.labels=tL;window._cAktivTyp2.data.datasets[0].data=tV;window._cAktivTyp2.data.datasets[0].backgroundColor=tC;window._cAktivTyp2.update();}else{const o=donutOpts();o.data={labels:tL,datasets:[{data:tV,backgroundColor:tC,borderWidth:0,hoverOffset:4}]};window._cAktivTyp2=new Chart(elT,o);}}
+  if(elT){if(window._cAktivTyp2)window._cAktivTyp2.destroy();const o=donutOpts();o.data={labels:Object.keys(typCnt),datasets:[{data:Object.values(typCnt),backgroundColor:getColors(Object.keys(typCnt)),borderWidth:0,hoverOffset:4}]};window._cAktivTyp2=new Chart(elT,o);}
   const vCnt={};rows.forEach(a=>{const v=a.verantwortlich||"–";vCnt[v]=(vCnt[v]||0)+1;});
   const elV=document.getElementById("chart-aktiv-verantw");
-  if(elV){const vL=Object.keys(vCnt),vV=Object.values(vCnt),vC=getColors(vL);if(window._cAktivV){window._cAktivV.data.labels=vL;window._cAktivV.data.datasets[0].data=vV;window._cAktivV.data.datasets[0].backgroundColor=vC;window._cAktivV.update();}else{const o=donutOpts();o.data={labels:vL,datasets:[{data:vV,backgroundColor:vC,borderWidth:0,hoverOffset:4}]};window._cAktivV=new Chart(elV,o);}}
+  if(elV){if(window._cAktivV)window._cAktivV.destroy();const o=donutOpts();o.data={labels:Object.keys(vCnt),datasets:[{data:Object.values(vCnt),backgroundColor:getColors(Object.keys(vCnt)),borderWidth:0,hoverOffset:4}]};window._cAktivV=new Chart(elV,o);}
   const pBg={"Hoch":"rgba(240,110,110,.1)","Mittel":"rgba(240,168,110,.1)","Niedrig":"rgba(110,240,160,.1)"};
   const pC={"Hoch":"var(--red)","Mittel":"var(--orange)","Niedrig":"var(--green)"};
   document.getElementById("aktivitaeten-table-wrap").innerHTML=`<table><thead><tr>
@@ -3865,7 +3917,7 @@ async function renderDashboard() {
   document.getElementById("kpi-followups").textContent = allActs.filter(x=>x.status==="Offen"||x.status==="Open"||x.status==="Abierto"||x.status==="Ouvert").length;
   initDashboardTooltips(kontakte, deals, allActs);
 
-  const sc={}; ["Lead","Aktiv","Inaktiv","Abgeschlossen"].forEach(s=>sc[s]=0);
+  const sc={}; ["Lead","Aktiv","Lead","Inaktiv","Abgeschlossen"].forEach(s=>sc[s]=0);
   kontakte.forEach(x=>{if(sc[x.status]!==undefined)sc[x.status]++;else sc["Lead"]++;});
 
   const cs = getComputedStyle(document.documentElement);
@@ -3878,30 +3930,19 @@ async function renderDashboard() {
   const textColor = cs.getPropertyValue("--text2").trim();
   const borderCol = cs.getPropertyValue("--border").trim();
 
-  const statusLabels = Object.keys(sc), statusVals = Object.values(sc);
-  if(cStatus) {
-    cStatus.data.labels = statusLabels;
-    cStatus.data.datasets[0].data = statusVals;
-    cStatus.data.datasets[0].backgroundColor = [blue,green,orange,text3,purple];
-    cStatus.update();
-  } else {
-    cStatus = new Chart(document.getElementById("chart-status"), {type:"doughnut",
-      data:{labels:statusLabels,datasets:[{data:statusVals,backgroundColor:[blue,green,orange,text3,purple],borderWidth:0,hoverOffset:4}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{display:true,position:"bottom",labels:{color:textColor,font:{size:11,family:"DM Sans"},padding:8,usePointStyle:true,pointStyle:"circle",pointStyleWidth:5,boxWidth:5,boxHeight:5}}}}});
-  }
+  if(cStatus) cStatus.destroy();
+  cStatus = new Chart(document.getElementById("chart-status"), {type:"doughnut",
+    data:{labels:Object.keys(sc),datasets:[{data:Object.values(sc),backgroundColor:[blue,green,orange,text3,purple],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{display:true,position:"bottom",labels:{color:textColor,font:{size:11,family:"DM Sans"},padding:8,usePointStyle:true,pointStyle:"circle",pointStyleWidth:5,boxWidth:5,boxHeight:5}}}}});
 
   const phases=["Erstgespräch","Angebot","Verhandlung","Abschluss"];
   const pv=phases.map(p=>deals.filter(d=>d.phase===p||d.phase==="First talk"||d.phase===p).reduce((s,d)=>s+(d.wert||0),0));
-  if(cPipe) {
-    cPipe.data.datasets[0].data = pv;
-    cPipe.update();
-  } else {
-    cPipe = new Chart(document.getElementById("chart-pipeline"), {type:"bar",
-      data:{labels:phases,datasets:[{data:pv,backgroundColor:"#6EB8F0",borderRadius:8,borderSkipped:false,borderWidth:0}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-        scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{family:"DM Sans",size:11}},grid:{color:borderCol},border:{display:false}},
-                x:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
-  }
+  if(cPipe) cPipe.destroy();
+  cPipe = new Chart(document.getElementById("chart-pipeline"), {type:"bar",
+    data:{labels:phases,datasets:[{data:pv,backgroundColor:"#6EB8F0",borderRadius:8,borderSkipped:false,borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{ticks:{color:text3,callback:v=>v.toLocaleString("de-DE")+"€",font:{family:"DM Sans",size:11}},grid:{color:borderCol},border:{display:false}},
+              x:{ticks:{color:text3,font:{size:11}},grid:{display:false},border:{display:false}}}}});
 
   const pBg={"Hoch":"rgba(240,110,110,.1)","Mittel":"rgba(240,168,110,.1)","Niedrig":"rgba(110,240,160,.1)"};
   const pC={"Hoch":"var(--red)","Mittel":"var(--orange)","Niedrig":"var(--green)"};
@@ -4307,7 +4348,7 @@ async function addJourney() {
     kontaktId = newK?.id;
   } else {
     // Update status if new phase is "further along" in journey
-    const statusOrder = {"Lead":0,"Aktiv":1,"Abgeschlossen":2,"Inaktiv":-1};
+    const statusOrder = {"Lead":0,"Lead":1,"Aktiv":2,"Abgeschlossen":3,"Inaktiv":-1};
     const currentOrder = statusOrder[existing.status]??0;
     const newOrder     = statusOrder[newStatus]??0;
     if(newOrder > currentOrder) {
@@ -4477,19 +4518,22 @@ function renderKontakteCharts(data) {
   const statusLabelsK = statusOrderK.filter(s=>statusCountRaw[s]>0);
   const statusValsK   = statusLabelsK.map(s=>statusCountRaw[s]);
   const statusColorsK = {"Lead":"#6EB8F0","Aktiv":"#6EF0A0","Abgeschlossen":"#B06EF0","Inaktiv":"#9090A8"};
+  if(cKStatus) cKStatus.destroy();
   const elS = document.getElementById("chart-k-status");
-  if(elS){const sBg=statusLabelsK.map(s=>statusColorsK[s]||"#9090A8");if(cKStatus){cKStatus.data.labels=statusLabelsK;cKStatus.data.datasets[0].data=statusValsK;cKStatus.data.datasets[0].backgroundColor=sBg;cKStatus.update();}else{cKStatus=new Chart(elS,{type:"doughnut",data:{labels:statusLabelsK,datasets:[{data:statusValsK,backgroundColor:sBg,borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:legendOpts}}});}}
+  if(elS) cKStatus = new Chart(elS, {type:"doughnut",data:{labels:statusLabelsK,datasets:[{data:statusValsK,backgroundColor:statusLabelsK.map(s=>statusColorsK[s]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:legendOpts}}});
 
   const landCount = {};
   data.forEach(k => { const l=k.land||"–"; landCount[l]=(landCount[l]||0)+1; });
   const topLand = Object.entries(landCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if(cKLand) cKLand.destroy();
   const elL = document.getElementById("chart-k-land");
-  if(elL){const lL=topLand.map(e=>e[0]),lV=topLand.map(e=>e[1]);if(cKLand){cKLand.data.labels=lL;cKLand.data.datasets[0].data=lV;cKLand.data.datasets[0].backgroundColor=getColors(lL);cKLand.update();}else{cKLand=new Chart(elL,donut(lL,lV));}}
+  if(elL) cKLand = new Chart(elL, donut(topLand.map(e=>e[0]), topLand.map(e=>e[1])));
 
   const brancheCount = {};
   data.forEach(k => { const b=k.branche||"–"; brancheCount[b]=(brancheCount[b]||0)+1; });
+  if(cKBranche) cKBranche.destroy();
   const elB = document.getElementById("chart-k-branche");
-  if(elB){const bL=Object.keys(brancheCount),bV=Object.values(brancheCount);if(cKBranche){cKBranche.data.labels=bL;cKBranche.data.datasets[0].data=bV;cKBranche.data.datasets[0].backgroundColor=getColors(bL);cKBranche.update();}else{cKBranche=new Chart(elB,donut(bL,bV));}}
+  if(elB) cKBranche = new Chart(elB, donut(Object.keys(brancheCount), Object.values(brancheCount)));
 }
 
 function filterKontakte(v) { kSearch=v||""; renderKontakte(v,kStatus); }
@@ -4918,26 +4962,29 @@ async function renderAktivitaeten(f) {
 
   // Status
   const statusCnt={};aktivData.forEach(a=>{const s=a.status||"–";statusCnt[s]=(statusCnt[s]||0)+1;});
+  if(cAktivTyp)cAktivTyp.destroy();
   const elS=document.getElementById("chart-aktiv-status");
-  if(elS){const sL=Object.keys(statusCnt),sV=Object.values(statusCnt);if(cAktivTyp){cAktivTyp.data.labels=sL;cAktivTyp.data.datasets[0].data=sV;cAktivTyp.data.datasets[0].backgroundColor=getColors(sL);cAktivTyp.update();}else{cAktivTyp=new Chart(elS,mkDonut(sL,sV));}}
+  if(elS) cAktivTyp=new Chart(elS,mkDonut(Object.keys(statusCnt),Object.values(statusCnt)));
 
   // Priorität
   const prioCntD={};aktivData.forEach(a=>{const p=a.prioritaet||"–";prioCntD[p]=(prioCntD[p]||0)+1;});
   const prioOrdD=["Niedrig","Mittel","Hoch"];
   const prioLblD=prioOrdD.filter(p=>prioCntD[p]>0);
   const prioClrD={"Niedrig":"#6EF0A0","Mittel":"#F0A86E","Hoch":"#F06E6E"};
+  if(cAktivPrio)cAktivPrio.destroy();
   const elP=document.getElementById("chart-aktiv-prio2");
-  if(elP){const pV=prioLblD.map(p=>prioCntD[p]),pBg=prioLblD.map(p=>prioClrD[p]||"#9090A8");if(cAktivPrio){cAktivPrio.data.labels=prioLblD;cAktivPrio.data.datasets[0].data=pV;cAktivPrio.data.datasets[0].backgroundColor=pBg;cAktivPrio.update();}else{cAktivPrio=new Chart(elP,{type:"doughnut",data:{labels:prioLblD,datasets:[{data:pV,backgroundColor:pBg,borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",align:isMobileA?"start":"center",labels:{color:text3,font:{size:isMobileA?7:9},padding:isMobileA?2:4,usePointStyle:true,pointStyle:"circle",pointStyleWidth:isMobileA?4:5,boxWidth:isMobileA?4:5,boxHeight:isMobileA?4:5}}}}}});}}
+  if(elP) cAktivPrio=new Chart(elP,{type:"doughnut",data:{labels:prioLblD,datasets:[{data:prioLblD.map(p=>prioCntD[p]),backgroundColor:prioLblD.map(p=>prioClrD[p]||"#9090A8"),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{display:true,position:"bottom",align:isMobileA?"start":"center",labels:{color:text3,font:{size:isMobileA?7:9},padding:isMobileA?2:4,usePointStyle:true,pointStyle:"circle",pointStyleWidth:isMobileA?4:5,boxWidth:isMobileA?4:5,boxHeight:isMobileA?4:5}}}}});
 
   // Typ
   const typCnt={};aktivData.forEach(a=>{const t=a.typ||"–";typCnt[t]=(typCnt[t]||0)+1;});
+  let cAktivTyp2=null;
   const elT=document.getElementById("chart-aktiv-typ2");
-  if(elT){const tL=Object.keys(typCnt),tV=Object.values(typCnt);if(window._cAktivTyp2){window._cAktivTyp2.data.labels=tL;window._cAktivTyp2.data.datasets[0].data=tV;window._cAktivTyp2.data.datasets[0].backgroundColor=getColors(tL);window._cAktivTyp2.update();}else{window._cAktivTyp2=new Chart(elT,mkDonut(tL,tV));}}
+  if(elT){if(window._cAktivTyp2)window._cAktivTyp2.destroy(); window._cAktivTyp2=new Chart(elT,mkDonut(Object.keys(typCnt),Object.values(typCnt)));}
 
   // Verantwortlich
   const vCnt={};aktivData.forEach(a=>{const v=a.verantwortlich||"–";vCnt[v]=(vCnt[v]||0)+1;});
   const elV=document.getElementById("chart-aktiv-verantw");
-  if(elV){const vL=Object.keys(vCnt),vV=Object.values(vCnt);if(window._cAktivV){window._cAktivV.data.labels=vL;window._cAktivV.data.datasets[0].data=vV;window._cAktivV.data.datasets[0].backgroundColor=getColors(vL);window._cAktivV.update();}else{window._cAktivV=new Chart(elV,mkDonut(vL,vV));}}
+  if(elV){if(window._cAktivV)window._cAktivV.destroy(); window._cAktivV=new Chart(elV,mkDonut(Object.keys(vCnt),Object.values(vCnt)));}
 
   let rows=aktivData;
   if(aFilter) rows=rows.filter(a=>a.status===aFilter);
@@ -6340,7 +6387,7 @@ async function syncDealToKontakt(kunde, newPhase, newStatus, oldPhase, oldStatus
     .maybeSingle();
   if(!kontakt) return;
 
-  const statusOrder = {"Lead":0,"Aktiv":1,"Abgeschlossen":2,"Inaktiv":-1};
+  const statusOrder = {"Lead":0,"Lead":1,"Aktiv":2,"Abgeschlossen":3,"Inaktiv":-1};
   let newKontaktStatus = null;
   let newJourneyPhase  = null;
 
@@ -7096,9 +7143,6 @@ async function moveDeal(id, direction) {
   showToast(`✓ ${deal.beschreibung||deal.kunde} → ${newPhase}`);
 }
 
-const _dbt = {};
-function debounce(key, fn, ms = 250) { clearTimeout(_dbt[key]); _dbt[key] = setTimeout(fn, ms); }
-
 function openModal(id) {
   resetModal(id);
   document.getElementById(id).classList.add("open");
@@ -7192,6 +7236,7 @@ async function loadEmailVorlagen() {
 async function renderEmail() {
   await loadEmailVorlagen();
   updateEmailVorlageSelect();
+  renderEmailVorlagenList();
   // Ensure contacts are loaded
   if(!isDemoMode && (!kontakteData || !kontakteData.length)) {
     const {data} = await sb.from("kontakte").select("*").order("unternehmen");
@@ -7260,8 +7305,6 @@ function updateEmailVorlagePreview() {
 }
 
 function previewEmailVorlage() {
-  const id = document.getElementById("email-vorlage-select")?.value;
-  if(!id) { showToast("⚠ Bitte zuerst eine Vorlage auswählen"); return; }
   const preview = document.getElementById("email-vorlage-preview");
   if(!preview) return;
   preview.style.display = preview.style.display === "none" ? "block" : "none";
@@ -7271,24 +7314,6 @@ function editEmailVorlageSelected() {
   const id = document.getElementById("email-vorlage-select")?.value;
   if(!id) { showToast("⚠ Bitte zuerst eine Vorlage auswählen"); return; }
   editEmailVorlage(id);
-}
-
-function deleteEmailVorlageSelected() {
-  const id = document.getElementById("email-vorlage-select")?.value;
-  if(!id) { showToast("⚠ Bitte zuerst eine Vorlage auswählen"); return; }
-  deleteEmailVorlage(id);
-}
-
-function editEmailVorlage(id) {
-  const vorlage = emailVorlagen.find(v => v.id === id);
-  if(!vorlage) { showToast("⚠ Vorlage nicht gefunden"); return; }
-  if(vorlage.default) { showToast("⚠ Standard-Vorlagen können nicht bearbeitet werden"); return; }
-  document.getElementById("email-vorlage-id").value = vorlage.id;
-  document.getElementById("email-vorlage-name").value = vorlage.name;
-  document.getElementById("email-vorlage-betreff").value = vorlage.betreff;
-  document.getElementById("email-vorlage-text").value = vorlage.text;
-  document.getElementById("email-vorlage-modal-title").textContent = "Vorlage bearbeiten";
-  openModalEdit("modal-email-vorlage");
 }
 
 function sendEmailBulk() {
@@ -7303,26 +7328,14 @@ function sendEmailBulk() {
 
   // Use first contact for personalization, all in BCC
   const first = empfaenger[0];
-  const single = empfaenger.length === 1;
-  const hasName = single && first.vorname && first.vorname !== "–" && first.nachname && first.nachname !== "–";
-  const isEn = single && first.sprache === "en";
-  const anrede = single
-    ? (isEn
-        ? (hasName ? `Dear ${first.vorname}` : `Dear ${first.unternehmen||"Team"} Team`)
-        : (first.geschlecht === "m" && hasName ? `Lieber ${first.vorname}`
-          : first.geschlecht === "f" && hasName ? `Liebe ${first.vorname}`
-          : `Liebes ${first.unternehmen||"Team"}-Team`))
-    : "";
   const betreff = vorlage.betreff
-    .replace(/{{vorname}}/g, single ? (first.vorname||"") : "")
-    .replace(/{{nachname}}/g, single ? (first.nachname||"") : "")
-    .replace(/{{unternehmen}}/g, single ? (first.unternehmen||"") : "")
-    .replace(/{{anrede}}/g, anrede);
+    .replace(/{{vorname}}/g, empfaenger.length === 1 ? (first.vorname||"") : "")
+    .replace(/{{nachname}}/g, empfaenger.length === 1 ? (first.nachname||"") : "")
+    .replace(/{{unternehmen}}/g, empfaenger.length === 1 ? (first.unternehmen||"") : "");
   const text = vorlage.text
-    .replace(/{{vorname}}/g, single ? (first.vorname||"") : "")
-    .replace(/{{nachname}}/g, single ? (first.nachname||"") : "")
-    .replace(/{{unternehmen}}/g, single ? (first.unternehmen||"") : "")
-    .replace(/{{anrede}}/g, anrede);
+    .replace(/{{vorname}}/g, empfaenger.length === 1 ? (first.vorname||"") : "")
+    .replace(/{{nachname}}/g, empfaenger.length === 1 ? (first.nachname||"") : "")
+    .replace(/{{unternehmen}}/g, empfaenger.length === 1 ? (first.unternehmen||"") : "");
 
   const bcc = empfaenger.map(k => k.email).join(",");
   const mailtoLink = document.createElement("a");
@@ -7335,85 +7348,8 @@ function sendEmailBulk() {
 }
 
 function renderEmailVorlagenList() {
+  // Vorlage list is rendered via updateEmailVorlageSelect dropdown
   updateEmailVorlageSelect();
-}
-
-async function saveEmailVorlage() {
-  const id = document.getElementById("email-vorlage-id")?.value || "";
-  const name = document.getElementById("email-vorlage-name")?.value.trim() || "";
-  const betreff = document.getElementById("email-vorlage-betreff")?.value.trim() || "";
-  const text = document.getElementById("email-vorlage-text")?.value.trim() || "";
-  if (!name || !betreff || !text) { showToast("⚠ Alle Felder ausfüllen"); return; }
-
-  if (isDemoMode) {
-    if (id) {
-      const idx = emailVorlagen.findIndex(v => v.id === id);
-      if (idx >= 0) emailVorlagen[idx] = {id, name, betreff, text};
-    } else {
-      emailVorlagen.push({id: "v" + Date.now(), name, betreff, text});
-    }
-    closeModal("modal-email-vorlage");
-    updateEmailVorlageSelect();
-    showToast("✓ Vorlage gespeichert");
-    return;
-  }
-
-  const cid = await getCompanyId();
-  if (!cid) { showToast("⚠ Keine Company", true); return; }
-
-  if (id && !id.startsWith("d")) {
-    await sb.from("email_vorlagen").update({name, betreff, text}).eq("id", id).eq("company_id", cid);
-  } else {
-    const {data} = await sb.from("email_vorlagen").insert({name, betreff, text, company_id: cid}).select().single();
-    if (data) emailVorlagen.push(data);
-  }
-  await loadEmailVorlagen();
-  closeModal("modal-email-vorlage");
-  updateEmailVorlageSelect();
-  showToast("✓ Vorlage gespeichert");
-}
-
-async function deleteEmailVorlage(id) {
-  if (DEFAULT_VORLAGEN.find(d => d.id === id)) { showToast("⚠ Standard-Vorlagen können nicht gelöscht werden"); return; }
-  if (!confirm("Vorlage löschen?")) return;
-  if (!isDemoMode) await sb.from("email_vorlagen").delete().eq("id", id);
-  emailVorlagen = emailVorlagen.filter(v => v.id !== id);
-  updateEmailVorlageSelect();
-  const preview = document.getElementById("email-vorlage-preview");
-  if (preview) { preview.style.display = "none"; preview.textContent = ""; }
-  showToast("✓ Vorlage gelöscht");
-}
-
-function importEmailVorlagen() {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = ".json";
-  input.onchange = async e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-      const text = await file.text();
-      const parsed = JSON.parse(text);
-      const vorlagen = Array.isArray(parsed) ? parsed : [parsed];
-      const cid = await getCompanyId();
-      let imported = 0;
-      for (const v of vorlagen) {
-        if (!v.name || !v.betreff || !v.text) continue;
-        if (!isDemoMode && cid) {
-          await sb.from("email_vorlagen").insert({name: v.name, betreff: v.betreff, text: v.text, company_id: cid});
-        } else {
-          emailVorlagen.push({id: "v" + Date.now() + imported, name: v.name, betreff: v.betreff, text: v.text});
-        }
-        imported++;
-      }
-      if (!isDemoMode) await loadEmailVorlagen();
-      updateEmailVorlageSelect();
-      showToast(`✓ ${imported} Vorlage(n) importiert`);
-    } catch (err) {
-      showToast("⚠ Fehler beim Import: " + err.message, true);
-    }
-  };
-  input.click();
 }
 
 function updateEmailVorlageSelect() {
@@ -7450,9 +7386,6 @@ async function sendEmailBulkDirect() {
   showToast(`⏳ Sende ${empfaenger.length} E-Mail(s)…`);
   let success = 0, failed = 0;
   const today = new Date().toISOString().split("T")[0];
-  const emailCfg = getEmailConfig();
-  const userId = !isDemoMode ? (await sb.auth.getUser()).data.user?.id : null;
-  const cid = !isDemoMode ? await getCompanyId() : null;
 
   for (const k of empfaenger) {
     // Gender-aware salutation
@@ -7479,7 +7412,7 @@ async function sendEmailBulkDirect() {
       .replace(/^Hallo {{vorname}}/m, anrede);
 
     try {
-      await emailjs.send(emailCfg.service, emailCfg.template, {
+      await emailjs.send(getEmailConfig().service, getEmailConfig().template, {
         to_email: k.email,
         subject: betreff,
         message: text.replace(/\n/g, "<br>") + EMAIL_SIGNATURE,
@@ -7489,6 +7422,7 @@ async function sendEmailBulkDirect() {
       // Auto-create Journey entry (skip own email)
       if(!isDemoMode && k.email !== "info@paironloop.com") {
         const phase = mapVorlageToJourneyPhase(vorlage.name);
+        const userId = (await sb.auth.getUser()).data.user?.id;
         const emailJourneyNr = await getNextJourneyNr();
         await sb.from("journey").insert({
           kunde: k.unternehmen || `${k.vorname||""} ${k.nachname||""}`.trim(),
@@ -7501,7 +7435,7 @@ async function sendEmailBulkDirect() {
           reaktion: "–",
           score: 5,
           user_id: userId,
-          company_id: cid
+      company_id: await getCompanyId()
         });
         // Auto-create follow-up activity in 7 days
         const followUpDate = new Date();
@@ -7517,7 +7451,7 @@ async function sendEmailBulkDirect() {
           verantwortlich: "Max",
           status: "Offen",
           user_id: userId,
-          company_id: cid
+      company_id: await getCompanyId()
         });
       }
     } catch(err) {

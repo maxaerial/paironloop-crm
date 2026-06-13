@@ -1863,6 +1863,7 @@ tbody td { font-feature-settings: "zero" 0; }
             <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="previewEmailVorlage()" id="btn-preview-vorlage">Vorschau</button>
             <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="editEmailVorlageSelected()">Bearbeiten</button>
             <button class="btn btn-primary btn-sm" onclick="openEmailVorlageModal()">+ Neue Vorlage</button>
+            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="importEmailVorlagen()">↑ Importieren</button>
           </div>
         </div>
         <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
@@ -7125,7 +7126,140 @@ applyI18n();
 
 const DEFAULT_VORLAGEN = [
   {
-    id: "v1", name: "Erstkontakt / Hallo",
+    id: "d1", name: "Erstkontakt", default: true,
+    betreff: "Anfrage von {{absender_firma}} – {{unternehmen}}",
+    text: `{{anrede}},\n\nmein Name ist {{absender_name}} von {{absender_firma}}.\n\nIch bin auf {{unternehmen}} aufmerksam geworden und würde mich über einen kurzen Austausch freuen.\n\nDarf ich Ihnen kurz vorstellen, was wir anbieten?\n\nMit freundlichen Grüßen,`
+  },
+  {
+    id: "d2", name: "Angebot nachfassen", default: true,
+    betreff: "Kurze Rückfrage zu unserem Angebot – {{unternehmen}}",
+    text: `{{anrede}},\n\nvor einigen Tagen habe ich Ihnen unser Angebot für {{unternehmen}} zugeschickt – haben Sie es erhalten?\n\nIch wollte kurz nachfragen, ob noch Fragen offen sind oder ob ich etwas anpassen soll.\n\nIch freue mich auf Ihre Rückmeldung.\n\nMit freundlichen Grüßen,`
+  },
+  {
+    id: "d3", name: "Feedback anfragen", default: true,
+    betreff: "Wie war Ihre Erfahrung mit uns?",
+    text: `{{anrede}},\n\nwir hoffen, dass Sie mit unserer Zusammenarbeit zufrieden waren!\n\nIhr Feedback ist uns sehr wichtig: Was hat Ihnen besonders gut gefallen? Was können wir verbessern?\n\nVielen herzlichen Dank!\n\nMit freundlichen Grüßen,`
+  },
+  {
+    id: "d4", name: "Empfehlung anfragen", default: true,
+    betreff: "Kurze Bitte an Sie",
+    text: `{{anrede}},\n\nwir hoffen, dass Sie mit unserer Leistung rundum zufrieden sind!\n\nFalls Sie jemanden kennen, der ebenfalls von uns profitieren könnte, würden wir uns über eine Empfehlung sehr freuen.\n\nVielen Dank für Ihr Vertrauen!\n\nMit freundlichen Grüßen,`
+  },
+  {
+    id: "d5", name: "Weihnachtsgruß", default: true,
+    betreff: "Frohe Weihnachten 🎄",
+    text: `{{anrede}},\n\ndas Jahr neigt sich dem Ende – Zeit, innezuhalten und Danke zu sagen.\n\nWir möchten uns herzlich bei Ihnen und {{unternehmen}} für das entgegengebrachte Vertrauen bedanken.\n\nWir wünschen Ihnen und Ihren Liebsten frohe, besinnliche Weihnachten und einen guten Rutsch ins neue Jahr!\n\nMit freundlichen Grüßen,`
+  },
+  {
+    id: "d6", name: "Neujahrsgruß", default: true,
+    betreff: "Frohes neues Jahr 🎆",
+    text: `{{anrede}},\n\nein neues Jahr beginnt – und mit ihm neue Möglichkeiten und neue Ideen.\n\nWir wünschen Ihnen und {{unternehmen}} ein erfolgreiches, gesundes und inspirierendes Jahr!\n\nMit freundlichen Grüßen,`
+  },
+  {
+    id: "d7", name: "🔔 Aktivität – Erinnerung", default: true,
+    betreff: "Erinnerung: Aktivität fällig – {{kunde}}",
+    text: `Hallo {{verantwortlich}},\n\nnur eine kurze Erinnerung: Die folgende Aktivität ist bald fällig oder bereits überfällig.\n\n📋 Aktivität: {{aktivitaet}}\n👤 Kunde: {{kunde}}\n📅 Fällig am: {{datum}}\n⚡ Priorität: {{prioritaet}}\n\nBitte kümmere dich zeitnah darum.`
+  },
+  {
+    id: "d8", name: "📋 Aktivität – Zuweisung", default: true,
+    betreff: "Neue Aufgabe: {{aktivitaet}}",
+    text: `Hallo {{verantwortlich}},\n\ndir wurde soeben eine neue Aktivität zugewiesen:\n\n📋 Aufgabe: {{aktivitaet}}\n👤 Kunde: {{kunde}}\n📅 Fällig am: {{datum}}\n⚡ Priorität: {{prioritaet}}\n📝 Beschreibung: {{beschreibung}}\n\nBitte aktualisiere den Status im CRM wenn du die Aufgabe bearbeitet hast.`
+  }
+];
+
+let emailVorlagen = [];
+let emailKontakteFiltered = [];
+let emailSelectedIds = new Set();
+
+async function loadEmailVorlagen() {
+  if(isDemoMode) {
+    emailVorlagen = JSON.parse(JSON.stringify(DEFAULT_VORLAGEN));
+    return;
+  }
+  const cid = await getCompanyId();
+  // Load company-specific vorlagen from Supabase
+  let companyVorlagen = [];
+  if(cid) {
+    const {data} = await sb.from("email_vorlagen").select("*").eq("company_id", cid).order("created_at");
+    companyVorlagen = data || [];
+  }
+  // Merge: defaults first, then company-specific
+  emailVorlagen = [...JSON.parse(JSON.stringify(DEFAULT_VORLAGEN)), ...companyVorlagen];
+}
+
+async function saveEmailVorlage() {
+  const id = document.getElementById("email-vorlage-id").value;
+  const name = document.getElementById("email-vorlage-name").value.trim();
+  const betreff = document.getElementById("email-vorlage-betreff").value.trim();
+  const text = document.getElementById("email-vorlage-text").value.trim();
+  if (!name || !betreff || !text) { showToast("⚠ Alle Felder ausfüllen"); return; }
+
+  if(isDemoMode) {
+    if(id) { const idx = emailVorlagen.findIndex(v => v.id === id); if(idx>=0) emailVorlagen[idx]={id,name,betreff,text}; }
+    else emailVorlagen.push({id:"v"+Date.now(),name,betreff,text});
+    closeModal("modal-email-vorlage"); renderEmailVorlagenList(); updateEmailVorlageSelect(); showToast("✓ Vorlage gespeichert");
+    return;
+  }
+
+  const cid = await getCompanyId();
+  if(!cid) { showToast("⚠ Keine Company", true); return; }
+
+  if(id && !id.startsWith("d")) {
+    // Update existing Supabase vorlage
+    await sb.from("email_vorlagen").update({name, betreff, text}).eq("id", id).eq("company_id", cid);
+  } else {
+    // Insert new
+    const {data} = await sb.from("email_vorlagen").insert({name, betreff, text, company_id: cid}).select().single();
+    if(data) emailVorlagen.push(data);
+  }
+  await loadEmailVorlagen();
+  closeModal("modal-email-vorlage");
+  renderEmailVorlagenList();
+  updateEmailVorlageSelect();
+  showToast("✓ Vorlage gespeichert");
+}
+
+async function deleteEmailVorlage(id) {
+  if(DEFAULT_VORLAGEN.find(d => d.id === id)) { showToast("⚠ Standard-Vorlagen können nicht gelöscht werden"); return; }
+  if(!confirm("Vorlage löschen?")) return;
+  if(!isDemoMode) await sb.from("email_vorlagen").delete().eq("id", id);
+  emailVorlagen = emailVorlagen.filter(v => v.id !== id);
+  renderEmailVorlagenList();
+  updateEmailVorlageSelect();
+  showToast("✓ Vorlage gelöscht");
+}
+
+// Import vorlagen from JSON file
+function importEmailVorlagen() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json";
+  input.onchange = async e => {
+    const file = e.target.files[0];
+    if(!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      const vorlagen = Array.isArray(data) ? data : [data];
+      const cid = await getCompanyId();
+      let imported = 0;
+      for(const v of vorlagen) {
+        if(!v.name || !v.betreff || !v.text) continue;
+        if(!isDemoMode && cid) {
+          await sb.from("email_vorlagen").insert({name: v.name, betreff: v.betreff, text: v.text, company_id: cid});
+        }
+        imported++;
+      }
+      await loadEmailVorlagen();
+      renderEmailVorlagenList();
+      updateEmailVorlageSelect();
+      showToast(`✓ ${imported} Vorlage(n) importiert`);
+    } catch(err) {
+      showToast("⚠ Fehler beim Import: " + err.message, true);
+    }
+  };
+  input.click();
+}
     betreff: "Hallo von Paironloop – Drohnenfilm für {{unternehmen}}",
     text: `{{anrede}},\n\nmein Name ist Max Weidmann und ich bin Mitgründer von Paironloop – wir produzieren professionelle Drohnenvideos für Unternehmen, Hotels, Weingüter und Freizeitbetriebe.\n\nIch bin auf {{unternehmen}} aufmerksam geworden und denke, dass beeindruckende Luftaufnahmen Ihre Außenwirkung deutlich stärken könnten.\n\nDarf ich Ihnen kurz zeigen, was wir für ähnliche Betriebe umgesetzt haben?\n`
   },
@@ -7193,37 +7327,6 @@ const DEFAULT_VORLAGEN = [
     id: "v14", name: "🤝 Cooperation Request Hotel (EN)",
     betreff: "Collaboration with PairOnLoop – Travel Content & Strategy for {{unternehmen}}",
     text: `{{anrede}},\n\nmy name is Max, and together with my partner Elena, I am a travel content creator. We run PairOnLoop – a travel channel with an enthusiastic, international community of travellers.\n\nWe came across your hotel and were immediately captivated – {{individueller_satz}}. These are exactly the kinds of special places we love to bring to life through our content.\n\nWhat we offer goes beyond content creation: we work with our partners to develop a strategy – from defining target audiences and creating a content roadmap to implementing concrete marketing measures that truly fit your property. The visual content – professional photos, cinematic Instagram & TikTok Reels and drone footage – is the result of a well-thought-out strategy, not an end in itself.\n\nIn short: we think strategically, not just through a lens.\n\nOur packages start from €299 – you'll find all the details on our website: 👉 www.paironloop.com\n\nWe would love to create something truly special together with you. Would you be interested in a brief chat?\n\nWarm regards from Munich,`
-  }
-];
-
-let emailVorlagen = [];
-let emailKontakteFiltered = [];
-let emailSelectedIds = new Set();
-
-async function loadEmailVorlagen() {
-  const key = "paironloop_email_vorlagen_" + (window._userId || "demo");
-  const versionKey = key + "_v7";
-  // Force reload defaults if version not set (clears old 4-template cache)
-  if (!localStorage.getItem(versionKey)) {
-    localStorage.removeItem(key);
-    localStorage.setItem(versionKey, "1");
-  }
-  const stored = localStorage.getItem(key);
-  let saved = stored ? JSON.parse(stored) : null;
-  if (!saved || saved.length < 14) {
-    const userCreated = saved ? saved.filter(v => !DEFAULT_VORLAGEN.find(d => d.id === v.id)) : [];
-    emailVorlagen = [...JSON.parse(JSON.stringify(DEFAULT_VORLAGEN)), ...userCreated];
-    localStorage.setItem(key, JSON.stringify(emailVorlagen));
-  } else {
-    emailVorlagen = saved;
-  }
-}
-
-function saveEmailVorlagenLocal() {
-  const key = "paironloop_email_vorlagen_" + (window._userId || "demo");
-  localStorage.setItem(key, JSON.stringify(emailVorlagen));
-}
-
 async function renderEmail() {
   await loadEmailVorlagen();
   updateEmailVorlageSelect();
@@ -7553,44 +7656,6 @@ function openEmailVorlageModal(id) {
   openModalEdit("modal-email-vorlage");
 }
 
-function editEmailVorlage(id) {
-  const v = emailVorlagen.find(x => x.id === id);
-  if (!v) return;
-  document.getElementById("email-vorlage-id").value = v.id;
-  document.getElementById("email-vorlage-name").value = v.name;
-  document.getElementById("email-vorlage-betreff").value = v.betreff;
-  document.getElementById("email-vorlage-text").value = v.text;
-  document.getElementById("email-vorlage-modal-title").textContent = "Vorlage bearbeiten";
-  openModalEdit("modal-email-vorlage");
-}
-
-function saveEmailVorlage() {
-  const id = document.getElementById("email-vorlage-id").value;
-  const name = document.getElementById("email-vorlage-name").value.trim();
-  const betreff = document.getElementById("email-vorlage-betreff").value.trim();
-  const text = document.getElementById("email-vorlage-text").value.trim();
-  if (!name || !betreff || !text) { showToast("⚠ Alle Felder ausfüllen"); return; }
-  if (id) {
-    const idx = emailVorlagen.findIndex(v => v.id === id);
-    if (idx >= 0) emailVorlagen[idx] = { id, name, betreff, text };
-  } else {
-    emailVorlagen.push({ id: "v" + Date.now(), name, betreff, text });
-  }
-  saveEmailVorlagenLocal();
-  closeModal("modal-email-vorlage");
-  renderEmailVorlagenList();
-  updateEmailVorlageSelect();
-  showToast("✓ Vorlage gespeichert");
-}
-
-function deleteEmailVorlage(id) {
-  if (!confirm("Vorlage löschen?")) return;
-  emailVorlagen = emailVorlagen.filter(v => v.id !== id);
-  saveEmailVorlagenLocal();
-  renderEmailVorlagenList();
-  updateEmailVorlageSelect();
-  showToast("✓ Vorlage gelöscht");
-}
 
 </script>
 </body>

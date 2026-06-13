@@ -3531,16 +3531,19 @@ async function applyProfileToUI(p) {
       ? [p.vorname, p.nachname].filter(Boolean).join(" ")
       : "–";
   }
-  // Sidebar firma/role - always load company name from DB
+  // Sidebar firma/role - firma field takes priority, fallback to company DB name
   const roleEl = document.getElementById("user-role-display");
   if(roleEl) {
-    roleEl.textContent = p.firma || "";
-    const userId = window._userId || (await sb.auth.getUser()).data.user?.id;
-    const {data: prof} = await sb.from("profiles").select("company_id").eq("id", userId).single();
-    const cid = prof?.company_id;
-    if(cid) {
-      const {data: comp} = await sb.from("companies").select("name").eq("id", cid).single();
-      if(comp?.name) roleEl.textContent = comp.name;
+    if(p.firma) {
+      roleEl.textContent = p.firma;
+    } else {
+      const userId = window._userId || (await sb.auth.getUser()).data.user?.id;
+      const {data: prof} = await sb.from("profiles").select("company_id").eq("id", userId).single();
+      const cid = prof?.company_id;
+      if(cid) {
+        const {data: comp} = await sb.from("companies").select("name").eq("id", cid).single();
+        if(comp?.name) roleEl.textContent = comp.name;
+      }
     }
   }
   // Avatar

@@ -2062,6 +2062,20 @@ tbody td { font-feature-settings: "zero" 0; }
   </div>
 
   <div class="settings-section">
+    <div class="settings-section-title">E-Mail Konfiguration</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">EmailJS Zugangsdaten für den E-Mail-Versand. <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent2)">emailjs.com</a> → Account erstellen → Service + Template anlegen.</div>
+    <div class="profile-form">
+      <div class="field form-full"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Service ID</label><input id="email-service-id" placeholder="service_xxxxxxx"></div>
+      <div class="field form-full"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Template ID</label><input id="email-template-id" placeholder="template_xxxxxxx"></div>
+      <div class="field form-full"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Public Key</label><input id="email-public-key" placeholder="xxxxxxxxxxxxxxxxxxxx"></div>
+      <div class="field"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Absender E-Mail</label><input id="email-from" type="email" placeholder="info@meinefirma.de"></div>
+      <div class="field"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Absender Name</label><input id="email-from-name" placeholder="Max Mustermann"></div>
+    </div>
+    <button type="button" class="profile-save-btn" onclick="saveEmailConfig()">E-Mail Konfiguration speichern</button>
+    <div id="email-config-msg" style="font-size:12px;text-align:center;margin-top:8px;display:none"></div>
+  </div>
+
+  <div class="settings-section">
     <div class="settings-section-title">Newsletter-Anmeldung erfassen</div>
     <div class="profile-form" style="margin-bottom:8px">
       <div class="field"><label>E-Mail</label><input id="nl-email" type="email" placeholder="kunde@beispiel.de"></div>
@@ -3356,6 +3370,7 @@ function onLogin(user) {
   if(theme !== "midnight") document.documentElement.setAttribute("data-theme", theme);
   loadTeamMembers();
   loadProfile();
+  loadEmailConfig();
   renderAll();
   setTimeout(initClearableFields, 500);
 }
@@ -3506,6 +3521,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ── PROFILE ──────────────────────────────────────────────────────────────────
 let profileData = {};
+
+async function saveEmailConfig() {
+  const msg = document.getElementById("email-config-msg");
+  const cid = await getCompanyId();
+  if(!cid) { showToast("⚠ Keine Company gefunden", true); return; }
+  const config = {
+    email_service_id:  document.getElementById("email-service-id").value.trim(),
+    email_template_id: document.getElementById("email-template-id").value.trim(),
+    email_public_key:  document.getElementById("email-public-key").value.trim(),
+    email_from:        document.getElementById("email-from").value.trim(),
+    email_from_name:   document.getElementById("email-from-name").value.trim(),
+  };
+  const {error} = await sb.from("companies").update(config).eq("id", cid);
+  if(error) {
+    msg.textContent = "Fehler: " + error.message;
+    msg.style.color = "var(--red)";
+  } else {
+    window._emailConfig = config;
+    msg.textContent = "✓ E-Mail Konfiguration gespeichert";
+    msg.style.color = "var(--green)";
+  }
+  msg.style.display = "block";
+  setTimeout(() => msg.style.display = "none", 3000);
+}
+
+async function loadEmailConfig() {
+  const cid = await getCompanyId();
+  if(!cid) return;
+  const {data} = await sb.from("companies").select("email_service_id,email_template_id,email_public_key,email_from,email_from_name").eq("id", cid).single();
+  if(!data) return;
+  window._emailConfig = data;
+  document.getElementById("email-service-id").value  = data.email_service_id  || "";
+  document.getElementById("email-template-id").value = data.email_template_id || "";
+  document.getElementById("email-public-key").value  = data.email_public_key  || "";
+  document.getElementById("email-from").value        = data.email_from        || "";
+  document.getElementById("email-from-name").value   = data.email_from_name   || "";
+}
+
+function getEmailConfig() {
+  const cfg = window._emailConfig;
+  return {
+    service:  cfg?.email_service_id  || "service_hrlpxqc",
+    template: cfg?.email_template_id || "template_eiax419",
+    pubkey:   cfg?.email_public_key  || "IF5buA7n2MWaXOlh5",
+    from:     cfg?.email_from        || "info@paironloop.com",
+    fromName: cfg?.email_from_name   || "PairOnLoop"
+  };
+}
 
 async function loadProfile() {
   if(isDemoMode) return;
@@ -3780,6 +3843,7 @@ function openSettings() {
   const emailTxt = document.getElementById("settings-email");
   if(emailDisp && emailTxt) emailDisp.textContent = emailTxt.textContent;
   renderTeamMembersList();
+  loadEmailConfig();
   setTimeout(initClearableFields, 50);
 }
 function closeSettings() { document.getElementById("settings-panel").classList.remove("open"); }
@@ -5027,7 +5091,7 @@ const EMAIL_SIGNATURE = `<br><br>
 // Initialize EmailJS after DOM ready
 window.addEventListener("load", () => {
   if(typeof emailjs !== "undefined") {
-    emailjs.init({ publicKey: EMAILJS_PUBLIC });
+    emailjs.init({ publicKey: getEmailConfig().pubkey });
   }
 });
 
@@ -5050,8 +5114,8 @@ async function sendAktivitaetNotification(type, verantw, kunde, aktivitaet, datu
   try {
     showToast(`⏳ E-Mail wird gesendet…`);
     if(typeof emailjs === "undefined") { showToast("⚠ EmailJS nicht geladen", true); return; }
-    emailjs.init({ publicKey: EMAILJS_PUBLIC });
-    await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+    emailjs.init({ publicKey: getEmailConfig().pubkey });
+    await emailjs.send(getEmailConfig().service, getEmailConfig().template, {
       to_email: email,
       subject,
       message: message.replace(/\n/g, "<br>") + EMAIL_SIGNATURE,
@@ -7291,7 +7355,7 @@ async function sendEmailBulkDirect() {
   if (!empfaenger.length) { showToast("⚠ Keine Kontakte mit E-Mail-Adresse ausgewählt"); return; }
 
   if(typeof emailjs === "undefined") { showToast("⚠ EmailJS nicht geladen"); return; }
-  emailjs.init({ publicKey: EMAILJS_PUBLIC });
+  emailjs.init({ publicKey: getEmailConfig().pubkey });
 
   // Vorlagen-Variablen prüfen
   if(vorlage.text.includes("{{individueller_satz}}")) {
@@ -7333,7 +7397,7 @@ async function sendEmailBulkDirect() {
       .replace(/^Hallo {{vorname}}/m, anrede);
 
     try {
-      await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+      await emailjs.send(getEmailConfig().service, getEmailConfig().template, {
         to_email: k.email,
         subject: betreff,
         message: text.replace(/\n/g, "<br>") + EMAIL_SIGNATURE,

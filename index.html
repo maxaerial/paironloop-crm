@@ -7264,6 +7264,18 @@ function editEmailVorlageSelected() {
   editEmailVorlage(id);
 }
 
+function editEmailVorlage(id) {
+  const vorlage = emailVorlagen.find(v => v.id === id);
+  if(!vorlage) { showToast("⚠ Vorlage nicht gefunden"); return; }
+  if(vorlage.default) { showToast("⚠ Standard-Vorlagen können nicht bearbeitet werden"); return; }
+  document.getElementById("email-vorlage-id").value = vorlage.id;
+  document.getElementById("email-vorlage-name").value = vorlage.name;
+  document.getElementById("email-vorlage-betreff").value = vorlage.betreff;
+  document.getElementById("email-vorlage-text").value = vorlage.text;
+  document.getElementById("email-vorlage-modal-title").textContent = "Vorlage bearbeiten";
+  openModalEdit("modal-email-vorlage");
+}
+
 function sendEmailBulk() {
   const vorlageId = document.getElementById("email-vorlage-select")?.value;
   if (!vorlageId) { showToast("⚠ Bitte eine Vorlage auswählen"); return; }

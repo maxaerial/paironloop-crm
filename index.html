@@ -7171,9 +7171,19 @@ let emailVorlagen = [];
 let emailKontakteFiltered = [];
 let emailSelectedIds = new Set();
 
+async function loadEmailVorlagen() {
+  if(isDemoMode) { emailVorlagen = JSON.parse(JSON.stringify(DEFAULT_VORLAGEN)); return; }
+  const cid = await getCompanyId();
+  let companyVorlagen = [];
+  if(cid) {
+    const {data} = await sb.from("email_vorlagen").select("*").eq("company_id", cid).order("created_at");
+    companyVorlagen = data || [];
+  }
+  emailVorlagen = [...JSON.parse(JSON.stringify(DEFAULT_VORLAGEN)), ...companyVorlagen];
+}
+
 async function renderEmail() {
   await loadEmailVorlagen();
-  updateEmailVorlageSelect();
   // Ensure contacts are loaded
   if(!isDemoMode && (!kontakteData || !kontakteData.length)) {
     const {data} = await sb.from("kontakte").select("*").order("unternehmen");

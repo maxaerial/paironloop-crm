@@ -1862,6 +1862,7 @@ tbody td { font-feature-settings: "zero" 0; }
           <div style="display:flex;gap:8px">
             <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="previewEmailVorlage()" id="btn-preview-vorlage">Vorschau</button>
             <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="editEmailVorlageSelected()">Bearbeiten</button>
+            <button class="btn btn-sm" style="background:var(--bg3);color:var(--red)" onclick="deleteEmailVorlageSelected()">Löschen</button>
             <button class="btn btn-primary btn-sm" onclick="openEmailVorlageModal()">+ Neue Vorlage</button>
             <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="importEmailVorlagen()">↑ Importieren</button>
           </div>
@@ -7262,6 +7263,12 @@ function editEmailVorlageSelected() {
   const id = document.getElementById("email-vorlage-select")?.value;
   if(!id) { showToast("⚠ Bitte zuerst eine Vorlage auswählen"); return; }
   editEmailVorlage(id);
+}
+
+function deleteEmailVorlageSelected() {
+  const id = document.getElementById("email-vorlage-select")?.value;
+  if(!id) { showToast("⚠ Bitte zuerst eine Vorlage auswählen"); return; }
+  deleteEmailVorlage(id);
 }
 
 function editEmailVorlage(id) {

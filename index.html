@@ -3364,6 +3364,7 @@ function onLogin(user) {
   document.getElementById("theme-"+theme)?.classList.add("active");
   if(theme !== "midnight") document.documentElement.setAttribute("data-theme", theme);
   loadTeamMembers();
+  loadProfile();
   renderAll();
   setTimeout(initClearableFields, 500);
 }

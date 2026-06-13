@@ -7184,6 +7184,8 @@ async function loadEmailVorlagen() {
 
 async function renderEmail() {
   await loadEmailVorlagen();
+  updateEmailVorlageSelect();
+  renderEmailVorlagenList();
   // Ensure contacts are loaded
   if(!isDemoMode && (!kontakteData || !kontakteData.length)) {
     const {data} = await sb.from("kontakte").select("*").order("unternehmen");
@@ -7292,6 +7294,11 @@ function sendEmailBulk() {
   mailtoLink.click();
   setTimeout(() => document.body.removeChild(mailtoLink), 1000);
   showToast("✓ E-Mail mit " + empfaenger.length + " Empfänger(n) im BCC geöffnet");
+}
+
+function renderEmailVorlagenList() {
+  // Vorlage list is rendered via updateEmailVorlageSelect dropdown
+  updateEmailVorlageSelect();
 }
 
 function updateEmailVorlageSelect() {

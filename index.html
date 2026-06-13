@@ -3532,16 +3532,17 @@ async function loadProfile() {
 }
 
 function applyProfileToUI(p) {
-  // Sidebar name
+  // Sidebar name - always reset first
   const nameEl = document.getElementById("user-name");
-  if(nameEl && (p.vorname||p.nachname)) {
-    nameEl.textContent = [p.vorname, p.nachname].filter(Boolean).join(" ");
+  if(nameEl) {
+    nameEl.textContent = (p.vorname||p.nachname)
+      ? [p.vorname, p.nachname].filter(Boolean).join(" ")
+      : "–";
   }
-  // Sidebar firma/role
+  // Sidebar firma/role - always load company name from DB
   const roleEl = document.getElementById("user-role-display");
-  if(roleEl && p.firma) roleEl.textContent = p.firma;
-  // Load company name from DB
-  if(roleEl && !p.firma) {
+  if(roleEl) {
+    roleEl.textContent = p.firma || "";
     getCompanyId().then(async cid => {
       if(!cid) return;
       const {data} = await sb.from("companies").select("name").eq("id", cid).single();

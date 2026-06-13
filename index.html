@@ -3338,7 +3338,6 @@ async function doAuth() {
   if(authMode === "login") {
     res = await sb.auth.signInWithPassword({email, password: pw});
   } else {
-    const name = document.getElementById("login-name").value.trim();
     const vorname = document.getElementById("login-vorname")?.value?.trim() || "";
     const nachname = document.getElementById("login-nachname")?.value?.trim() || "";
     const company = document.getElementById("login-company")?.value?.trim() || "";

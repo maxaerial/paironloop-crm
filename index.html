@@ -3452,7 +3452,7 @@ function loadTeamMembersFromStorage() {
 
 async function loadTeamMembers() {
   if(isDemoMode) {
-    if(!loadTeamMembersFromStorage()) teamMembers = [{name:"Max",email:""},{name:"Elena",email:""}];
+    if(!loadTeamMembersFromStorage()) teamMembers = [{name:"Max Mustermann",email:""}];
     fillVerantwortlichDropdowns(); return;
   }
   try { const u=(await sb.auth.getUser()).data.user; if(u?.id) window._userId=u.id; } catch(e){}
@@ -3461,7 +3461,7 @@ async function loadTeamMembers() {
     const {data: prof} = await sb.from("profiles").select("company_id").eq("id", window._userId).single();
     if(prof?.company_id) window._companyId = prof.company_id;
   } catch(e) {}
-  if(!loadTeamMembersFromStorage()) teamMembers = [{name:"Max",email:""},{name:"Elena",email:""}];
+  if(!loadTeamMembersFromStorage()) teamMembers = [{name:"Max Mustermann",email:""}];
   fillVerantwortlichDropdowns();
   // Supabase sync in background
   try {
@@ -3582,21 +3582,31 @@ async function prefillProfileForm(p) {
 function handleProfileImg(input) {
   const file = input.files[0];
   if(!file) return;
-  if(file.size > 600000) { showToast("Bild zu groß (max 600KB)", true); return; }
+  if(file.size > 5000000) { showToast("Bild zu groß (max 5MB)", true); return; }
   const reader = new FileReader();
   reader.onload = e => {
-    const b64 = e.target.result;
-    // Show preview
-    const img = document.getElementById("profile-avatar-img");
-    const init = document.getElementById("profile-avatar-initials");
-    if(img) { img.src = b64; img.style.display = "block"; }
-    if(init) init.style.display = "none";
-    profileData.avatar = b64;
-    // Also update sidebar
-    const sImg = document.getElementById("sidebar-avatar-img");
-    const sTxt = document.getElementById("sidebar-avatar-text");
-    if(sImg) { sImg.src = b64; sImg.style.display = "block"; }
-    if(sTxt) sTxt.style.display = "none";
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const max = 200;
+      const ratio = Math.min(max/img.width, max/img.height);
+      canvas.width = img.width * ratio;
+      canvas.height = img.height * ratio;
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      const b64 = canvas.toDataURL("image/jpeg", 0.8);
+      // Show preview
+      const imgEl = document.getElementById("profile-avatar-img");
+      const init = document.getElementById("profile-avatar-initials");
+      if(imgEl) { imgEl.src = b64; imgEl.style.display = "block"; }
+      if(init) init.style.display = "none";
+      profileData.avatar = b64;
+      // Also update sidebar immediately
+      const sImg = document.getElementById("sidebar-avatar-img");
+      const sTxt = document.getElementById("sidebar-avatar-text");
+      if(sImg) { sImg.src = b64; sImg.style.display = "block"; }
+      if(sTxt) sTxt.style.display = "none";
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }

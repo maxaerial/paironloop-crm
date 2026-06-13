@@ -3866,7 +3866,7 @@ async function renderDashboard() {
   document.getElementById("kpi-followups").textContent = allActs.filter(x=>x.status==="Offen"||x.status==="Open"||x.status==="Abierto"||x.status==="Ouvert").length;
   initDashboardTooltips(kontakte, deals, allActs);
 
-  const sc={}; ["Lead","Aktiv","Lead","Inaktiv","Abgeschlossen"].forEach(s=>sc[s]=0);
+  const sc={}; ["Lead","Aktiv","Inaktiv","Abgeschlossen"].forEach(s=>sc[s]=0);
   kontakte.forEach(x=>{if(sc[x.status]!==undefined)sc[x.status]++;else sc["Lead"]++;});
 
   const cs = getComputedStyle(document.documentElement);
@@ -4297,7 +4297,7 @@ async function addJourney() {
     kontaktId = newK?.id;
   } else {
     // Update status if new phase is "further along" in journey
-    const statusOrder = {"Lead":0,"Lead":1,"Aktiv":2,"Abgeschlossen":3,"Inaktiv":-1};
+    const statusOrder = {"Lead":0,"Aktiv":1,"Abgeschlossen":2,"Inaktiv":-1};
     const currentOrder = statusOrder[existing.status]??0;
     const newOrder     = statusOrder[newStatus]??0;
     if(newOrder > currentOrder) {
@@ -6336,7 +6336,7 @@ async function syncDealToKontakt(kunde, newPhase, newStatus, oldPhase, oldStatus
     .maybeSingle();
   if(!kontakt) return;
 
-  const statusOrder = {"Lead":0,"Lead":1,"Aktiv":2,"Abgeschlossen":3,"Inaktiv":-1};
+  const statusOrder = {"Lead":0,"Aktiv":1,"Abgeschlossen":2,"Inaktiv":-1};
   let newKontaktStatus = null;
   let newJourneyPhase  = null;
 
@@ -7185,7 +7185,6 @@ async function loadEmailVorlagen() {
 async function renderEmail() {
   await loadEmailVorlagen();
   updateEmailVorlageSelect();
-  renderEmailVorlagenList();
   // Ensure contacts are loaded
   if(!isDemoMode && (!kontakteData || !kontakteData.length)) {
     const {data} = await sb.from("kontakte").select("*").order("unternehmen");
@@ -7297,8 +7296,83 @@ function sendEmailBulk() {
 }
 
 function renderEmailVorlagenList() {
-  // Vorlage list is rendered via updateEmailVorlageSelect dropdown
   updateEmailVorlageSelect();
+}
+
+async function saveEmailVorlage() {
+  const id = document.getElementById("email-vorlage-id")?.value || "";
+  const name = document.getElementById("email-vorlage-name")?.value.trim() || "";
+  const betreff = document.getElementById("email-vorlage-betreff")?.value.trim() || "";
+  const text = document.getElementById("email-vorlage-text")?.value.trim() || "";
+  if (!name || !betreff || !text) { showToast("⚠ Alle Felder ausfüllen"); return; }
+
+  if (isDemoMode) {
+    if (id) {
+      const idx = emailVorlagen.findIndex(v => v.id === id);
+      if (idx >= 0) emailVorlagen[idx] = {id, name, betreff, text};
+    } else {
+      emailVorlagen.push({id: "v" + Date.now(), name, betreff, text});
+    }
+    closeModal("modal-email-vorlage");
+    updateEmailVorlageSelect();
+    showToast("✓ Vorlage gespeichert");
+    return;
+  }
+
+  const cid = await getCompanyId();
+  if (!cid) { showToast("⚠ Keine Company", true); return; }
+
+  if (id && !id.startsWith("d")) {
+    await sb.from("email_vorlagen").update({name, betreff, text}).eq("id", id).eq("company_id", cid);
+  } else {
+    const {data} = await sb.from("email_vorlagen").insert({name, betreff, text, company_id: cid}).select().single();
+    if (data) emailVorlagen.push(data);
+  }
+  await loadEmailVorlagen();
+  closeModal("modal-email-vorlage");
+  updateEmailVorlageSelect();
+  showToast("✓ Vorlage gespeichert");
+}
+
+async function deleteEmailVorlage(id) {
+  if (DEFAULT_VORLAGEN.find(d => d.id === id)) { showToast("⚠ Standard-Vorlagen können nicht gelöscht werden"); return; }
+  if (!confirm("Vorlage löschen?")) return;
+  if (!isDemoMode) await sb.from("email_vorlagen").delete().eq("id", id);
+  emailVorlagen = emailVorlagen.filter(v => v.id !== id);
+  updateEmailVorlageSelect();
+  showToast("✓ Vorlage gelöscht");
+}
+
+function importEmailVorlagen() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json";
+  input.onchange = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const vorlagen = Array.isArray(parsed) ? parsed : [parsed];
+      const cid = await getCompanyId();
+      let imported = 0;
+      for (const v of vorlagen) {
+        if (!v.name || !v.betreff || !v.text) continue;
+        if (!isDemoMode && cid) {
+          await sb.from("email_vorlagen").insert({name: v.name, betreff: v.betreff, text: v.text, company_id: cid});
+        } else {
+          emailVorlagen.push({id: "v" + Date.now() + imported, name: v.name, betreff: v.betreff, text: v.text});
+        }
+        imported++;
+      }
+      if (!isDemoMode) await loadEmailVorlagen();
+      updateEmailVorlageSelect();
+      showToast(`✓ ${imported} Vorlage(n) importiert`);
+    } catch (err) {
+      showToast("⚠ Fehler beim Import: " + err.message, true);
+    }
+  };
+  input.click();
 }
 
 function updateEmailVorlageSelect() {

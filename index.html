@@ -2049,6 +2049,7 @@ tbody td { font-feature-settings: "zero" 0; }
     <div class="profile-form">
       <div class="field"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Vorname</label><input id="profile-vorname" placeholder="Max"></div>
       <div class="field"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Nachname</label><input id="profile-nachname" placeholder="Weidmann"></div>
+      <div class="field form-full"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">E-Mail</label><input id="profile-email-display" type="email" placeholder="deine@email.com"></div>
       <div class="field form-full"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Firma</label><input id="profile-firma" placeholder="Paironloop"></div>
       <div class="field form-full"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Telefon</label><input id="profile-telefon" placeholder="+49 89 ..."></div>
     </div>
@@ -3572,11 +3573,17 @@ async function applyProfileToUI(p) {
   }
 }
 
-function prefillProfileForm(p) {
+async function prefillProfileForm(p) {
   document.getElementById("profile-vorname").value  = p.vorname  || "";
   document.getElementById("profile-nachname").value = p.nachname || "";
   document.getElementById("profile-firma").value    = p.firma    || "";
   document.getElementById("profile-telefon").value  = p.telefon  || "";
+  // Fill email from auth
+  const user = (await sb.auth.getUser()).data.user;
+  if(user?.email) {
+    const emailEl = document.getElementById("profile-email-display");
+    if(emailEl) emailEl.value = user.email;
+  }
 }
 
 function handleProfileImg(input) {
@@ -3618,6 +3625,20 @@ async function saveProfile() {
     avatar:   profileData.avatar || null,
     updated_at: new Date().toISOString()
   };
+
+  // E-Mail ändern falls geändert
+  const newEmail = document.getElementById("profile-email-display")?.value.trim();
+  const currentUser = (await sb.auth.getUser()).data.user;
+  if(newEmail && newEmail !== currentUser?.email) {
+    const {error: emailErr} = await sb.auth.updateUser({ email: newEmail });
+    if(emailErr) {
+      msg.textContent = "E-Mail Fehler: " + emailErr.message;
+      msg.style.color = "var(--red)";
+      msg.style.display = "block";
+      btn.disabled = false;
+      return;
+    }
+  }
 
   const {error} = await sb.from("profiles").upsert(updates);
   btn.disabled = false;

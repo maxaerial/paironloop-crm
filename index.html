@@ -1465,7 +1465,7 @@ tbody td { font-feature-settings: "zero" 0; }
         </div>
         <div>
           <div class="user-name" id="user-name">–</div>
-          <div class="user-role" id="user-role-display">Paironloop</div>
+          <div class="user-role" id="user-role-display"></div>
         </div>
       </div>
     </div>
@@ -3434,7 +3434,9 @@ function saveTeamMembers() {
         teamMembers.forEach(m => {
           const name = typeof m === "string" ? m : m.name;
           const email = typeof m === "object" ? (m.email||"") : "";
-          sb.from("team_members").insert({name, email}).then(()=>{}).catch(()=>{});
+          getCompanyId().then(cid => {
+            sb.from("team_members").insert({name, email, company_id: cid}).then(()=>{}).catch(()=>{});
+          });
         });
       }).catch(()=>{});
     } catch(e) {}
@@ -3538,6 +3540,14 @@ function applyProfileToUI(p) {
   // Sidebar firma/role
   const roleEl = document.getElementById("user-role-display");
   if(roleEl && p.firma) roleEl.textContent = p.firma;
+  // Load company name from DB
+  if(roleEl && !p.firma) {
+    getCompanyId().then(async cid => {
+      if(!cid) return;
+      const {data} = await sb.from("companies").select("name").eq("id", cid).single();
+      if(data?.name) roleEl.textContent = data.name;
+    });
+  }
   // Avatar
   const initials = ((p.vorname||"?")[0]+(p.nachname||"")[0]).toUpperCase() || "?";
   const sidebarText = document.getElementById("sidebar-avatar-text");

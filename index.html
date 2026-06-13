@@ -7254,6 +7254,8 @@ function updateEmailVorlagePreview() {
 }
 
 function previewEmailVorlage() {
+  const id = document.getElementById("email-vorlage-select")?.value;
+  if(!id) { showToast("⚠ Bitte zuerst eine Vorlage auswählen"); return; }
   const preview = document.getElementById("email-vorlage-preview");
   if(!preview) return;
   preview.style.display = preview.style.display === "none" ? "block" : "none";
@@ -7295,14 +7297,26 @@ function sendEmailBulk() {
 
   // Use first contact for personalization, all in BCC
   const first = empfaenger[0];
+  const single = empfaenger.length === 1;
+  const hasName = single && first.vorname && first.vorname !== "–" && first.nachname && first.nachname !== "–";
+  const isEn = single && first.sprache === "en";
+  const anrede = single
+    ? (isEn
+        ? (hasName ? `Dear ${first.vorname}` : `Dear ${first.unternehmen||"Team"} Team`)
+        : (first.geschlecht === "m" && hasName ? `Lieber ${first.vorname}`
+          : first.geschlecht === "f" && hasName ? `Liebe ${first.vorname}`
+          : `Liebes ${first.unternehmen||"Team"}-Team`))
+    : "";
   const betreff = vorlage.betreff
-    .replace(/{{vorname}}/g, empfaenger.length === 1 ? (first.vorname||"") : "")
-    .replace(/{{nachname}}/g, empfaenger.length === 1 ? (first.nachname||"") : "")
-    .replace(/{{unternehmen}}/g, empfaenger.length === 1 ? (first.unternehmen||"") : "");
+    .replace(/{{vorname}}/g, single ? (first.vorname||"") : "")
+    .replace(/{{nachname}}/g, single ? (first.nachname||"") : "")
+    .replace(/{{unternehmen}}/g, single ? (first.unternehmen||"") : "")
+    .replace(/{{anrede}}/g, anrede);
   const text = vorlage.text
-    .replace(/{{vorname}}/g, empfaenger.length === 1 ? (first.vorname||"") : "")
-    .replace(/{{nachname}}/g, empfaenger.length === 1 ? (first.nachname||"") : "")
-    .replace(/{{unternehmen}}/g, empfaenger.length === 1 ? (first.unternehmen||"") : "");
+    .replace(/{{vorname}}/g, single ? (first.vorname||"") : "")
+    .replace(/{{nachname}}/g, single ? (first.nachname||"") : "")
+    .replace(/{{unternehmen}}/g, single ? (first.unternehmen||"") : "")
+    .replace(/{{anrede}}/g, anrede);
 
   const bcc = empfaenger.map(k => k.email).join(",");
   const mailtoLink = document.createElement("a");
@@ -7359,6 +7373,8 @@ async function deleteEmailVorlage(id) {
   if (!isDemoMode) await sb.from("email_vorlagen").delete().eq("id", id);
   emailVorlagen = emailVorlagen.filter(v => v.id !== id);
   updateEmailVorlageSelect();
+  const preview = document.getElementById("email-vorlage-preview");
+  if (preview) { preview.style.display = "none"; preview.textContent = ""; }
   showToast("✓ Vorlage gelöscht");
 }
 
@@ -7428,6 +7444,9 @@ async function sendEmailBulkDirect() {
   showToast(`⏳ Sende ${empfaenger.length} E-Mail(s)…`);
   let success = 0, failed = 0;
   const today = new Date().toISOString().split("T")[0];
+  const emailCfg = getEmailConfig();
+  const userId = !isDemoMode ? (await sb.auth.getUser()).data.user?.id : null;
+  const cid = !isDemoMode ? await getCompanyId() : null;
 
   for (const k of empfaenger) {
     // Gender-aware salutation
@@ -7454,7 +7473,7 @@ async function sendEmailBulkDirect() {
       .replace(/^Hallo {{vorname}}/m, anrede);
 
     try {
-      await emailjs.send(getEmailConfig().service, getEmailConfig().template, {
+      await emailjs.send(emailCfg.service, emailCfg.template, {
         to_email: k.email,
         subject: betreff,
         message: text.replace(/\n/g, "<br>") + EMAIL_SIGNATURE,
@@ -7464,7 +7483,6 @@ async function sendEmailBulkDirect() {
       // Auto-create Journey entry (skip own email)
       if(!isDemoMode && k.email !== "info@paironloop.com") {
         const phase = mapVorlageToJourneyPhase(vorlage.name);
-        const userId = (await sb.auth.getUser()).data.user?.id;
         const emailJourneyNr = await getNextJourneyNr();
         await sb.from("journey").insert({
           kunde: k.unternehmen || `${k.vorname||""} ${k.nachname||""}`.trim(),
@@ -7477,7 +7495,7 @@ async function sendEmailBulkDirect() {
           reaktion: "–",
           score: 5,
           user_id: userId,
-      company_id: await getCompanyId()
+          company_id: cid
         });
         // Auto-create follow-up activity in 7 days
         const followUpDate = new Date();
@@ -7493,7 +7511,7 @@ async function sendEmailBulkDirect() {
           verantwortlich: "Max",
           status: "Offen",
           user_id: userId,
-      company_id: await getCompanyId()
+          company_id: cid
         });
       }
     } catch(err) {

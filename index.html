@@ -3134,6 +3134,16 @@ const DEMO_DATA = {
 
 let isDemoMode = false;
 
+// Demo user profile constants
+const DEMO_USER = {
+  vorname:    "Alex",
+  nachname:   "Demo",
+  firma:      "Demo GmbH",
+  email:      "demo@demo-crm.com",
+  initials:   "AD",
+  avatar:     "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojN0M2RUYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzZFQjhGMCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSIxMDAiIGZpbGw9InVybCgjZykiLz4KICA8IS0tIEJvZHkgc2lsaG91ZXR0ZSAtLT4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSI4MiIgcj0iMzIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC45KSIvPgogIDxlbGxpcHNlIGN4PSIxMDAiIGN5PSIxNjUiIHJ4PSI1MiIgcnk9IjM4IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuOSkiLz4KPC9zdmc+"
+};
+
 function loginDemo() {
   isDemoMode = true;
   window._userId = "demo";
@@ -3143,11 +3153,8 @@ function loginDemo() {
   dealsData    = JSON.parse(JSON.stringify(DEMO_DATA.deals));
   aktivData    = JSON.parse(JSON.stringify(DEMO_DATA.aktivitaeten));
 
-  // Fake user
-  document.getElementById("user-name").textContent = "Demo User";
-  const _demoAvTxt = document.getElementById("sidebar-avatar-text");
-  if(_demoAvTxt) _demoAvTxt.textContent = "DU";
-  document.getElementById("settings-email").textContent = "demo@paironloop.com";
+  // Apply demo user profile to UI
+  applyDemoProfile();
 
   // Copy logos to mobile topbar
   const sw=document.querySelector('.sidebar .logo-white');
@@ -3176,6 +3183,42 @@ function loginDemo() {
   renderAktivitaetenDemo();
   checkNotificationsDemo();
   showToast("🎬 Demo-Modus aktiv — Änderungen werden nicht gespeichert");
+}
+
+function applyDemoProfile() {
+  const u = DEMO_USER;
+
+  // Sidebar name & company
+  const nameEl = document.getElementById("user-name");
+  if(nameEl) nameEl.textContent = u.vorname + " " + u.nachname;
+  const roleEl = document.getElementById("user-role-display");
+  if(roleEl) roleEl.textContent = u.firma;
+
+  // Sidebar avatar - show image
+  const sidebarText = document.getElementById("sidebar-avatar-text");
+  const sidebarImg  = document.getElementById("sidebar-avatar-img");
+  if(sidebarImg) { sidebarImg.src = u.avatar; sidebarImg.style.display = "block"; }
+  if(sidebarText) sidebarText.style.display = "none";
+
+  // Settings email display
+  const settingsEmail = document.getElementById("settings-email");
+  if(settingsEmail) settingsEmail.textContent = u.email;
+
+  // Settings profile form prefill
+  const pfVorname  = document.getElementById("profile-vorname");
+  const pfNachname = document.getElementById("profile-nachname");
+  const pfFirma    = document.getElementById("profile-firma");
+  const pfEmail    = document.getElementById("profile-email-display");
+  if(pfVorname)  pfVorname.value  = u.vorname;
+  if(pfNachname) pfNachname.value = u.nachname;
+  if(pfFirma)    pfFirma.value    = u.firma;
+  if(pfEmail)    pfEmail.value    = u.email;
+
+  // Settings avatar display
+  const profAvImg  = document.getElementById("profile-avatar-img");
+  const profAvInit = document.getElementById("profile-avatar-initials");
+  if(profAvImg)  { profAvImg.src = u.avatar; profAvImg.style.display = "block"; }
+  if(profAvInit) profAvInit.style.display = "none";
 }
 
 // Demo render functions — use in-memory data instead of Supabase
@@ -3988,11 +4031,15 @@ function renderAll() {
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
 function openSettings() {
   document.getElementById("settings-panel").classList.add("open");
-  const emailDisp = document.getElementById("settings-email-display");
-  const emailTxt = document.getElementById("settings-email");
-  if(emailDisp && emailTxt) emailDisp.textContent = emailTxt.textContent;
+  if(isDemoMode) {
+    applyDemoProfile();
+  } else {
+    const emailDisp = document.getElementById("settings-email-display");
+    const emailTxt = document.getElementById("settings-email");
+    if(emailDisp && emailTxt) emailDisp.textContent = emailTxt.textContent;
+    loadEmailConfig();
+  }
   renderTeamMembersList();
-  loadEmailConfig();
   setTimeout(initClearableFields, 50);
 }
 function closeSettings() { document.getElementById("settings-panel").classList.remove("open"); }

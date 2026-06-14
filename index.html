@@ -5596,8 +5596,24 @@ const PAIRONLOOP_SIGNATURE = `<br><br>
 // Company signature — loaded from Supabase on login
 window._emailSignature = null;
 
+const DEMO_SIGNATURE = `<br><br>
+<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;max-width:500px;">
+  <tbody><tr><td style="padding:14px 0 12px 0;border-top:1px solid #cccccc;">
+    <div style="font-size:16px;font-weight:bold;color:#1a1a1a">Alex Demo</div>
+    <div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#999999;margin-top:3px">Demo GmbH</div>
+    <div style="border-top:1px solid #eeeeee;margin:8px 0 6px 0"></div>
+    <table cellpadding="0" cellspacing="0" border="0">
+      <tbody>
+        <tr><td style="padding:0 0 2px 0;font-size:11px;font-family:Arial,sans-serif;color:#1a1a1a">+49 89 123456</td></tr>
+        <tr><td style="padding:0 0 2px 0"><a href="mailto:demo@demo-crm.com" style="font-size:11px;font-family:Arial,sans-serif;color:#7C6EF0;text-decoration:none">demo@demo-crm.com</a></td></tr>
+        <tr><td><a href="#" style="font-size:11px;font-family:Arial,sans-serif;color:#1a1a1a;text-decoration:none">www.demo-crm.com</a></td></tr>
+      </tbody>
+    </table>
+  </td></tr></tbody>
+</table>`;
+
 function getEmailSignature() {
-  if(isDemoMode) return "";
+  if(isDemoMode) return DEMO_SIGNATURE;
   // PairOnLoop company gets the hardcoded signature
   const PAIRONLOOP_COMPANY_ID = "00000000-0000-0000-0000-000000000001";
   if(window._companyId === PAIRONLOOP_COMPANY_ID) return PAIRONLOOP_SIGNATURE;
@@ -7907,6 +7923,50 @@ function toggleEmailKontakt(id, checked) {
   if (checked) emailSelectedIds.add(String(id));
   else emailSelectedIds.delete(String(id));
   updateEmailSelectedCount();
+}
+
+function populateEmailKontakteDropdown() {
+  const branche    = document.getElementById("email-branche-filter")?.value || "";
+  const phase      = document.getElementById("email-phase-filter")?.value || "";
+  const newsletter = document.getElementById("email-newsletter-filter")?.value || "";
+  const aktivtyp   = document.getElementById("email-aktivtyp-filter")?.value || "";
+  const sprache    = document.getElementById("email-sprache-filter")?.value || "";
+  const sel = document.getElementById("email-search-kontakte");
+  if(!sel) return;
+  const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
+
+  let matchByPhase = new Set();
+  if(phase) {
+    const jSrc = isDemoMode ? (window.DEMO_DATA?.journey || []) : (journeyData || []);
+    jSrc.filter(j => j.phase === phase).forEach(j => matchByPhase.add(j.kunde));
+  }
+  let matchByAktiv = new Set();
+  if(aktivtyp) {
+    const aSrc = isDemoMode ? (window.DEMO_DATA?.aktivitaeten || []) : (aktivData || []);
+    const today = new Date().toISOString().split("T")[0];
+    const filtered = aktivtyp === "faellig"
+      ? aSrc.filter(a => a.datum <= today && a.status === "Offen")
+      : aSrc.filter(a => a.typ === aktivtyp);
+    filtered.forEach(a => matchByAktiv.add(a.kunde));
+  }
+
+  const filtered = src.filter(k => {
+    if(!k.email) return false;
+    if(branche && k.branche !== branche) return false;
+    if(phase && !matchByPhase.has(k.unternehmen)) return false;
+    if(newsletter && k.newsletter !== newsletter) return false;
+    if(aktivtyp && !matchByAktiv.has(k.unternehmen)) return false;
+    if(sprache && k.sprache !== sprache) return false;
+    return true;
+  });
+
+  sel.innerHTML = `<option value="">+ Kontakt hinzufügen… (${filtered.length})</option>` +
+    filtered.map(k => `<option value="${k.id||k.nr}">${k.unternehmen||""} – ${k.vorname||""} ${k.nachname||""}</option>`).join("");
+}
+
+function filterEmailKontakte() {
+  populateEmailKontakteDropdown();
+  renderEmailKontakteList();
 }
 
 function updateEmailSelectedCount() {

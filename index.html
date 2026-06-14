@@ -5479,6 +5479,7 @@ async function renderAktivitaeten(f) {
       <th>${t("description")}</th>
       <th>Verantwortlich</th>
       <th>${thSort("status_a",t("status"),aSortCol,aSortDir)}</th>
+      <th></th>
       </tr></thead>
     <tbody>${rows.map(a=>`<tr>
       <td><input type="checkbox" class="row-checkbox bulk-check-aktivitaeten" data-id="${a.id}" onchange="updateBulk('aktivitaeten')"></td>

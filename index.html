@@ -1589,6 +1589,7 @@ tbody td { font-feature-settings: "zero" 0; }
               <thead><tr>
                 <th data-i18n="date">Datum</th>
                 <th data-i18n="client">Unternehmen</th>
+                <th>Name</th>
                 <th data-i18n="type">Typ</th>
                 <th data-i18n="priority">Priorität</th>
                 <th data-i18n="status">Status</th>
@@ -3360,7 +3361,7 @@ function renderDemoDashboard() {
   const pC={"Hoch":"var(--red)","Mittel":"var(--orange)","Niedrig":"var(--green)"};
   document.getElementById("recent-activity-body").innerHTML=a.slice(0,5).map(x=>`<tr>
     <td style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text3)">${fmtDate(x.datum)}</td>
-    <td><strong>${x.kunde}</strong></td>
+    <td><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${x.kunde}')">${x.kunde}</strong></td>
     <td style="font-size:12px;color:var(--text2)">${(()=>{const k=(window.DEMO_DATA?.kontakte||[]).find(k=>k.unternehmen===x.kunde);return k?((k.vorname||"")+(k.nachname?" "+k.nachname:"")).trim()||"–":"–";})()}</td>
     <td style="color:var(--text2)">${x.typ}</td>
     <td><span style="background:${pBg[x.prioritaet]};color:${pC[x.prioritaet]};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600">${x.prioritaet}</span></td>
@@ -4406,7 +4407,8 @@ async function renderDashboard() {
   const pC={"Hoch":"var(--red)","Mittel":"var(--orange)","Niedrig":"var(--green)"};
   document.getElementById("recent-activity-body").innerHTML = acts.map(a=>`<tr>
     <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(a.datum)}</td>
-    <td><strong>${a.kunde}</strong></td>
+    <td><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${a.kunde}')">${a.kunde}</strong></td>
+    <td style="font-size:12px;color:var(--text2)">${(()=>{const k=(kontakteData||[]).find(k=>k.unternehmen===a.kunde);return k?((k.vorname||'')+(k.nachname?' '+k.nachname:'')).trim()||'–':'–';})()}</td>
     <td style="color:var(--text2)">${a.typ}</td>
     <td><span style="background:${pBg[a.prioritaet]||"var(--bg3)"};color:${pC[a.prioritaet]||"var(--text3)"};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600">${a.prioritaet}</span></td>
     <td><span class="badge badge-${(a.status||"").toLowerCase().replace(/\s+/g,"-")}">${a.status}</span></td>

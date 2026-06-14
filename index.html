@@ -7559,7 +7559,7 @@ function emailDeselectAll() {
   updateEmailSelectedCount();
 }
 
-function openEmailVorlageModal(id) {
+function openEmailVorlageModal() {
   document.getElementById("email-vorlage-id").value = "";
   document.getElementById("email-vorlage-name").value = "";
   document.getElementById("email-vorlage-betreff").value = "";
@@ -7568,6 +7568,134 @@ function openEmailVorlageModal(id) {
   openModalEdit("modal-email-vorlage");
 }
 
+function editEmailVorlage(id) {
+  const v = emailVorlagen.find(x => x.id === id);
+  if (!v) { showToast("⚠ Vorlage nicht gefunden"); return; }
+  if (v.default) {
+    // Allow editing default vorlagen — copy into edit modal with their content
+    // but save as a company-specific override (new entry)
+    document.getElementById("email-vorlage-id").value = "";  // save as new
+    document.getElementById("email-vorlage-modal-title").textContent = "Vorlage kopieren & bearbeiten";
+  } else {
+    document.getElementById("email-vorlage-id").value = v.id;
+    document.getElementById("email-vorlage-modal-title").textContent = "Vorlage bearbeiten";
+  }
+  document.getElementById("email-vorlage-name").value = v.name || "";
+  document.getElementById("email-vorlage-betreff").value = v.betreff || "";
+  document.getElementById("email-vorlage-text").value = v.text || "";
+  openModalEdit("modal-email-vorlage");
+}
+
+async function saveEmailVorlage() {
+  const name    = document.getElementById("email-vorlage-name").value.trim();
+  const betreff = document.getElementById("email-vorlage-betreff").value.trim();
+  const text    = document.getElementById("email-vorlage-text").value.trim();
+  const id      = document.getElementById("email-vorlage-id").value.trim();
+
+  if (!name)    { showToast("⚠ Bitte einen Vorlagennamen eingeben"); return; }
+  if (!betreff) { showToast("⚠ Bitte einen Betreff eingeben"); return; }
+  if (!text)    { showToast("⚠ Bitte einen Text eingeben"); return; }
+
+  if (isDemoMode) {
+    // In demo mode: just update in-memory
+    if (id) {
+      const idx = emailVorlagen.findIndex(v => v.id === id);
+      if (idx >= 0) emailVorlagen[idx] = { ...emailVorlagen[idx], name, betreff, text };
+    } else {
+      const newId = "custom_" + Date.now();
+      emailVorlagen.push({ id: newId, name, betreff, text, default: false });
+    }
+    closeModal("modal-email-vorlage");
+    updateEmailVorlageSelect();
+    showToast("✓ Vorlage gespeichert (Demo)");
+    return;
+  }
+
+  const cid = await getCompanyId();
+  if (!cid) { showToast("⚠ Keine Company ID gefunden"); return; }
+
+  if (id) {
+    // Update existing custom vorlage
+    const { error } = await sb.from("email_vorlagen")
+      .update({ name, betreff, text })
+      .eq("id", id)
+      .eq("company_id", cid);
+    if (error) { showToast("Fehler: " + error.message, true); return; }
+  } else {
+    // Insert new vorlage
+    const { error } = await sb.from("email_vorlagen")
+      .insert({ name, betreff, text, company_id: cid });
+    if (error) { showToast("Fehler: " + error.message, true); return; }
+  }
+
+  closeModal("modal-email-vorlage");
+  await loadEmailVorlagen();
+  updateEmailVorlageSelect();
+  showToast("✓ Vorlage gespeichert");
+}
+
+async function deleteEmailVorlage(id) {
+  const v = emailVorlagen.find(x => x.id === id);
+  if (!v) return;
+  if (v.default) { showToast("⚠ Standard-Vorlagen können nicht gelöscht werden"); return; }
+  if (!confirm(`Vorlage "${v.name}" wirklich löschen?`)) return;
+
+  if (isDemoMode) {
+    emailVorlagen = emailVorlagen.filter(x => x.id !== id);
+    updateEmailVorlageSelect();
+    showToast("✓ Vorlage gelöscht (Demo)");
+    return;
+  }
+
+  const { error } = await sb.from("email_vorlagen").delete().eq("id", id);
+  if (error) { showToast("Fehler: " + error.message, true); return; }
+  await loadEmailVorlagen();
+  updateEmailVorlageSelect();
+  showToast("✓ Vorlage gelöscht");
+}
+
+function importEmailVorlagen() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json";
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      const vorlagen = Array.isArray(data) ? data : [data];
+      if (!vorlagen.length) { showToast("⚠ Keine Vorlagen in der Datei"); return; }
+
+      if (isDemoMode) {
+        vorlagen.forEach(v => {
+          if (!v.name || !v.betreff || !v.text) return;
+          const newId = "import_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+          emailVorlagen.push({ id: newId, name: v.name, betreff: v.betreff, text: v.text, default: false });
+        });
+        updateEmailVorlageSelect();
+        showToast(`✓ ${vorlagen.length} Vorlage(n) importiert (Demo)`);
+        return;
+      }
+
+      const cid = await getCompanyId();
+      if (!cid) { showToast("⚠ Keine Company ID"); return; }
+      let imported = 0;
+      for (const v of vorlagen) {
+        if (!v.name || !v.betreff || !v.text) continue;
+        const { error } = await sb.from("email_vorlagen")
+          .insert({ name: v.name, betreff: v.betreff, text: v.text, company_id: cid });
+        if (!error) imported++;
+      }
+      await loadEmailVorlagen();
+      updateEmailVorlageSelect();
+      showToast(`✓ ${imported} Vorlage(n) importiert`);
+    } catch (err) {
+      showToast("⚠ Fehler beim Import: " + err.message, true);
+    }
+  };
+  input.click();
+}
 
 </script>
 </body>

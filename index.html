@@ -1588,7 +1588,7 @@ tbody td { font-feature-settings: "zero" 0; }
             <table>
               <thead><tr>
                 <th data-i18n="date">Datum</th>
-                <th data-i18n="client">Kunde</th>
+                <th data-i18n="client">Unternehmen</th>
                 <th data-i18n="type">Typ</th>
                 <th data-i18n="priority">Priorität</th>
                 <th data-i18n="status">Status</th>
@@ -2933,7 +2933,7 @@ const LANGS = {
     save:"Speichern",cancel:"Abbrechen",search:"Suchen…",loading:"Laden…",
     total_clients:"Kunden gesamt",leads:"Leads",active_deals:"Aktive Deals",open_followups:"Offene Aktivitäten",
     contacts_by_status:"Kontakte nach Status",pipeline_by_phase:"Pipeline nach Phase (€)",
-    recent_activities:"Letzte Aktivitäten",date:"Datum",client:"Kunde",type:"Typ",
+    recent_activities:"Letzte Aktivitäten",date:"Datum",client:"Unternehmen",type:"Typ",
     priority:"Priorität",status:"Status",all_status:"Alle Status",all_phases:"Alle Phasen",
     leads_by_phase:"Leads nach Phase",all_touchpoints:"Alle Touchpoints",
     journey_subtitle:"Leads nach Phase – klick zum Filtern",
@@ -3361,6 +3361,7 @@ function renderDemoDashboard() {
   document.getElementById("recent-activity-body").innerHTML=a.slice(0,5).map(x=>`<tr>
     <td style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text3)">${fmtDate(x.datum)}</td>
     <td><strong>${x.kunde}</strong></td>
+    <td style="font-size:12px;color:var(--text2)">${(()=>{const k=(window.DEMO_DATA?.kontakte||[]).find(k=>k.unternehmen===x.kunde);return k?((k.vorname||"")+(k.nachname?" "+k.nachname:"")).trim()||"–":"–";})()}</td>
     <td style="color:var(--text2)">${x.typ}</td>
     <td><span style="background:${pBg[x.prioritaet]};color:${pC[x.prioritaet]};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600">${x.prioritaet}</span></td>
     <td><span class="badge badge-${(x.status||"").toLowerCase().replace(/\s+/g,"-")}">${x.status}</span></td>
@@ -3522,7 +3523,7 @@ function renderAktivitaetenDemo() {
   const pC={"Hoch":"var(--red)","Mittel":"var(--orange)","Niedrig":"var(--green)"};
   document.getElementById("aktivitaeten-table-wrap").innerHTML=`<table><thead><tr>
     <th><input type="checkbox" class="row-checkbox" id="check-all-a" onchange="toggleAllBulk('aktivitaeten',this.checked)"></th>
-    <th>${thSort("nr_a","Nr",aSortCol,aSortDir)}</th><th>${thSort("kunde_a",t("client"),aSortCol,aSortDir)}</th>
+    <th>${thSort("nr_a","Nr",aSortCol,aSortDir)}</th><th>${thSort("kunde_a","Unternehmen",aSortCol,aSortDir)}</th><th>Name</th>
     <th>${thSort("typ_a",t("type"),aSortCol,aSortDir)}</th><th>${thSort("datum_a",t("due_date"),aSortCol,aSortDir)}</th>
     <th>${thSort("prio_a",t("priority"),aSortCol,aSortDir)}</th><th>${t("description")}</th>
     <th>Verantwortlich</th><th>${thSort("status_a",t("status"),aSortCol,aSortDir)}</th>
@@ -3530,6 +3531,7 @@ function renderAktivitaetenDemo() {
       <td><input type="checkbox" class="row-checkbox bulk-check-aktivitaeten" data-id="${a.id}" onchange="updateBulk('aktivitaeten')"></td>
       <td style="font-size:11px;color:var(--text3)">${a.nr||"–"}</td>
       <td><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${a.kunde}')">${a.kunde}</strong></td>
+      <td style="font-size:12px;color:var(--text2)">${(()=>{const k=(kontakteData||[]).find(k=>k.unternehmen===a.kunde);return k?((k.vorname||'')+(k.nachname?' '+k.nachname:'')).trim()||'–':'–';})()}</td>
       <td style="color:var(--text2)">${a.typ}</td>
       <td style="font-size:12px;color:var(--text3)">${fmtDate(a.datum)}</td>
       <td><span style="background:${pBg[a.prioritaet]};color:${pC[a.prioritaet]};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600">${a.prioritaet}</span></td>
@@ -4576,7 +4578,8 @@ function renderJourneyTable() {
       <th><input type="checkbox" class="row-checkbox" id="check-all-j" onchange="toggleAllBulk('journey',this.checked)"></th>
       <th>${thSort("nr_j","Nr",jSortCol,jSortDir)}</th>
       <th>${thSort("datum_j",t("date"),jSortCol,jSortDir)}</th>
-      <th>${thSort("kunde_j",t("client"),jSortCol,jSortDir)}</th>
+      <th>${thSort("kunde_j","Unternehmen",jSortCol,jSortDir)}</th>
+      <th>Name</th>
       <th>${thSort("phase_j",t("phase"),jSortCol,jSortDir)}</th>
       <th>${thSort("touchpoint_j",t("touchpoint_col"),jSortCol,jSortDir)}</th>
       <th>${thSort("kanal_j",t("channel"),jSortCol,jSortDir)}</th>
@@ -4590,6 +4593,7 @@ function renderJourneyTable() {
         <td style="font-size:11px;color:var(--accent2);cursor:pointer;font-weight:600" onclick="openJourneyDetail('${j.id}','journey')">${j.nr||"–"}</td>
         <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(j.datum)}</td>
         <td><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${j.kunde}')">${j.kunde}</strong></td>
+        <td style="font-size:12px;color:var(--text2)">${(()=>{const k=(kontakteData||[]).find(k=>k.unternehmen===j.kunde);return k?((k.vorname||'')+(k.nachname?' '+k.nachname:'')).trim()||'–':'–';})()}</td>
         <td><span style="
         background:${(()=>{const c={'Bewusstsein':'rgba(110,184,240,.15)','Interesse':'rgba(124,110,240,.15)','Angebot':'rgba(240,168,110,.15)','Kauf':'rgba(110,240,160,.15)','Empfehlung':'rgba(240,196,78,.18)'};return c[j.phase]||'rgba(144,144,168,.12)';})()};
         color:${(()=>{const c={'Bewusstsein':'#6EB8F0','Interesse':'#7C6EF0','Angebot':'#c47a1e','Kauf':'#1e8a4a','Empfehlung':'#b87c00'};return c[j.phase]||'var(--text3)';})()};
@@ -5465,7 +5469,8 @@ async function renderAktivitaeten(f) {
     <thead><tr>
       <th><input type="checkbox" class="row-checkbox" id="check-all-a" onchange="toggleAllBulk('aktivitaeten',this.checked)"></th>
       <th>${thSort("nr_a","Nr",aSortCol,aSortDir)}</th>
-      <th>${thSort("kunde_a",t("client"),aSortCol,aSortDir)}</th>
+      <th>${thSort("kunde_a","Unternehmen",aSortCol,aSortDir)}</th>
+      <th>Name</th>
       <th>${thSort("typ_a",t("type"),aSortCol,aSortDir)}</th>
       <th>${thSort("datum_a",t("due_date"),aSortCol,aSortDir)}</th>
       <th>${thSort("prio_a",t("priority"),aSortCol,aSortDir)}</th>
@@ -8149,6 +8154,9 @@ async function deleteEmailVorlage(id) {
   if (isDemoMode) {
     emailVorlagen = emailVorlagen.filter(x => x.id !== id);
     updateEmailVorlageSelect();
+    document.getElementById("email-vorlage-select").value = "";
+    const preview = document.getElementById("email-vorlage-preview");
+    if(preview) preview.style.display = "none";
     showToast("✓ Vorlage gelöscht (Demo)");
     return;
   }
@@ -8157,6 +8165,9 @@ async function deleteEmailVorlage(id) {
   if (error) { showToast("Fehler: " + error.message, true); return; }
   await loadEmailVorlagen();
   updateEmailVorlageSelect();
+  document.getElementById("email-vorlage-select").value = "";
+  const preview = document.getElementById("email-vorlage-preview");
+  if(preview) preview.style.display = "none";
   showToast("✓ Vorlage gelöscht");
 }
 

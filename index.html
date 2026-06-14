@@ -7293,7 +7293,14 @@ function addEmailEmpfaenger(id) {
   updateEmailSelectedCount();
 }
 
+function onEmailVorlageSelectChange() {
+  // Hide preview when a new vorlage is selected - user must click "Vorschau" explicitly
+  const preview = document.getElementById("email-vorlage-preview");
+  if(preview) preview.style.display = "none";
+}
+
 function updateEmailVorlagePreview() {
+  // Populate preview content (called by previewEmailVorlage toggle)
   const id = document.getElementById("email-vorlage-select")?.value;
   const preview = document.getElementById("email-vorlage-preview");
   if(!preview) return;
@@ -7301,13 +7308,25 @@ function updateEmailVorlagePreview() {
   const v = emailVorlagen.find(x => x.id === id);
   if(!v) { preview.style.display = "none"; return; }
   preview.textContent = `Betreff: ${v.betreff}\n\n${v.text}`;
-  preview.style.display = "block";
 }
 
 function previewEmailVorlage() {
+  const id = document.getElementById("email-vorlage-select")?.value;
+  if(!id) { showToast("\u26a0 Bitte zuerst eine Vorlage w\u00e4hlen"); return; }
   const preview = document.getElementById("email-vorlage-preview");
   if(!preview) return;
-  preview.style.display = preview.style.display === "none" ? "block" : "none";
+  if(preview.style.display === "none" || preview.style.display === "") {
+    updateEmailVorlagePreview();
+    preview.style.display = "block";
+  } else {
+    preview.style.display = "none";
+  }
+}
+
+function deleteEmailVorlageSelected() {
+  const id = document.getElementById("email-vorlage-select")?.value;
+  if(!id) { showToast("\u26a0 Bitte zuerst eine Vorlage ausw\u00e4hlen"); return; }
+  deleteEmailVorlage(id);
 }
 
 function editEmailVorlageSelected() {

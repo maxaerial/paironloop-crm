@@ -1884,6 +1884,31 @@ tbody td { font-feature-settings: "zero" 0; }
         </div>
       </div>
 
+      <!-- Signatur -->
+      <div class="card" style="margin-bottom:16px" id="email-signature-card">
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+          <div class="card-title">✍️ Signatur</div>
+          <button class="btn btn-ghost btn-sm" onclick="toggleSignatureEditor()" id="btn-toggle-sig">Bearbeiten</button>
+        </div>
+        <div id="email-signature-preview-area" style="padding:12px 20px">
+          <div id="email-sig-preview-text" style="font-size:12px;color:var(--text3);font-style:italic">Klicke auf "Bearbeiten" um deine Signatur einzurichten.</div>
+        </div>
+        <div id="email-signature-edit-area" style="display:none;padding:14px 20px;border-top:1px solid var(--border)">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:8px">HTML-Signatur — wird automatisch an jede E-Mail angehängt.</div>
+          <textarea id="email-signature-editor" rows="8" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;font-family:monospace;padding:10px;resize:vertical;outline:none" placeholder="&lt;p&gt;Mit freundlichen Grüßen,&lt;br&gt;Max Mustermann&lt;/p&gt;" oninput="updateSigPreview()"></textarea>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="saveEmailSignature()">Signatur speichern</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleSignatureEditor()">Schließen</button>
+            <div style="flex:1"></div>
+            <div id="sig-preview-toggle" style="font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px">
+              <span>Vorschau:</span>
+              <button class="btn btn-ghost btn-sm" onclick="showSigHtmlPreview()">HTML-Vorschau</button>
+            </div>
+          </div>
+          <div id="sig-html-preview" style="display:none;margin-top:12px;background:white;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px"></div>
+        </div>
+      </div>
+
       <!-- Vorlage auswählen -->
       <div class="card" style="margin-bottom:16px">
         <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
@@ -3626,6 +3651,7 @@ function onLogin(user) {
   loadProfile();
   loadEmailConfig();
   loadCompanyLogo();
+  loadEmailSignature();
   // Always land on Dashboard after login
   showPage('dashboard', document.querySelector('.nav-item'));
   renderAll();
@@ -3948,6 +3974,73 @@ async function loadCompanyLogo() {
     if(preview) { preview.src = ""; preview.style.display = "none"; }
     if(placeholder) placeholder.style.display = "";
   }
+}
+
+// ── SIGNATURE EDITOR UI ───────────────────────────────────────────────────────
+function toggleSignatureEditor() {
+  const editArea    = document.getElementById("email-signature-edit-area");
+  const previewArea = document.getElementById("email-signature-preview-area");
+  const btn         = document.getElementById("btn-toggle-sig");
+  const isOpen      = editArea.style.display !== "none";
+  editArea.style.display    = isOpen ? "none" : "block";
+  previewArea.style.display = isOpen ? "block" : "none";
+  btn.textContent = isOpen ? "Bearbeiten" : "Schließen";
+  if(!isOpen) {
+    // Populate editor with current signature
+    const editor = document.getElementById("email-signature-editor");
+    if(editor) editor.value = window._emailSignature || "";
+    updateSigPreview();
+  }
+}
+
+function updateSigPreview() {
+  const editor = document.getElementById("email-signature-editor");
+  const preview = document.getElementById("email-sig-preview-text");
+  if(!editor || !preview) return;
+  const val = editor.value.trim();
+  preview.innerHTML = val
+    ? '<span style="font-size:12px;color:var(--green)">✓ Signatur hinterlegt (' + val.length + ' Zeichen)</span>'
+    : '<span style="font-size:12px;color:var(--text3);font-style:italic">Keine Signatur hinterlegt</span>';
+}
+
+function showSigHtmlPreview() {
+  const editor  = document.getElementById("email-signature-editor");
+  const preview = document.getElementById("sig-html-preview");
+  if(!editor || !preview) return;
+  if(preview.style.display === "none") {
+    preview.innerHTML = editor.value || "<em style='color:#999'>Kein HTML eingegeben</em>";
+    preview.style.display = "block";
+  } else {
+    preview.style.display = "none";
+  }
+}
+
+async function renderEmail() {
+  // load signature into preview on tab open
+  await loadEmailVorlagen();
+  await loadEmailSignature();
+  updateEmailVorlageSelect();
+  renderEmailVorlagenList();
+  // update sig preview
+  const preview = document.getElementById("email-sig-preview-text");
+  if(preview) {
+    const sig = window._emailSignature || "";
+    preview.innerHTML = sig
+      ? '<span style="font-size:12px;color:var(--green)">✓ Signatur hinterlegt (' + sig.length + ' Zeichen)</span>'
+      : '<span style="font-size:12px;color:var(--text3);font-style:italic">Noch keine Signatur hinterlegt — klicke auf "Bearbeiten".</span>';
+  }
+  // Hide signature card for PairOnLoop (they have a fixed one)
+  const PAIRONLOOP_ID = "00000000-0000-0000-0000-000000000001";
+  const sigCard = document.getElementById("email-signature-card");
+  if(sigCard) sigCard.style.display = (window._companyId === PAIRONLOOP_ID) ? "none" : "block";
+  // Ensure contacts are loaded
+  if(!isDemoMode && (!kontakteData || !kontakteData.length)) {
+    const {data} = await sb.from("kontakte").select("*").order("unternehmen");
+    if(data) kontakteData = data;
+  }
+  populateEmailKontakteDropdown();
+  renderEmailKontakteList();
+  updateEmailSelectedCount();
 }
 
 function getEmailConfig() {
@@ -5454,7 +5547,9 @@ const EMAILJS_SERVICE  = "service_hrlpxqc";
 const EMAILJS_TEMPLATE = "template_eiax419";
 const EMAILJS_PUBLIC   = "IF5buA7n2MWaXOlh5";
 
-const EMAIL_SIGNATURE = `<br><br>
+// ── EMAIL SIGNATURE ──────────────────────────────────────────────────────────
+// Default signature for PairOnLoop (company_id 00000000-0000-0000-0000-000000000001)
+const PAIRONLOOP_SIGNATURE = `<br><br>
 <table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;max-width:500px;">
   <tbody>
     <tr>
@@ -5467,7 +5562,7 @@ const EMAIL_SIGNATURE = `<br><br>
                 <div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#999999;margin-top:4px">Content Creator</div>
               </td>
               <td style="text-align:right;vertical-align:middle;padding-left:20px">
-                <img src="data:image/jpeg;base64,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" alt="Pair On Loop" width="100" style="display:block;border:0px">
+                <img src="data:image/jpeg;base64,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..." alt="Pair On Loop" width="100" style="display:block;border:0px">
               </td>
             </tr>
           </tbody>
@@ -5497,6 +5592,49 @@ const EMAIL_SIGNATURE = `<br><br>
     </tr>
   </tbody>
 </table>`;
+
+// Company signature — loaded from Supabase on login
+window._emailSignature = null;
+
+function getEmailSignature() {
+  if(isDemoMode) return "";
+  // PairOnLoop company gets the hardcoded signature
+  const PAIRONLOOP_COMPANY_ID = "00000000-0000-0000-0000-000000000001";
+  if(window._companyId === PAIRONLOOP_COMPANY_ID) return PAIRONLOOP_SIGNATURE;
+  // Other companies: use their custom signature or nothing
+  return window._emailSignature || "";
+}
+
+async function loadEmailSignature() {
+  if(isDemoMode) return;
+  const cid = await getCompanyId();
+  if(!cid) return;
+  const PAIRONLOOP_COMPANY_ID = "00000000-0000-0000-0000-000000000001";
+  if(cid === PAIRONLOOP_COMPANY_ID) {
+    window._emailSignature = PAIRONLOOP_SIGNATURE;
+  } else {
+    const { data } = await sb.from("companies").select("email_signature").eq("id", cid).single();
+    window._emailSignature = data?.email_signature || "";
+  }
+  // Populate signature editor if open
+  const el = document.getElementById("email-signature-editor");
+  if(el) el.value = window._emailSignature || "";
+}
+
+async function saveEmailSignature() {
+  if(isDemoMode) { showToast("Demo-Modus — wird nicht gespeichert"); return; }
+  const cid = await getCompanyId();
+  if(!cid) { showToast("⚠ Keine Company gefunden", true); return; }
+  const PAIRONLOOP_COMPANY_ID = "00000000-0000-0000-0000-000000000001";
+  if(cid === PAIRONLOOP_COMPANY_ID) {
+    showToast("ℹ PairOnLoop-Signatur ist fest hinterlegt"); return;
+  }
+  const sig = document.getElementById("email-signature-editor")?.value || "";
+  const { error } = await sb.from("companies").update({ email_signature: sig }).eq("id", cid);
+  if(error) { showToast("Fehler: " + error.message, true); return; }
+  window._emailSignature = sig;
+  showToast("✓ Signatur gespeichert");
+}
 
 // Initialize EmailJS after DOM ready
 window.addEventListener("load", () => {
@@ -5528,7 +5666,7 @@ async function sendAktivitaetNotification(type, verantw, kunde, aktivitaet, datu
     await emailjs.send(getEmailConfig().service, getEmailConfig().template, {
       to_email: email,
       subject,
-      message: message.replace(/\n/g, "<br>") + EMAIL_SIGNATURE,
+      message: message.replace(/\n/g, "<br>") + getEmailSignature(),
       email: "info@paironloop.com"
     });
     showToast(`✓ E-Mail an ${verantw} (${email}) gesendet`);
@@ -7601,138 +7739,6 @@ async function loadEmailVorlagen() {
   emailVorlagen = [...JSON.parse(JSON.stringify(DEFAULT_VORLAGEN)), ...companyVorlagen];
 }
 
-async function renderEmail() {
-  await loadEmailVorlagen();
-  updateEmailVorlageSelect();
-  renderEmailVorlagenList();
-  // Ensure contacts are loaded
-  if(!isDemoMode && (!kontakteData || !kontakteData.length)) {
-    const {data} = await sb.from("kontakte").select("*").order("unternehmen");
-    if(data) kontakteData = data;
-  }
-  populateEmailKontakteDropdown();
-  renderEmailKontakteList();
-  updateEmailSelectedCount();
-}
-
-function populateEmailKontakteDropdown() {
-  const branche   = document.getElementById("email-branche-filter")?.value || "";
-  const phase     = document.getElementById("email-phase-filter")?.value || "";
-  const newsletter= document.getElementById("email-newsletter-filter")?.value || "";
-  const aktivtyp  = document.getElementById("email-aktivtyp-filter")?.value || "";
-  const sprache   = document.getElementById("email-sprache-filter")?.value || "";
-  const sel = document.getElementById("email-search-kontakte");
-  if(!sel) return;
-  const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
-
-  let matchByPhase = new Set();
-  if(phase) {
-    const jSrc = isDemoMode ? (window.DEMO_DATA?.journey || []) : (journeyData || []);
-    jSrc.filter(j => j.phase === phase).forEach(j => matchByPhase.add(j.kunde));
-  }
-
-  let matchByAktiv = new Set();
-  if(aktivtyp) {
-    const aSrc = isDemoMode ? (window.DEMO_DATA?.aktivitaeten || []) : (aktivData || []);
-    const today = new Date().toISOString().split("T")[0];
-    const filtered = aktivtyp === "faellig"
-      ? aSrc.filter(a => a.datum <= today && a.status === "Offen")
-      : aSrc.filter(a => a.typ === aktivtyp);
-    filtered.forEach(a => matchByAktiv.add(a.kunde));
-  }
-
-  const filtered = src.filter(k => {
-    if(!k.email) return false;
-    if(branche && k.branche !== branche) return false;
-    if(phase && !matchByPhase.has(k.unternehmen)) return false;
-    if(newsletter && k.newsletter !== newsletter) return false;
-    if(aktivtyp && !matchByAktiv.has(k.unternehmen)) return false;
-    if(sprache && k.sprache !== sprache) return false;
-    return true;
-  });
-  sel.innerHTML = `<option value="">+ Kontakt hinzufügen…</option>` +
-    filtered.map(k => `<option value="${k.id||k.nr}">${k.unternehmen||""} – ${k.vorname||""} ${k.nachname||""}</option>`).join("");
-}
-
-function addEmailEmpfaenger(id) {
-  if(!id) return;
-  emailSelectedIds.add(String(id));
-  renderEmailKontakteList();
-  updateEmailSelectedCount();
-}
-
-function onEmailVorlageSelectChange() {
-  // Hide preview when a new vorlage is selected - user must click "Vorschau" explicitly
-  const preview = document.getElementById("email-vorlage-preview");
-  if(preview) preview.style.display = "none";
-}
-
-function updateEmailVorlagePreview() {
-  // Populate preview content (called by previewEmailVorlage toggle)
-  const id = document.getElementById("email-vorlage-select")?.value;
-  const preview = document.getElementById("email-vorlage-preview");
-  if(!preview) return;
-  if(!id) { preview.style.display = "none"; return; }
-  const v = emailVorlagen.find(x => x.id === id);
-  if(!v) { preview.style.display = "none"; return; }
-  preview.textContent = `Betreff: ${v.betreff}\n\n${v.text}`;
-}
-
-function previewEmailVorlage() {
-  const id = document.getElementById("email-vorlage-select")?.value;
-  if(!id) { showToast("\u26a0 Bitte zuerst eine Vorlage w\u00e4hlen"); return; }
-  const preview = document.getElementById("email-vorlage-preview");
-  if(!preview) return;
-  if(preview.style.display === "none" || preview.style.display === "") {
-    updateEmailVorlagePreview();
-    preview.style.display = "block";
-  } else {
-    preview.style.display = "none";
-  }
-}
-
-function deleteEmailVorlageSelected() {
-  const id = document.getElementById("email-vorlage-select")?.value;
-  if(!id) { showToast("\u26a0 Bitte zuerst eine Vorlage ausw\u00e4hlen"); return; }
-  deleteEmailVorlage(id);
-}
-
-function editEmailVorlageSelected() {
-  const id = document.getElementById("email-vorlage-select")?.value;
-  if(!id) { showToast("⚠ Bitte zuerst eine Vorlage auswählen"); return; }
-  editEmailVorlage(id);
-}
-
-function sendEmailBulk() {
-  const vorlageId = document.getElementById("email-vorlage-select")?.value;
-  if (!vorlageId) { showToast("⚠ Bitte eine Vorlage auswählen"); return; }
-  if (!emailSelectedIds.size) { showToast("⚠ Bitte mindestens einen Empfänger auswählen"); return; }
-  const vorlage = emailVorlagen.find(v => v.id === vorlageId);
-  if (!vorlage) return;
-  const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
-  const empfaenger = src.filter(k => emailSelectedIds.has(String(k.id || k.nr)) && k.email);
-  if (!empfaenger.length) { showToast("⚠ Keine Kontakte mit E-Mail-Adresse ausgewählt"); return; }
-
-  // Use first contact for personalization, all in BCC
-  const first = empfaenger[0];
-  const betreff = vorlage.betreff
-    .replace(/{{vorname}}/g, empfaenger.length === 1 ? (first.vorname||"") : "")
-    .replace(/{{nachname}}/g, empfaenger.length === 1 ? (first.nachname||"") : "")
-    .replace(/{{unternehmen}}/g, empfaenger.length === 1 ? (first.unternehmen||"") : "");
-  const text = vorlage.text
-    .replace(/{{vorname}}/g, empfaenger.length === 1 ? (first.vorname||"") : "")
-    .replace(/{{nachname}}/g, empfaenger.length === 1 ? (first.nachname||"") : "")
-    .replace(/{{unternehmen}}/g, empfaenger.length === 1 ? (first.unternehmen||"") : "");
-
-  const bcc = empfaenger.map(k => k.email).join(",");
-  const mailtoLink = document.createElement("a");
-  mailtoLink.href = "mailto:?bcc=" + encodeURIComponent(bcc) + "&subject=" + encodeURIComponent(betreff) + "&body=" + encodeURIComponent(text);
-  mailtoLink.style.display = "none";
-  document.body.appendChild(mailtoLink);
-  mailtoLink.click();
-  setTimeout(() => document.body.removeChild(mailtoLink), 1000);
-  showToast("✓ E-Mail mit " + empfaenger.length + " Empfänger(n) im BCC geöffnet");
-}
 
 function renderEmailVorlagenList() {
   // Vorlage list is rendered via updateEmailVorlageSelect dropdown
@@ -7802,7 +7808,7 @@ async function sendEmailBulkDirect() {
       await emailjs.send(getEmailConfig().service, getEmailConfig().template, {
         to_email: k.email,
         subject: betreff,
-        message: text.replace(/\n/g, "<br>") + EMAIL_SIGNATURE,
+        message: text.replace(/\n/g, "<br>") + getEmailSignature(),
         email: "info@paironloop.com"
       });
       success++;

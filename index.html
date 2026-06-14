@@ -1862,6 +1862,7 @@ tbody td { font-feature-settings: "zero" 0; }
           <div style="display:flex;gap:8px">
             <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="previewEmailVorlage()" id="btn-preview-vorlage">Vorschau</button>
             <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="editEmailVorlageSelected()">Bearbeiten</button>
+            <button class="btn btn-sm" style="background:transparent;color:var(--red);border:1px solid rgba(240,110,110,.25)" onclick="deleteEmailVorlageSelected()">× Löschen</button>
             <button class="btn btn-primary btn-sm" onclick="openEmailVorlageModal()">+ Neue Vorlage</button>
             <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="importEmailVorlagen()">↑ Importieren</button>
           </div>
@@ -2125,8 +2126,11 @@ tbody td { font-feature-settings: "zero" 0; }
                 <td style="padding:5px 8px;color:var(--text3);font-size:10px">E-Mail-Text (HTML)</td>
               </tr>
             </table>
-            <div style="margin-top:8px;padding:6px 8px;background:var(--bg4);border-radius:4px;color:var(--text3);font-size:10px;line-height:1.5">
-              💡 <strong style="color:var(--text2)">Wichtig:</strong> Kein eigener Text oder Stil nötig — das CRM schreibt alles rein. Das Template einmal anlegen, dann nie wieder anfassen.
+            <div style="margin-top:8px;padding:6px 8px;background:var(--bg4);border-radius:4px;color:var(--text3);font-size:10px;line-height:1.6">
+              ⚠️ <strong style="color:var(--orange)">HTML aktivieren:</strong> Im Template-Editor beim Content-Feld den Modus auf <strong style="color:var(--text2)">HTML</strong> umstellen (nicht Plain Text) — sonst werden Formatierungen und die Signatur nicht korrekt dargestellt.
+            </div>
+            <div style="margin-top:6px;padding:6px 8px;background:var(--bg4);border-radius:4px;color:var(--text3);font-size:10px;line-height:1.5">
+              💡 <strong style="color:var(--text2)">Hinweis:</strong> Kein eigener Text oder Stil nötig — das CRM befüllt alles selbst. Template einmal anlegen, dann nie wieder anfassen.
             </div>
             <div style="margin-top:6px;color:var(--text3);font-size:11px">Die <strong style="color:var(--accent2)">Template ID</strong> siehst du oben im Template-Editor, z.B. <span style="font-family:monospace">template_xyz9876</span></div>
           </div>

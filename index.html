@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Paironloop CRM</title>
+<title>Relio CRM</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Paironloop CRM">
+<meta name="apple-mobile-web-app-title" content="Relio">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -259,7 +259,7 @@ body {
   padding: 24px 20px 18px;
   border-bottom: 1px solid var(--border);
 }
-.sidebar-logo-wrap img { height: 30px; }
+.sidebar-logo-wrap img { height: 42px; }
 .sidebar-section-label {
   padding: 20px 20px 6px;
   font-size: 10px;
@@ -1315,8 +1315,10 @@ tbody td { font-feature-settings: "zero" 0; }
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
-    <img class="login-logo logo-white" src="data:image/png;base64,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" alt="Paironloop"><img class="login-logo logo-dark" src="data:image/png;base64,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" alt="Paironloop" style="display:none">
-    <div class="login-title" id="lt-crm">CRM System</div>
+    <img class="login-logo logo-dark" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgNDQiPgogIDxkZWZzPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnMiIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM1QjRDRjU7c3RvcC1vcGFjaXR5OjEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMkE4MkQ0O3N0b3Atb3BhY2l0eToxIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8Y2lyY2xlIGN4PSIxMCIgY3k9IjIyIiByPSI3IiBmaWxsPSJ1cmwoI2cyKSIvPgogIDxjaXJjbGUgY3g9IjMwIiBjeT0iMTAiIHI9IjUiIGZpbGw9InVybCgjZzIpIiBvcGFjaXR5PSIwLjg1Ii8+CiAgPGNpcmNsZSBjeD0iMzAiIGN5PSIzNCIgcj0iNSIgZmlsbD0idXJsKCNnMikiIG9wYWNpdHk9IjAuODUiLz4KICA8bGluZSB4MT0iMTAiIHkxPSIyMiIgeDI9IjMwIiB5Mj0iMTAiIHN0cm9rZT0idXJsKCNnMikiIHN0cm9rZS13aWR0aD0iMS44IiBvcGFjaXR5PSIwLjUiLz4KICA8bGluZSB4MT0iMTAiIHkxPSIyMiIgeDI9IjMwIiB5Mj0iMzQiIHN0cm9rZT0idXJsKCNnMikiIHN0cm9rZS13aWR0aD0iMS44IiBvcGFjaXR5PSIwLjUiLz4KICA8bGluZSB4MT0iMzAiIHkxPSIxMCIgeDI9IjMwIiB5Mj0iMzQiIHN0cm9rZT0idXJsKCNnMikiIHN0cm9rZS13aWR0aD0iMS4yIiBvcGFjaXR5PSIwLjMiLz4KICA8dGV4dCB4PSI0NiIgeT0iMTciIGZvbnQtZmFtaWx5PSJzeXN0ZW0tdWksLWFwcGxlLXN5c3RlbSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iNTAwIiBsZXR0ZXItc3BhY2luZz0iMiIgZmlsbD0iIzkwOTBBOCI+Q09OTkVDVDwvdGV4dD4KICA8dGV4dCB4PSI0NCIgeT0iMzYiIGZvbnQtZmFtaWx5PSJzeXN0ZW0tdWksLWFwcGxlLXN5c3RlbSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjE5IiBmb250LXdlaWdodD0iNzAwIiBsZXR0ZXItc3BhY2luZz0iLTAuNSIgZmlsbD0iIzFBMUEyRSI+UmVsaW88L3RleHQ+Cjwvc3ZnPg==" alt="Relio" style="display:none;height:40px">
+    <img class="login-logo logo-white" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgNDQiPgogIDxkZWZzPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnMSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM3QzZFRjA7c3RvcC1vcGFjaXR5OjEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojNkVCOEYwO3N0b3Atb3BhY2l0eToxIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8IS0tIEljb246IHRocmVlIGNvbm5lY3RlZCBkb3RzIGZvcm1pbmcgYSBuZXR3b3JrL3JlbGF0aW9uc2hpcCBzeW1ib2wgLS0+CiAgPGNpcmNsZSBjeD0iMTAiIGN5PSIyMiIgcj0iNyIgZmlsbD0idXJsKCNnMSkiLz4KICA8Y2lyY2xlIGN4PSIzMCIgY3k9IjEwIiByPSI1IiBmaWxsPSJ1cmwoI2cxKSIgb3BhY2l0eT0iMC44NSIvPgogIDxjaXJjbGUgY3g9IjMwIiBjeT0iMzQiIHI9IjUiIGZpbGw9InVybCgjZzEpIiBvcGFjaXR5PSIwLjg1Ii8+CiAgPGxpbmUgeDE9IjEwIiB5MT0iMjIiIHgyPSIzMCIgeTI9IjEwIiBzdHJva2U9InVybCgjZzEpIiBzdHJva2Utd2lkdGg9IjEuOCIgb3BhY2l0eT0iMC41Ii8+CiAgPGxpbmUgeDE9IjEwIiB5MT0iMjIiIHgyPSIzMCIgeTI9IjM0IiBzdHJva2U9InVybCgjZzEpIiBzdHJva2Utd2lkdGg9IjEuOCIgb3BhY2l0eT0iMC41Ii8+CiAgPGxpbmUgeDE9IjMwIiB5MT0iMTAiIHgyPSIzMCIgeTI9IjM0IiBzdHJva2U9InVybCgjZzEpIiBzdHJva2Utd2lkdGg9IjEuMiIgb3BhY2l0eT0iMC4zIi8+CiAgPCEtLSBXb3JkbWFyayAtLT4KICA8dGV4dCB4PSI0NiIgeT0iMTciIGZvbnQtZmFtaWx5PSJzeXN0ZW0tdWksLWFwcGxlLXN5c3RlbSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iNTAwIiBsZXR0ZXItc3BhY2luZz0iMiIgZmlsbD0iIzkwOTBBOCI+Q09OTkVDVDwvdGV4dD4KICA8dGV4dCB4PSI0NCIgeT0iMzYiIGZvbnQtZmFtaWx5PSJzeXN0ZW0tdWksLWFwcGxlLXN5c3RlbSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjE5IiBmb250LXdlaWdodD0iNzAwIiBsZXR0ZXItc3BhY2luZz0iLTAuNSIgZmlsbD0id2hpdGUiPlJlbGlvPC90ZXh0Pgo8L3N2Zz4=" alt="Relio" style="height:40px">
+    <div class="login-title" id="lt-crm">Relio</div>
+    <div style="font-size:11px;color:var(--text3);letter-spacing:.3px;margin-bottom:4px;font-style:italic">Relations · Rely · Grow</div>
     <div class="login-subtitle" id="lt-welcome">Willkommen zurück</div>
     <div class="login-tabs">
       <button class="login-tab active" id="tab-login" onclick="switchTab('login')" data-i18n="login"></button>
@@ -1373,7 +1375,7 @@ tbody td { font-feature-settings: "zero" 0; }
   <div class="mobile-topbar" id="mobile-topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <img id="mobile-company-logo" src="" alt="" style="display:none;height:22px;max-width:140px;object-fit:contain">
-      <img id="mobile-default-logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgNDAiPgogIDxkZWZzPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzdDNkVGMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM2RUI4RjAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDwhLS0gSWNvbjogc2ltcGxlIENSTSBncmlkIHN5bWJvbCAtLT4KICA8cmVjdCB4PSIyIiB5PSI4IiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHJ4PSIyIiBmaWxsPSJ1cmwoI2dyYWQpIi8+CiAgPHJlY3QgeD0iMTUiIHk9IjgiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgcng9IjIiIGZpbGw9InVybCgjZ3JhZCkiIG9wYWNpdHk9IjAuNyIvPgogIDxyZWN0IHg9IjIiIHk9IjIxIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHJ4PSIyIiBmaWxsPSJ1cmwoI2dyYWQpIiBvcGFjaXR5PSIwLjciLz4KICA8cmVjdCB4PSIxNSIgeT0iMjEiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgcng9IjIiIGZpbGw9InVybCgjZ3JhZCkiIG9wYWNpdHk9IjAuNCIvPgogIDwhLS0gVGV4dDogQ1JNIC0tPgogIDx0ZXh0IHg9IjMyIiB5PSIyOCIgZm9udC1mYW1pbHk9InN5c3RlbS11aSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjN0M2RUYwIj5DUk08L3RleHQ+Cjwvc3ZnPg==" alt="CRM" style="height:22px;max-width:140px;object-fit:contain">
+      <img id="mobile-default-logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgNDQiPgogIDxkZWZzPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnMSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM3QzZFRjA7c3RvcC1vcGFjaXR5OjEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojNkVCOEYwO3N0b3Atb3BhY2l0eToxIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8IS0tIEljb246IHRocmVlIGNvbm5lY3RlZCBkb3RzIGZvcm1pbmcgYSBuZXR3b3JrL3JlbGF0aW9uc2hpcCBzeW1ib2wgLS0+CiAgPGNpcmNsZSBjeD0iMTAiIGN5PSIyMiIgcj0iNyIgZmlsbD0idXJsKCNnMSkiLz4KICA8Y2lyY2xlIGN4PSIzMCIgY3k9IjEwIiByPSI1IiBmaWxsPSJ1cmwoI2cxKSIgb3BhY2l0eT0iMC44NSIvPgogIDxjaXJjbGUgY3g9IjMwIiBjeT0iMzQiIHI9IjUiIGZpbGw9InVybCgjZzEpIiBvcGFjaXR5PSIwLjg1Ii8+CiAgPGxpbmUgeDE9IjEwIiB5MT0iMjIiIHgyPSIzMCIgeTI9IjEwIiBzdHJva2U9InVybCgjZzEpIiBzdHJva2Utd2lkdGg9IjEuOCIgb3BhY2l0eT0iMC41Ii8+CiAgPGxpbmUgeDE9IjEwIiB5MT0iMjIiIHgyPSIzMCIgeTI9IjM0IiBzdHJva2U9InVybCgjZzEpIiBzdHJva2Utd2lkdGg9IjEuOCIgb3BhY2l0eT0iMC41Ii8+CiAgPGxpbmUgeDE9IjMwIiB5MT0iMTAiIHgyPSIzMCIgeTI9IjM0IiBzdHJva2U9InVybCgjZzEpIiBzdHJva2Utd2lkdGg9IjEuMiIgb3BhY2l0eT0iMC4zIi8+CiAgPCEtLSBXb3JkbWFyayAtLT4KICA8dGV4dCB4PSI0NiIgeT0iMTciIGZvbnQtZmFtaWx5PSJzeXN0ZW0tdWksLWFwcGxlLXN5c3RlbSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iNTAwIiBsZXR0ZXItc3BhY2luZz0iMiIgZmlsbD0iIzkwOTBBOCI+Q09OTkVDVDwvdGV4dD4KICA8dGV4dCB4PSI0NCIgeT0iMzYiIGZvbnQtZmFtaWx5PSJzeXN0ZW0tdWksLWFwcGxlLXN5c3RlbSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjE5IiBmb250LXdlaWdodD0iNzAwIiBsZXR0ZXItc3BhY2luZz0iLTAuNSIgZmlsbD0id2hpdGUiPlJlbGlvPC90ZXh0Pgo8L3N2Zz4="  alt="CRM" style="height:22px;max-width:140px;object-fit:contain">
     </div>
     <div class="mobile-topbar-actions">
       <button class="icon-btn" onclick="openSettings()" style="width:32px;height:32px">
@@ -1417,9 +1419,9 @@ tbody td { font-feature-settings: "zero" 0; }
   <div class="sidebar">
     <div class="sidebar-logo-wrap" style="cursor:default">
       <!-- Company logo (set via settings) -->
-      <img id="sidebar-company-logo" src="" alt="" style="display:none;height:30px;max-width:180px;object-fit:contain">
+      <img id="sidebar-company-logo" src="" alt="" style="display:none;height:42px;max-width:200px;object-fit:contain">
       <!-- Default CRM logo (shown when no company logo set) -->
-      <img id="sidebar-default-logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgNDAiPgogIDxkZWZzPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzdDNkVGMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM2RUI4RjAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDwhLS0gSWNvbjogc2ltcGxlIENSTSBncmlkIHN5bWJvbCAtLT4KICA8cmVjdCB4PSIyIiB5PSI4IiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHJ4PSIyIiBmaWxsPSJ1cmwoI2dyYWQpIi8+CiAgPHJlY3QgeD0iMTUiIHk9IjgiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgcng9IjIiIGZpbGw9InVybCgjZ3JhZCkiIG9wYWNpdHk9IjAuNyIvPgogIDxyZWN0IHg9IjIiIHk9IjIxIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHJ4PSIyIiBmaWxsPSJ1cmwoI2dyYWQpIiBvcGFjaXR5PSIwLjciLz4KICA8cmVjdCB4PSIxNSIgeT0iMjEiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgcng9IjIiIGZpbGw9InVybCgjZ3JhZCkiIG9wYWNpdHk9IjAuNCIvPgogIDwhLS0gVGV4dDogQ1JNIC0tPgogIDx0ZXh0IHg9IjMyIiB5PSIyOCIgZm9udC1mYW1pbHk9InN5c3RlbS11aSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjN0M2RUYwIj5DUk08L3RleHQ+Cjwvc3ZnPg==" alt="CRM" style="height:30px;max-width:180px;object-fit:contain">
+      <img id="sidebar-default-logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgNDQiPgogIDxkZWZzPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnMSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM3QzZFRjA7c3RvcC1vcGFjaXR5OjEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojNkVCOEYwO3N0b3Atb3BhY2l0eToxIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8IS0tIEljb246IHRocmVlIGNvbm5lY3RlZCBkb3RzIGZvcm1pbmcgYSBuZXR3b3JrL3JlbGF0aW9uc2hpcCBzeW1ib2wgLS0+CiAgPGNpcmNsZSBjeD0iMTAiIGN5PSIyMiIgcj0iNyIgZmlsbD0idXJsKCNnMSkiLz4KICA8Y2lyY2xlIGN4PSIzMCIgY3k9IjEwIiByPSI1IiBmaWxsPSJ1cmwoI2cxKSIgb3BhY2l0eT0iMC44NSIvPgogIDxjaXJjbGUgY3g9IjMwIiBjeT0iMzQiIHI9IjUiIGZpbGw9InVybCgjZzEpIiBvcGFjaXR5PSIwLjg1Ii8+CiAgPGxpbmUgeDE9IjEwIiB5MT0iMjIiIHgyPSIzMCIgeTI9IjEwIiBzdHJva2U9InVybCgjZzEpIiBzdHJva2Utd2lkdGg9IjEuOCIgb3BhY2l0eT0iMC41Ii8+CiAgPGxpbmUgeDE9IjEwIiB5MT0iMjIiIHgyPSIzMCIgeTI9IjM0IiBzdHJva2U9InVybCgjZzEpIiBzdHJva2Utd2lkdGg9IjEuOCIgb3BhY2l0eT0iMC41Ii8+CiAgPGxpbmUgeDE9IjMwIiB5MT0iMTAiIHgyPSIzMCIgeTI9IjM0IiBzdHJva2U9InVybCgjZzEpIiBzdHJva2Utd2lkdGg9IjEuMiIgb3BhY2l0eT0iMC4zIi8+CiAgPCEtLSBXb3JkbWFyayAtLT4KICA8dGV4dCB4PSI0NiIgeT0iMTciIGZvbnQtZmFtaWx5PSJzeXN0ZW0tdWksLWFwcGxlLXN5c3RlbSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iNTAwIiBsZXR0ZXItc3BhY2luZz0iMiIgZmlsbD0iIzkwOTBBOCI+Q09OTkVDVDwvdGV4dD4KICA8dGV4dCB4PSI0NCIgeT0iMzYiIGZvbnQtZmFtaWx5PSJzeXN0ZW0tdWksLWFwcGxlLXN5c3RlbSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjE5IiBmb250LXdlaWdodD0iNzAwIiBsZXR0ZXItc3BhY2luZz0iLTAuNSIgZmlsbD0id2hpdGUiPlJlbGlvPC90ZXh0Pgo8L3N2Zz4="  alt="CRM" style="height:42px;max-width:200px;object-fit:contain">
     </div>
     <div class="sidebar-section-label" data-i18n="navigation">Navigation</div>
     <nav class="sidebar-nav">
@@ -2322,6 +2324,14 @@ tbody td { font-feature-settings: "zero" 0; }
     <div class="settings-section-title">🚀 Ersteinrichtung</div>
     <div style="font-size:12px;color:var(--text2);line-height:1.7">
 
+      <div style="background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:6px">Was ist Relio?</div>
+        <div style="color:var(--text2);line-height:1.7">
+          <strong style="color:var(--text1)">Relio</strong> steht für <em>Relations · Rely · Grow</em> — ein CRM für Teams, die auf echte Beziehungen setzen. Der Name verbindet <em>Relation</em> (Kontaktpflege), <em>Rely</em> (Vertrauen) und den Gedanken des Wachstums durch Empfehlungen.
+        </div>
+        <div style="margin-top:8px;color:var(--text3);font-size:11px">Relio hilft dir, Kontakte zu pflegen, Deals zu tracken, E-Mails zu versenden und den gesamten Weg vom Erstkontakt bis zur Empfehlung sichtbar zu machen.</div>
+      </div>
+
       <div style="font-weight:700;color:var(--text1);margin-bottom:6px">1. Profil vervollständigen</div>
       <div style="color:var(--text3);margin-bottom:12px">Vorname, Nachname und Firma oben eintragen und speichern. Diese Daten erscheinen unten links in der Sidebar.</div>
 
@@ -2879,7 +2889,7 @@ const LANGS = {
     open:"Offen",in_progress:"In Bearbeitung",done:"Erledigt",high:"Hoch",medium:"Mittel",low:"Niedrig",
     call:"Anruf",offer:"Angebot",followup:"Nachfassen",other:"Sonstiges",
     first_talk:"Erstgespräch",negotiation:"Verhandlung",closing:"Abschluss",
-    journey_total:"Touchpoints",crm:"CRM System",welcome:"Willkommen zurück",
+    journey_total:"Touchpoints",crm:"Relio",welcome:"Willkommen zurück",
     nr:"Nr",name:"Name",company_col:"Unternehmen",location_col:"Ort",channel_col:"Kanal",last_contact:"Letzter Kontakt",actions:"Aktionen",
     score:"Score",reaction:"Reaktion",touchpoint_col:"Touchpoint",
     overdue:"Überfällig",today:"Heute",
@@ -2910,7 +2920,7 @@ const LANGS = {
     open:"Open",in_progress:"In progress",done:"Done",high:"High",medium:"Medium",low:"Low",
     call:"Call",offer:"Offer",followup:"Follow up",other:"Other",
     first_talk:"First talk",negotiation:"Negotiation",closing:"Closing",
-    journey_total:"touchpoints",crm:"CRM System",welcome:"Welcome back",
+    journey_total:"touchpoints",crm:"Relio",welcome:"Welcome back",
     nr:"No.",name:"Name",company_col:"Company",location_col:"Location",channel_col:"Channel",last_contact:"Last contact",actions:"Actions",
     score:"Score",reaction:"Reaction",touchpoint_col:"Touchpoint",
     overdue:"Overdue",today:"Today",
@@ -2941,7 +2951,7 @@ const LANGS = {
     open:"Abierto",in_progress:"En proceso",done:"Hecho",high:"Alta",medium:"Media",low:"Baja",
     call:"Llamada",offer:"Oferta",followup:"Seguimiento",other:"Otro",
     first_talk:"Primera llamada",negotiation:"Negociación",closing:"Cierre",
-    journey_total:"touchpoints",crm:"Sistema CRM",welcome:"Bienvenido de nuevo",
+    journey_total:"touchpoints",crm:"Relio",welcome:"Bienvenido de nuevo",
     nr:"Nº",name:"Nombre",company_col:"Empresa",location_col:"Ubicación",channel_col:"Canal",last_contact:"Último contacto",actions:"Acciones",
     score:"Puntuación",reaction:"Reacción",touchpoint_col:"Touchpoint",
     overdue:"Vencido",today:"Hoy",
@@ -2972,7 +2982,7 @@ const LANGS = {
     open:"Ouvert",in_progress:"En cours",done:"Terminé",high:"Haute",medium:"Moyenne",low:"Basse",
     call:"Appel",offer:"Offre",followup:"Suivi",other:"Autre",
     first_talk:"Premier entretien",negotiation:"Négociation",closing:"Clôture",
-    journey_total:"touchpoints",crm:"Système CRM",welcome:"Bienvenue",
+    journey_total:"touchpoints",crm:"Relio",welcome:"Bienvenue",
     nr:"N°",name:"Nom",company_col:"Entreprise",location_col:"Lieu",channel_col:"Canal",last_contact:"Dernier contact",actions:"Actions",
     score:"Score",reaction:"Réaction",touchpoint_col:"Touchpoint",
     overdue:"En retard",today:"Aujourd'hui",
@@ -3201,6 +3211,8 @@ function loginDemo() {
   document.getElementById("theme-"+theme)?.classList.add("active");
   if(theme!=="midnight") document.documentElement.setAttribute("data-theme",theme);
 
+  // Always land on Dashboard, reset nav state
+  showPage('dashboard', document.querySelector('.nav-item'));
   // Render all with demo data
   renderDemoDashboard();
   renderKontakteDemo();
@@ -3578,8 +3590,49 @@ function onLogin(user) {
   loadProfile();
   loadEmailConfig();
   loadCompanyLogo();
+  // Always land on Dashboard after login
+  showPage('dashboard', document.querySelector('.nav-item'));
   renderAll();
   setTimeout(initClearableFields, 500);
+  // Detect first login after registration
+  const created = new Date(user.created_at).getTime();
+  const lastSign = new Date(user.last_sign_in_at || user.created_at).getTime();
+  const isNewUser = (lastSign - created) < 10000; // within 10s = first login
+  if(isNewUser) setTimeout(() => showWelcomeModal(user), 800);
+}
+
+function showWelcomeModal(user) {
+  const vorname = user.user_metadata?.vorname || user.email.split("@")[0];
+  const modal = document.createElement("div");
+  modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px";
+  modal.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:36px 40px;max-width:460px;width:100%;box-shadow:var(--shadow);text-align:center;position:relative">
+      <div style="font-size:40px;margin-bottom:12px">👋</div>
+      <div style="font-size:22px;font-weight:700;color:var(--text1);margin-bottom:4px">Willkommen bei Relio${vorname ? ', ' + vorname : ''}!</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:20px;font-style:italic">Relations · Rely · Grow</div>
+      <div style="background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;text-align:left">
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">
+          <strong style="color:var(--accent2)">Relio</strong> ist dein CRM für echte Beziehungen — der Name steht für
+          <strong style="color:var(--text1)">Relation</strong> (Kontaktpflege),
+          <strong style="color:var(--text1)">Rely</strong> (Vertrauen aufbauen) und
+          <strong style="color:var(--text1)">Wachstum</strong> durch Empfehlungen.
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px;text-align:left;padding:0 2px">
+        <div style="margin-bottom:6px">✅ Kontakte & Customer Journey verwalten</div>
+        <div style="margin-bottom:6px">✅ Deals in der Pipeline tracken</div>
+        <div style="margin-bottom:6px">✅ Personalisierte E-Mails in Massen versenden</div>
+        <div>✅ Aktivitäten & Follow-ups nie vergessen</div>
+      </div>
+      <div style="margin-top:20px;font-size:12px;color:var(--text3);margin-bottom:16px">
+        Tipp: Öffne <strong style="color:var(--text2)">Einstellungen → 🚀 Ersteinrichtung</strong> für einen geführten Start.
+      </div>
+      <button onclick="this.closest('[style*=fixed]').remove()" style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:11px 32px;font-size:14px;font-family:var(--font);font-weight:600;cursor:pointer;width:100%;transition:var(--transition)" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">
+        Los geht's →
+      </button>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener("click", e => { if(e.target === modal) modal.remove(); });
 }
 
 function renderTeamMembersList() {
@@ -6048,8 +6101,14 @@ const HILFE_CONTENT = {
 </style>
 
 <div class="hilfe-section">
+  <h2>Was ist Relio?</h2>
+  <p><strong>Relio</strong> steht für <em>Relations · Rely · Grow</em>. Der Name verbindet <em>Relation</em> (Beziehungspflege), <em>Rely</em> (Vertrauen aufbauen) und Wachstum durch Empfehlungen — genau das, wofür dieses CRM gemacht ist.</p>
+  <p style="margin-top:8px">Relio hilft dir, Kontakte zu pflegen, Deals zu tracken, E-Mails zu versenden und den gesamten Weg vom Erstkontakt bis zur Empfehlung sichtbar zu machen. Alles in einem Tool, ohne Komplexität.</p>
+</div>
+
+<div class="hilfe-section">
   <h2>🚀 Schnellstart</h2>
-  <p>Paironloop CRM hilft dir, Kontakte, Deals, Aktivitäten und die Customer Journey zentral zu verwalten. So startest du:</p>
+  <p>So startest du in wenigen Minuten:</p>
   <ul>
     <li><strong>Kontakt anlegen</strong> → Kontakte → + Kontakt</li>
     <li><strong>Deal erstellen</strong> → Pipeline → + Deal</li>
@@ -6141,8 +6200,14 @@ const HILFE_CONTENT = {
 </style>
 
 <div class="hilfe-section">
+  <h2>What is Relio?</h2>
+  <p><strong>Relio</strong> stands for <em>Relations · Rely · Grow</em>. The name combines <em>relation</em> (building connections), <em>rely</em> (earning trust) and growth through recommendations — exactly what this CRM is built for.</p>
+  <p style="margin-top:8px">Relio helps you manage contacts, track deals, send emails and visualise the full journey from first contact to advocacy. Everything in one place, without complexity.</p>
+</div>
+
+<div class="hilfe-section">
   <h2>🚀 Quick Start</h2>
-  <p>Paironloop CRM helps you manage contacts, deals, activities and the customer journey in one place. Here's how to get started:</p>
+  <p>Get started in minutes:</p>
   <ul>
     <li><strong>Add a contact</strong> → Contacts → + Contact</li>
     <li><strong>Create a deal</strong> → Pipeline → + Deal</li>

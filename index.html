@@ -1868,7 +1868,7 @@ tbody td { font-feature-settings: "zero" 0; }
           </div>
         </div>
         <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
-          <select id="email-vorlage-select" class="filter-select" style="width:100%;max-width:100%" onchange="updateEmailVorlagePreview()">
+          <select id="email-vorlage-select" class="filter-select" style="width:100%;max-width:100%" onchange="onEmailVorlageSelectChange()">
             <option value="">— Vorlage wählen —</option>
           </select>
           <div id="email-vorlage-preview" style="display:none;background:var(--bg3);border-radius:var(--radius-sm);padding:12px;font-size:12px;color:var(--text2);white-space:pre-wrap;max-height:120px;overflow-y:auto;border:1px solid var(--border)"></div>
@@ -2818,6 +2818,14 @@ Chart.defaults.plugins.legend.labels.pointStyleWidth = 5;
 const {createClient} = supabase;
 const sb = createClient("https://ftkriccztlcwccgetdqt.supabase.co","sb_publishable_qpOqA2VwlZDxXEJL86-Wpw_cv15argD");
 
+// ── CACHED AUTH HELPER ──
+async function getCurrentUserId() {
+  if(window._userId) return window._userId;
+  const { data } = await sb.auth.getUser();
+  window._userId = data?.user?.id || null;
+  return window._userId;
+}
+
 // ── I18N ──────────────────────────────────────────────────────────────────────
 const LANGS = {
   de: {
@@ -3063,11 +3071,6 @@ function updateTopbarTitle() {
 }
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
-function loginDemo() {
-  document.getElementById("login-email").value = "demo@paironloop.com";
-  document.getElementById("login-pw").value = "Demo1234!";
-  doAuth();
-}
 
 // ── DEMO MODE ─────────────────────────────────────────────────────────────────
 const DEMO_DATA = {
@@ -3706,7 +3709,7 @@ function getEmailConfig() {
 
 async function loadProfile() {
   if(isDemoMode) return;
-  const userId = (await sb.auth.getUser()).data.user?.id;
+  const userId = await getCurrentUserId();
   if(!userId) return;
   const {data} = await sb.from("profiles").select("*").eq("id", userId).maybeSingle();
   if(data) {
@@ -3734,7 +3737,7 @@ async function applyProfileToUI(p) {
     if(p.firma) {
       roleEl.textContent = p.firma;
     } else {
-      const userId = window._userId || (await sb.auth.getUser()).data.user?.id;
+      const userId = window._userId || await getCurrentUserId();
       const {data: prof} = await sb.from("profiles").select("company_id").eq("id", userId).single();
       const cid = prof?.company_id;
       if(cid) {
@@ -3813,7 +3816,7 @@ async function saveProfile() {
   const btn = document.getElementById("btn-save-profile");
   const msg = document.getElementById("profile-save-msg");
   btn.disabled = true;
-  const userId = (await sb.auth.getUser()).data.user?.id;
+  const userId = await getCurrentUserId();
   if(!userId) return;
 
   const updates = {
@@ -3879,10 +3882,13 @@ async function changeEmail() {
 async function doLogout() {
   if(isDemoMode) {
     isDemoMode = false;
-    kontakteData=[]; journeyData=[]; dealsData=[]; aktivData=[];
   } else {
     await sb.auth.signOut();
   }
+  // Clear all cached state
+  kontakteData=[]; journeyData=[]; dealsData=[]; aktivData=[];
+  window._companyId = null; window._userId = null; window._emailConfig = null;
+  emailSelectedIds = new Set(); bulkSelected = {kontakte:[],journey:[],aktivitaeten:[],deals:[]};
   document.getElementById("app").style.display = "none";
   document.getElementById("login-screen").style.display = "flex";
   closeSettings();
@@ -3968,7 +3974,16 @@ function showPage(id, el) {
   }
   syncAllSearchClears();
 }
-function renderAll() { renderDashboard(); renderKontakte(); renderJourney(); renderPipeline(); renderAktivitaeten(); checkNotifications(); syncAllSearchClears(); }
+function renderAll() {
+  if(isDemoMode) {
+    renderDemoDashboard(); renderKontakteDemo(); renderJourneyDemo();
+    renderPipelineDemo(); renderAktivitaetenDemo(); checkNotificationsDemo();
+  } else {
+    renderDashboard(); renderKontakte(); renderJourney();
+    renderPipeline(); renderAktivitaeten(); checkNotifications();
+  }
+  syncAllSearchClears();
+}
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
 function openSettings() {
@@ -4384,7 +4399,7 @@ async function addJourney() {
   const aktivitaet = document.getElementById("j-aktivitaet").value;
   const reaktion = document.getElementById("j-reaktion").value;
   const score    = parseInt(document.getElementById("j-score").value)||5;
-  const userId   = (await sb.auth.getUser()).data.user?.id;
+  const userId   = await getCurrentUserId();
 
   if(!kunde) { showToast("Bitte Kundenname eingeben", true); btn.disabled=false; return; }
   // Auto-create contact if new
@@ -4682,7 +4697,7 @@ async function addKontakt() {
     letzter_kontakt:new Date().toISOString().split("T")[0],
     homepage:document.getElementById("k-homepage").value||null,
     kommentar:document.getElementById("k-kommentar").value,
-    user_id:(await sb.auth.getUser()).data.user?.id,
+    user_id:await getCurrentUserId(),
       company_id: await getCompanyId()
   });
   btn.disabled=false;
@@ -5001,7 +5016,7 @@ async function addDeal() {
         status:"Lead",
         letzter_kontakt: new Date().toISOString().split("T")[0],
         kommentar: "Automatisch angelegt via Pipeline-Deal",
-        user_id:(await sb.auth.getUser()).data.user?.id,
+        user_id:await getCurrentUserId(),
       company_id: await getCompanyId()
       });
     }
@@ -5017,7 +5032,7 @@ async function addDeal() {
     abschluss_datum:document.getElementById("d-datum").value||null,
     quelle:document.getElementById("d-quelle").value,
     status:document.getElementById("d-status").value,
-    user_id:(await sb.auth.getUser()).data.user?.id,
+    user_id:await getCurrentUserId(),
       company_id: await getCompanyId()
   });
   btn.disabled=false;
@@ -5130,7 +5145,7 @@ async function addAktivitaet() {
   const {count: aktivCount}=await sb.from("aktivitaeten").select("*",{count:"exact",head:true});
   const nr = await getNextAktivitaetNr();
   const kundeName = document.getElementById("a-kunde").value.trim();
-  const userId = (await sb.auth.getUser()).data.user?.id;
+  const userId = await getCurrentUserId();
 
   // Auto-create contact if new
   if(aktivKundeIsNew && kundeName) {
@@ -5391,8 +5406,10 @@ async function getNextJourneyNr() {
 }
 
 async function getCompanyId() {
+  if(isDemoMode) return "00000000-0000-0000-0000-000000000001";
   if(window._companyId) return window._companyId;
-  const userId = (await sb.auth.getUser()).data.user?.id;
+  const userId = window._userId || await getCurrentUserId();
+  if(!userId) return null;
   const {data} = await sb.from("profiles").select("company_id").eq("id", userId).single();
   window._companyId = data?.company_id;
   return window._companyId;
@@ -5435,7 +5452,7 @@ async function saveReaktion() {
   const notiz    = document.getElementById("reaktion-notiz").value.trim();
   if(!reaktion) { showToast("Bitte Reaktion auswählen", true); return; }
 
-  const userId = (await sb.auth.getUser()).data.user?.id;
+  const userId = await getCurrentUserId();
   const today  = new Date().toISOString().split("T")[0];
 
   // 1. Update existing touchpoint reaktion
@@ -6024,7 +6041,7 @@ function renderHilfe() {
 // ── NEWSLETTER SIGNUP ─────────────────────────────────────────────────────────
 async function handleNewsletterSignup(email, vorname, nachname, unternehmen) {
   // Find or create contact
-  const userId = (await sb.auth.getUser()).data.user?.id;
+  const userId = await getCurrentUserId();
   const today = new Date().toISOString().split("T")[0];
   let kontakt = kontakteData.find(k => k.email?.toLowerCase() === email.toLowerCase());
 
@@ -6195,16 +6212,13 @@ async function handleImport(input) {
 
   // Auto-detect separator: semicolon or comma
   const sep = lines[0].includes(";") ? ";" : ",";
-  console.log(`Import: table=${table}, sep="${sep}", rows=${lines.length-1}`);
-
+  
   // Parse header — normalize: lowercase, trim, remove quotes
   const header = parseCSVLine(lines[0], sep).map(h=>h.toLowerCase().trim().replace(/^"|"$/g,""));
-  console.log("Header:", header);
 
   const colMap = tmpl.cols.map(c => header.indexOf(c));
-  console.log("ColMap:", tmpl.cols.map((c,i)=>`${c}→${colMap[i]}`));
 
-  const userId = (await sb.auth.getUser()).data.user?.id;
+  const userId = await getCurrentUserId();
   let inserted = 0, errors = 0, skipped = 0, enriched = 0, _importMaxNr = 0;
 
   for(let i=1; i<lines.length; i++) {
@@ -6267,7 +6281,6 @@ async function handleImport(input) {
     const meaningfulKeys = Object.keys(row).filter(k=>k!=="user_id"&&row[k]);
     if(meaningfulKeys.length === 0) { skipped++; continue; }
 
-    console.log(`Row ${i}:`, row);
 
     // Duplicate detection for kontakte: match by email OR company name, enrich only null fields
     if(table === "kontakte") {
@@ -6460,7 +6473,7 @@ const DEAL_STATUS_SYNC = {
 async function syncDealToKontakt(kunde, newPhase, newStatus, oldPhase, oldStatus) {
   if(!kunde) return;
   const today = new Date().toISOString().split("T")[0];
-  const userId = (await sb.auth.getUser()).data.user?.id;
+  const userId = await getCurrentUserId();
 
   // Find contact
   const {data: kontakt} = await sb.from("kontakte")
@@ -7523,7 +7536,7 @@ async function sendEmailBulkDirect() {
       // Auto-create Journey entry (skip own email)
       if(!isDemoMode && k.email !== "info@paironloop.com") {
         const phase = mapVorlageToJourneyPhase(vorlage.name);
-        const userId = (await sb.auth.getUser()).data.user?.id;
+        const userId = await getCurrentUserId();
         const emailJourneyNr = await getNextJourneyNr();
         await sb.from("journey").insert({
           kunde: k.unternehmen || `${k.vorname||""} ${k.nachname||""}`.trim(),

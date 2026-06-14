@@ -7853,7 +7853,7 @@ async function sendEmailBulkDirect() {
         const userId = await getCurrentUserId();
         const emailJourneyNr = await getNextJourneyNr();
         await sb.from("journey").insert({
-          kunde: k.unternehmen || `${k.vorname||""} ${k.nachname||""}`.trim(),
+          kunde: k.unternehmen || k.email.split("@")[1]?.split(".")[0] || k.email,
           datum: today,
           phase,
           nr: emailJourneyNr,
@@ -7871,7 +7871,7 @@ async function sendEmailBulkDirect() {
         const followUpNr = await getNextAktivitaetNr();
         await sb.from("aktivitaeten").insert({
           nr: followUpNr,
-          kunde: k.unternehmen || `${k.vorname||""} ${k.nachname||""}`.trim(),
+          kunde: k.unternehmen || k.email.split("@")[1]?.split(".")[0] || k.email,
           typ: "Nachfassen",
           datum: followUpDate.toISOString().split("T")[0],
           prioritaet: "Mittel",

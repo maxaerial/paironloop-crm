@@ -4023,16 +4023,20 @@ async function renderEmail() {
   renderEmailVorlagenList();
   // update sig preview
   const preview = document.getElementById("email-sig-preview-text");
-  if(preview) {
+  const sigCard = document.getElementById("email-signature-card");
+  const PAIRONLOOP_ID = "00000000-0000-0000-0000-000000000001";
+  if(isDemoMode) {
+    if(preview) preview.innerHTML = '<span style="font-size:12px;color:var(--green)">✓ Demo-Signatur aktiv (Alex Demo · Demo GmbH)</span>';
+    if(sigCard) sigCard.style.display = "none"; // hide editor in demo
+  } else if(window._companyId === PAIRONLOOP_ID) {
+    if(sigCard) sigCard.style.display = "none"; // PairOnLoop has fixed sig
+  } else {
+    if(sigCard) sigCard.style.display = "block";
     const sig = window._emailSignature || "";
-    preview.innerHTML = sig
+    if(preview) preview.innerHTML = sig
       ? '<span style="font-size:12px;color:var(--green)">✓ Signatur hinterlegt (' + sig.length + ' Zeichen)</span>'
       : '<span style="font-size:12px;color:var(--text3);font-style:italic">Noch keine Signatur hinterlegt — klicke auf "Bearbeiten".</span>';
   }
-  // Hide signature card for PairOnLoop (they have a fixed one)
-  const PAIRONLOOP_ID = "00000000-0000-0000-0000-000000000001";
-  const sigCard = document.getElementById("email-signature-card");
-  if(sigCard) sigCard.style.display = (window._companyId === PAIRONLOOP_ID) ? "none" : "block";
   // Ensure contacts are loaded
   if(!isDemoMode && (!kontakteData || !kontakteData.length)) {
     const {data} = await sb.from("kontakte").select("*").order("unternehmen");
@@ -7885,6 +7889,13 @@ function mapVorlageToJourneyPhase(vorlageName) {
   if(n.includes("empfehlung") || n.includes("feedback") || n.includes("bewertung")) return "Empfehlung";
   if(n.includes("weihnacht") || n.includes("neujahr") || n.includes("ostern")) return "Empfehlung";
   return "Interesse"; // default
+}
+
+function addEmailEmpfaenger(id) {
+  if(!id) return;
+  emailSelectedIds.add(String(id));
+  renderEmailKontakteList();
+  updateEmailSelectedCount();
 }
 
 function filterEmailKontakte() {

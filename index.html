@@ -2063,14 +2063,113 @@ tbody td { font-feature-settings: "zero" 0; }
   </div>
 
   <div class="settings-section">
-    <div class="settings-section-title">E-Mail Konfiguration</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">EmailJS Zugangsdaten für den E-Mail-Versand. <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent2)">emailjs.com</a> → Account erstellen → Service + Template anlegen.</div>
+    <div class="settings-section-title">📧 E-Mail Konfiguration</div>
+
+    <!-- Step-by-step guide -->
+    <div style="margin-bottom:16px">
+
+      <!-- Step 1 -->
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <div style="width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">1</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--text1);margin-bottom:3px">Account bei EmailJS anlegen</div>
+          <div style="font-size:12px;color:var(--text3)">Gehe zu <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent2);text-decoration:none">emailjs.com</a> → <strong style="color:var(--text2)">Sign Up</strong> (kostenlos, 200 E-Mails/Monat).</div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <div style="width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">2</div>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:700;color:var(--text1);margin-bottom:3px">Email Service verbinden</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:6px">Im Dashboard: <strong style="color:var(--text2)">Email Services → Add New Service</strong> → Gmail oder Outlook wählen → Konto verbinden → auf Speichern klicken.</div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:11px">
+            <div style="color:var(--text3);margin-bottom:4px">Die <strong style="color:var(--accent2)">Service ID</strong> erscheint danach in der Liste, z.B.:</div>
+            <div style="font-family:monospace;color:var(--text2);background:var(--bg4);padding:4px 8px;border-radius:4px;font-size:11px">service_abc1234</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <div style="width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">3</div>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:700;color:var(--text1);margin-bottom:3px">Email Template erstellen</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:6px">Im Dashboard: <strong style="color:var(--text2)">Email Templates → Create New Template</strong>. Das Template ist ein generischer Durchleiter — das CRM befüllt alle Inhalte selbst.</div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:11px">
+            <div style="color:var(--text2);font-weight:600;margin-bottom:8px">So muss das EmailJS-Template aussehen:</div>
+            <table style="width:100%;border-collapse:collapse;font-size:11px">
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px 8px;color:var(--text3);white-space:nowrap;width:90px">To Email</td>
+                <td style="padding:5px 8px;font-family:monospace;color:var(--accent2)">{{to_email}}</td>
+                <td style="padding:5px 8px;color:var(--text3);font-size:10px">Empfänger-Adresse</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px 8px;color:var(--text3)">From Name</td>
+                <td style="padding:5px 8px;font-family:monospace;color:var(--accent2)">{{from_name}}</td>
+                <td style="padding:5px 8px;color:var(--text3);font-size:10px">Dein Absendername</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px 8px;color:var(--text3)">Reply To</td>
+                <td style="padding:5px 8px;font-family:monospace;color:var(--accent2)">{{reply_to}}</td>
+                <td style="padding:5px 8px;color:var(--text3);font-size:10px">Antwort-Adresse</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px 8px;color:var(--text3)">Subject</td>
+                <td style="padding:5px 8px;font-family:monospace;color:var(--accent2)">{{subject}}</td>
+                <td style="padding:5px 8px;color:var(--text3);font-size:10px">Betreff (vom CRM)</td>
+              </tr>
+              <tr>
+                <td style="padding:5px 8px;color:var(--text3)">Content</td>
+                <td style="padding:5px 8px;font-family:monospace;color:var(--accent2)">{{message}}</td>
+                <td style="padding:5px 8px;color:var(--text3);font-size:10px">E-Mail-Text (HTML)</td>
+              </tr>
+            </table>
+            <div style="margin-top:8px;padding:6px 8px;background:var(--bg4);border-radius:4px;color:var(--text3);font-size:10px;line-height:1.5">
+              💡 <strong style="color:var(--text2)">Wichtig:</strong> Kein eigener Text oder Stil nötig — das CRM schreibt alles rein. Das Template einmal anlegen, dann nie wieder anfassen.
+            </div>
+            <div style="margin-top:6px;color:var(--text3);font-size:11px">Die <strong style="color:var(--accent2)">Template ID</strong> siehst du oben im Template-Editor, z.B. <span style="font-family:monospace">template_xyz9876</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div style="display:flex;gap:10px;margin-bottom:4px">
+        <div style="width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">4</div>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:700;color:var(--text1);margin-bottom:3px">Public Key kopieren</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:6px">Im Dashboard oben rechts auf deinen Namen klicken → <strong style="color:var(--text2)">Account → API Keys</strong> → <strong style="color:var(--text2)">Public Key</strong> kopieren.</div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:11px;font-family:monospace;color:var(--text3)">z.B. &nbsp;<span style="color:var(--accent2)">user_aBcDeFgHiJkLmNoPqRsT</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div style="border-top:1px solid var(--border);margin:16px 0 14px"></div>
+
+    <!-- Fields -->
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Zugangsdaten eintragen</div>
     <div class="profile-form">
-      <div class="field form-full"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Service ID</label><input id="email-service-id" placeholder="service_xxxxxxx"></div>
-      <div class="field form-full"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Template ID</label><input id="email-template-id" placeholder="template_xxxxxxx"></div>
-      <div class="field form-full"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Public Key</label><input id="email-public-key" placeholder="xxxxxxxxxxxxxxxxxxxx"></div>
-      <div class="field"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Absender E-Mail</label><input id="email-from" type="email" placeholder="info@meinefirma.de"></div>
-      <div class="field"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Absender Name</label><input id="email-from-name" placeholder="Max Mustermann"></div>
+      <div class="field form-full">
+        <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Service ID <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">— aus Email Services</span></label>
+        <input id="email-service-id" placeholder="service_xxxxxxx">
+      </div>
+      <div class="field form-full">
+        <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Template ID <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">— aus Email Templates</span></label>
+        <input id="email-template-id" placeholder="template_xxxxxxx">
+      </div>
+      <div class="field form-full">
+        <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Public Key <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">— aus Account → API Keys</span></label>
+        <input id="email-public-key" placeholder="user_xxxxxxxxxxxxxxxxxxxx">
+      </div>
+      <div class="field">
+        <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Absender E-Mail</label>
+        <input id="email-from" type="email" placeholder="info@meinefirma.de">
+      </div>
+      <div class="field">
+        <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Absender Name</label>
+        <input id="email-from-name" placeholder="Max Mustermann">
+      </div>
     </div>
     <button type="button" class="profile-save-btn" onclick="saveEmailConfig()">E-Mail Konfiguration speichern</button>
     <div id="email-config-msg" style="font-size:12px;text-align:center;margin-top:8px;display:none"></div>
@@ -2197,28 +2296,7 @@ tbody td { font-feature-settings: "zero" 0; }
       <div style="color:var(--text3);margin-bottom:12px">Vorname, Nachname und Firma oben eintragen und speichern. Diese Daten erscheinen unten links in der Sidebar.</div>
 
       <div style="font-weight:700;color:var(--text1);margin-bottom:6px">2. E-Mail Konfiguration einrichten</div>
-      <div style="color:var(--text3);margin-bottom:4px">Für den direkten E-Mail-Versand aus dem CRM brauchst du einen kostenlosen <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent2)">EmailJS</a>-Account.</div>
-      <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:4px">
-        <div style="color:var(--text1);font-weight:600;margin-bottom:4px">So richtest du EmailJS ein:</div>
-        <ol style="color:var(--text3);padding-left:16px;margin:0;line-height:1.9">
-          <li>Gehe zu <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent2)">emailjs.com</a> → Sign Up (kostenlos)</li>
-          <li><strong>Email Services</strong> → Add New Service → Gmail / Outlook wählen → verbinden</li>
-          <li><strong>Email Templates</strong> → Create New Template</li>
-          <li>Template so konfigurieren:</li>
-        </ol>
-        <div style="background:var(--bg4);border-radius:6px;padding:8px 10px;margin:6px 0;font-family:monospace;font-size:11px;color:var(--text2);line-height:1.7">
-          To: <span style="color:var(--accent2)">{{to_email}}</span><br>
-          From: <span style="color:var(--accent2)">{{from_name}}</span><br>
-          Reply-to: <span style="color:var(--accent2)">{{reply_to}}</span><br>
-          Subject: <span style="color:var(--accent2)">{{subject}}</span><br>
-          Body: <span style="color:var(--accent2)">{{message}}</span>
-        </div>
-        <ol start="5" style="color:var(--text3);padding-left:16px;margin:0;line-height:1.9">
-          <li>Service ID, Template ID und Public Key kopieren</li>
-          <li>Oben in „E-Mail Konfiguration" eintragen und speichern</li>
-        </ol>
-      </div>
-      <div style="color:var(--text3);margin-bottom:12px;font-size:11px">💡 Der kostenlose Plan erlaubt 200 E-Mails/Monat. Jede Einzelmail verbraucht 1 Request.</div>
+      <div style="color:var(--text3);margin-bottom:12px">Für den direkten E-Mail-Versand brauchst du einen kostenlosen <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent2)">EmailJS</a>-Account. Die vollständige Schritt-für-Schritt-Anleitung findest du direkt in der Sektion <strong style="color:var(--text2)">📧 E-Mail Konfiguration</strong> weiter oben — dort steht genau, welche Felder in EmailJS wie befüllt werden müssen und was du ins CRM einträgst.</div>
 
       <div style="font-weight:700;color:var(--text1);margin-bottom:6px">3. Team einrichten</div>
       <div style="color:var(--text3);margin-bottom:12px">Unter „Team / Verantwortliche" Teammitglieder mit Namen und E-Mail eintragen. Diese Namen erscheinen im Dropdown bei Aktivitäten.</div>

@@ -265,6 +265,11 @@ body {
   border-bottom: 1px solid var(--border);
 }
 .sidebar-logo-wrap img { height: auto; }
+/* Company logo: invert on dark themes so dark logos become visible */
+/* Default (midnight) + dark themes: invert dark logos to white */
+#sidebar-company-logo { filter: brightness(0) invert(1); }
+[data-theme="arctic"] #sidebar-company-logo,
+[data-theme="rose"] #sidebar-company-logo { filter: none; }
 .sidebar-section-label {
   padding: 20px 20px 6px;
   font-size: 10px;
@@ -1426,9 +1431,25 @@ tbody td { font-feature-settings: "zero" 0; }
     <div class="sidebar-logo-wrap" style="cursor:default">
       <!-- Relio × Company logo area -->
       <div id="sidebar-logo-combo" style="display:flex;align-items:center;gap:10px;width:100%">
-        <img id="sidebar-relio-logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMzIgNDQiPgogIDxkZWZzPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJncyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM3QzZFRjAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojNkVCOEYwIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8Y2lyY2xlIGN4PSIxMCIgY3k9IjIyIiByPSI3IiBmaWxsPSJ1cmwoI2dzKSIvPgogIDxjaXJjbGUgY3g9IjMwIiBjeT0iMTAiIHI9IjUiIGZpbGw9InVybCgjZ3MpIiBvcGFjaXR5PSIwLjg1Ii8+CiAgPGNpcmNsZSBjeD0iMzAiIGN5PSIzNCIgcj0iNSIgZmlsbD0idXJsKCNncykiIG9wYWNpdHk9IjAuODUiLz4KICA8bGluZSB4MT0iMTAiIHkxPSIyMiIgeDI9IjMwIiB5Mj0iMTAiIHN0cm9rZT0idXJsKCNncykiIHN0cm9rZS13aWR0aD0iMS44IiBvcGFjaXR5PSIwLjUiLz4KICA8bGluZSB4MT0iMTAiIHkxPSIyMiIgeDI9IjMwIiB5Mj0iMzQiIHN0cm9rZT0idXJsKCNncykiIHN0cm9rZS13aWR0aD0iMS44IiBvcGFjaXR5PSIwLjUiLz4KICA8bGluZSB4MT0iMzAiIHkxPSIxMCIgeDI9IjMwIiB5Mj0iMzQiIHN0cm9rZT0idXJsKCNncykiIHN0cm9rZS13aWR0aD0iMS4yIiBvcGFjaXR5PSIwLjMiLz4KICA8dGV4dCB4PSI0NiIgeT0iMTYiIGZvbnQtZmFtaWx5PSJzeXN0ZW0tdWksLWFwcGxlLXN5c3RlbSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iNjAwIiBsZXR0ZXItc3BhY2luZz0iMi41IiBmaWxsPSIjOTA5MEE4Ij5DT05ORUNUPC90ZXh0PgogIDx0ZXh0IHg9IjQ0IiB5PSIzNyIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwtYXBwbGUtc3lzdGVtLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjEiIGZvbnQtd2VpZ2h0PSI4MDAiIGxldHRlci1zcGFjaW5nPSItMC41IiBmaWxsPSIjN0M2RUYwIj5SZWxpbzwvdGV4dD4KPC9zdmc+" alt="Relio" style="height:72px;width:auto;max-width:none;object-fit:contain;flex:1;min-width:0">
+        <!-- Inline SVG so CSS vars work for colors across all themes -->
+        <svg id="sidebar-relio-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 44" style="height:68px;width:auto;flex:1;min-width:0;overflow:visible">
+          <defs>
+            <linearGradient id="g-sidebar" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#7C6EF0"/>
+              <stop offset="100%" stop-color="#6EB8F0"/>
+            </linearGradient>
+          </defs>
+          <circle cx="10" cy="22" r="7" fill="url(#g-sidebar)"/>
+          <circle cx="30" cy="10" r="5" fill="url(#g-sidebar)" opacity="0.85"/>
+          <circle cx="30" cy="34" r="5" fill="url(#g-sidebar)" opacity="0.85"/>
+          <line x1="10" y1="22" x2="30" y2="10" stroke="url(#g-sidebar)" stroke-width="1.8" opacity="0.5"/>
+          <line x1="10" y1="22" x2="30" y2="34" stroke="url(#g-sidebar)" stroke-width="1.8" opacity="0.5"/>
+          <line x1="30" y1="10" x2="30" y2="34" stroke="url(#g-sidebar)" stroke-width="1.2" opacity="0.3"/>
+          <text x="46" y="16" font-family="system-ui,-apple-system,sans-serif" font-size="10" font-weight="600" letter-spacing="2.5" fill="var(--text3)">CONNECT</text>
+          <text x="44" y="37" font-family="system-ui,-apple-system,sans-serif" font-size="21" font-weight="800" letter-spacing="-0.5" fill="var(--text)">Relio</text>
+        </svg>
         <span id="sidebar-logo-x" style="display:none;font-size:22px;font-weight:800;color:var(--text3);flex-shrink:0;line-height:1;margin:0 2px">×</span>
-        <img id="sidebar-company-logo" src="" alt="" style="display:none;height:72px;width:auto;max-width:none;object-fit:contain;flex:1;min-width:0">
+        <img id="sidebar-company-logo" src="" alt="" style="display:none;height:68px;width:auto;max-width:none;object-fit:contain;flex:1;min-width:0">
       </div>
         </div>
     <div class="sidebar-section-label" data-i18n="navigation">Navigation</div>

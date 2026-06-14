@@ -5693,11 +5693,13 @@ async function sendAktivitaetNotification(type, verantw, kunde, aktivitaet, datu
     showToast(`⏳ E-Mail wird gesendet…`);
     if(typeof emailjs === "undefined") { showToast("⚠ EmailJS nicht geladen", true); return; }
     emailjs.init({ publicKey: getEmailConfig().pubkey });
-    await emailjs.send(getEmailConfig().service, getEmailConfig().template, {
-      to_email: email,
+    const _cfg = getEmailConfig();
+    await emailjs.send(_cfg.service, _cfg.template, {
+      to_email:  email,
+      from_name: _cfg.fromName || "PairOnLoop",
+      reply_to:  _cfg.from    || "info@paironloop.com",
       subject,
-      message: message.replace(/\n/g, "<br>") + getEmailSignature(),
-      email: "info@paironloop.com"
+      message:   message.replace(/\n/g, "<br>") + getEmailSignature(),
     });
     showToast(`✓ E-Mail an ${verantw} (${email}) gesendet`);
   } catch(err) {
@@ -7835,11 +7837,13 @@ async function sendEmailBulkDirect() {
       .replace(/^Hallo {{vorname}}/m, anrede);
 
     try {
-      await emailjs.send(getEmailConfig().service, getEmailConfig().template, {
-        to_email: k.email,
-        subject: betreff,
-        message: text.replace(/\n/g, "<br>") + getEmailSignature(),
-        email: "info@paironloop.com"
+      const cfg = getEmailConfig();
+      await emailjs.send(cfg.service, cfg.template, {
+        to_email:  k.email,
+        from_name: cfg.fromName || "PairOnLoop",
+        reply_to:  cfg.from    || "info@paironloop.com",
+        subject:   betreff,
+        message:   text.replace(/\n/g, "<br>") + getEmailSignature(),
       });
       success++;
       // Auto-create Journey entry (skip own email)
@@ -7879,7 +7883,9 @@ async function sendEmailBulkDirect() {
       }
     } catch(err) {
       failed++;
+      const msg = err?.text || err?.message || JSON.stringify(err) || "Unbekannter Fehler";
       console.error("EmailJS error for", k.email, err);
+      if(failed === 1) showToast("⚠ Fehler: " + msg.slice(0, 80), true);
     }
   }
 

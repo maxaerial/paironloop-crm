@@ -2145,6 +2145,10 @@ tbody td { font-feature-settings: "zero" 0; }
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Logo hochladen
         </button>
+        <button id="btn-save-company-logo" class="btn btn-primary btn-sm" style="display:none;margin-bottom:6px;width:100%" onclick="saveCompanyLogoExplicit()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2l11 0 5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Logo speichern
+        </button>
         <button class="btn btn-sm" style="background:transparent;color:var(--red);border:1px solid rgba(240,110,110,.2);width:100%" onclick="removeCompanyLogo()">
           × Logo entfernen
         </button>
@@ -3904,24 +3908,43 @@ function handleCompanyLogo(input) {
     const placeholder = document.getElementById("company-logo-placeholder");
     if(preview) { preview.src = src; preview.style.display = "block"; }
     if(placeholder) placeholder.style.display = "none";
+    // Show save button
+    const saveBtn = document.getElementById("btn-save-company-logo");
+    if(saveBtn) saveBtn.style.display = "block";
     // Store in memory for saving
     window._pendingCompanyLogo = src;
     // Apply to sidebar immediately (preview)
     applyCompanyLogoToUI(src);
-    showToast("✓ Logo geladen — bitte speichern");
   };
   reader.readAsDataURL(file);
 }
 
 async function saveCompanyLogo() {
+  // Called implicitly when saving profile
   const src = window._pendingCompanyLogo;
   if(!src) return;
   const cid = await getCompanyId();
-  if(!cid) { showToast("⚠ Keine Company gefunden", true); return; }
+  if(!cid) return;
   const { error } = await sb.from("companies").update({ logo: src }).eq("id", cid);
   if(error) { showToast("Fehler: " + error.message, true); return; }
   window._companyLogo = src;
   window._pendingCompanyLogo = null;
+}
+
+async function saveCompanyLogoExplicit() {
+  // Called by the explicit "Logo speichern" button
+  const src = window._pendingCompanyLogo;
+  if(!src) { showToast("⚠ Kein Logo ausgewählt", true); return; }
+  const cid = await getCompanyId();
+  if(!cid) { showToast("⚠ Keine Company gefunden", true); return; }
+  const btn = document.getElementById("btn-save-company-logo");
+  if(btn) btn.textContent = "Speichert…";
+  const { error } = await sb.from("companies").update({ logo: src }).eq("id", cid);
+  if(error) { showToast("Fehler: " + error.message, true); if(btn) btn.textContent = "Logo speichern"; return; }
+  window._companyLogo = src;
+  window._pendingCompanyLogo = null;
+  if(btn) { btn.style.display = "none"; btn.textContent = "Logo speichern"; }
+  showToast("✓ Logo gespeichert");
 }
 
 async function removeCompanyLogo() {
@@ -3984,6 +4007,9 @@ async function loadCompanyLogo() {
     if(preview) { preview.src = ""; preview.style.display = "none"; }
     if(placeholder) placeholder.style.display = "";
   }
+  // Hide save button — logo is already saved
+  const saveBtn = document.getElementById("btn-save-company-logo");
+  if(saveBtn) saveBtn.style.display = "none";
 }
 
 // ── SIGNATURE EDITOR UI ───────────────────────────────────────────────────────

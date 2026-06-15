@@ -4408,7 +4408,7 @@ async function renderDashboard() {
   document.getElementById("recent-activity-body").innerHTML = acts.map(a=>`<tr>
     <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(a.datum)}</td>
     <td><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${a.kunde}')">${a.kunde}</strong></td>
-    <td style="font-size:12px;color:var(--text2)">${(()=>{const k=(kontakteData||[]).find(k=>k.unternehmen===a.kunde);return k?((k.vorname||'')+(k.nachname?' '+k.nachname:'')).trim()||'–':'–';})()}</td>
+    <td style="font-size:12px;color:var(--text2)">${(()=>{const k=a.kontakt_id?(kontakteData||[]).find(k=>k.id===a.kontakt_id):(kontakteData||[]).find(k=>k.unternehmen===a.kunde);return k?((k.vorname||'')+(k.nachname?' '+k.nachname:'')).trim()||'–':'–';})()}</td>
     <td style="color:var(--text2)">${a.typ}</td>
     <td><span style="background:${pBg[a.prioritaet]||"var(--bg3)"};color:${pC[a.prioritaet]||"var(--text3)"};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600">${a.prioritaet}</span></td>
     <td><span class="badge badge-${(a.status||"").toLowerCase().replace(/\s+/g,"-")}">${a.status}</span></td>
@@ -4595,7 +4595,7 @@ function renderJourneyTable() {
         <td style="font-size:11px;color:var(--accent2);cursor:pointer;font-weight:600" onclick="openJourneyDetail('${j.id}','journey')">${j.nr||"–"}</td>
         <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(j.datum)}</td>
         <td><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${j.kunde}')">${j.kunde}</strong></td>
-        <td style="font-size:12px;color:var(--text2)">${(()=>{const k=(kontakteData||[]).find(k=>k.unternehmen===j.kunde);return k?((k.vorname||'')+(k.nachname?' '+k.nachname:'')).trim()||'–':'–';})()}</td>
+        <td style="font-size:12px;color:var(--text2)">${(()=>{const k=j.kontakt_id?(kontakteData||[]).find(k=>k.id===j.kontakt_id):(kontakteData||[]).find(k=>k.unternehmen===j.kunde);return k?((k.vorname||'')+(k.nachname?' '+k.nachname:'')).trim()||'–':'–';})()}</td>
         <td><span style="
         background:${(()=>{const c={'Bewusstsein':'rgba(110,184,240,.15)','Interesse':'rgba(124,110,240,.15)','Angebot':'rgba(240,168,110,.15)','Kauf':'rgba(110,240,160,.15)','Empfehlung':'rgba(240,196,78,.18)'};return c[j.phase]||'rgba(144,144,168,.12)';})()};
         color:${(()=>{const c={'Bewusstsein':'#6EB8F0','Interesse':'#7C6EF0','Angebot':'#c47a1e','Kauf':'#1e8a4a','Empfehlung':'#b87c00'};return c[j.phase]||'var(--text3)';})()};
@@ -5486,7 +5486,7 @@ async function renderAktivitaeten(f) {
       <td style="font-size:11px;color:var(--accent2);cursor:pointer;font-weight:600" onclick="openAktivitaetDetail('${a.id}','aktivitaeten')">${a.nr||"–"}</td>
       <td style="font-family:'DM Sans',sans-serif;font-feature-settings:'zero' 0,'tnum' 1;font-size:12px;color:var(--text3)">${fmtDate(a.datum)}</td>
       <td style="max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${a.kunde}"><strong style="cursor:pointer;color:var(--accent2)" onclick="goToKontakt('${a.kunde}')">${a.kunde}</strong></td>
-      <td style="font-size:12px;color:var(--text2)">${(()=>{const k=(kontakteData||[]).find(k=>k.unternehmen===a.kunde);return k?((k.vorname||'')+(k.nachname?' '+k.nachname:'')).trim()||'–':'–';})()}</td>
+      <td style="font-size:12px;color:var(--text2)">${(()=>{const k=a.kontakt_id?(kontakteData||[]).find(k=>k.id===a.kontakt_id):(kontakteData||[]).find(k=>k.unternehmen===a.kunde);return k?((k.vorname||'')+(k.nachname?' '+k.nachname:'')).trim()||'–':'–';})()}</td>
       <td style="color:var(--text2)">${a.typ}</td>
       <td><span style="background:${pBg[a.prioritaet]||"var(--bg3)"};color:${pC[a.prioritaet]||"var(--text3)"};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600">${a.prioritaet}</span></td>
       <td style="color:var(--text2);font-size:12px;max-width:180px">${a.beschreibung||"–"}</td>
@@ -7854,6 +7854,7 @@ async function sendEmailBulkDirect() {
         const emailJourneyNr = await getNextJourneyNr();
         await sb.from("journey").insert({
           kunde: k.unternehmen || k.email.split("@")[1]?.split(".")[0] || k.email,
+          kontakt_id: k.id || null,
           datum: today,
           phase,
           nr: emailJourneyNr,
@@ -7872,6 +7873,7 @@ async function sendEmailBulkDirect() {
         await sb.from("aktivitaeten").insert({
           nr: followUpNr,
           kunde: k.unternehmen || k.email.split("@")[1]?.split(".")[0] || k.email,
+          kontakt_id: k.id || null,
           typ: "Nachfassen",
           datum: followUpDate.toISOString().split("T")[0],
           prioritaet: "Mittel",

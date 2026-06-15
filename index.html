@@ -7877,17 +7877,25 @@ async function sendEmailBulkDirect() {
          k.geschlecht === "f" && hasName ? `Liebe ${k.vorname}` :
          `Liebes ${k.unternehmen||"Team"}-Team`);
 
+    // Sender info from profile
+    const _absName  = ((profileData?.vorname||"") + " " + (profileData?.nachname||"")).trim() || getEmailConfig().fromName || "";
+    const _absFirma = profileData?.firma || getEmailConfig().fromName || "";
+
     const betreff = vorlage.betreff
       .replace(/{{vorname}}/g, k.vorname||"")
       .replace(/{{nachname}}/g, k.nachname||"")
       .replace(/{{unternehmen}}/g, k.unternehmen||"")
-      .replace(/{{anrede}}/g, anrede);
+      .replace(/{{anrede}}/g, anrede)
+      .replace(/{{absender_name}}/g, _absName)
+      .replace(/{{absender_firma}}/g, _absFirma);
     const text = vorlage.text
       .replace(/{{vorname}}/g, k.vorname||"")
       .replace(/{{nachname}}/g, k.nachname||"")
       .replace(/{{unternehmen}}/g, k.unternehmen||"")
       .replace(/{{anrede}}/g, anrede)
       .replace(/{{individueller_satz}}/g, k.individueller_satz||"[bitte individuellen Satz eintragen]")
+      .replace(/{{absender_name}}/g, _absName)
+      .replace(/{{absender_firma}}/g, _absFirma)
       .replace(/^Hallo {{vorname}},/m, anrede + ",")
       .replace(/^Hallo {{vorname}}/m, anrede);
 
@@ -8118,7 +8126,22 @@ function updateEmailVorlagePreview() {
   if(!id) { preview.style.display = "none"; return; }
   const v = emailVorlagen.find(x => x.id === id);
   if(!v) { preview.style.display = "none"; return; }
-  preview.textContent = `Betreff: ${v.betreff}\n\n${v.text}`;
+
+  const absName  = ((profileData?.vorname||"") + " " + (profileData?.nachname||"")).trim() || "Dein Name";
+  const absFirma = profileData?.firma || "Dein Unternehmen";
+  const sub = s => s
+    .replace(/{{absender_name}}/g, absName)
+    .replace(/{{absender_firma}}/g, absFirma)
+    .replace(/{{vorname}}/g, "Max").replace(/{{nachname}}/g, "Mustermann")
+    .replace(/{{unternehmen}}/g, "Beispiel GmbH")
+    .replace(/{{anrede}}/g, "Sehr geehrte Damen und Herren")
+    .replace(/{{individueller_satz}}/g, "[individueller Satz]");
+
+  preview.style.display = "block";
+  preview.innerHTML = `<div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:600">Betreff</div>
+    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">${sub(v.betreff)}</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:600">Text</div>
+    <div style="font-size:13px;color:var(--text2);white-space:pre-wrap">${sub(v.text)}</div>`;
 }
 
 function previewEmailVorlage() {

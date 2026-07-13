@@ -5723,7 +5723,7 @@ async function saveEmailSignature() {
 // Initialize EmailJS after DOM ready
 window.addEventListener("load", () => {
   if(typeof emailjs !== "undefined") {
-    emailjs.init({ publicKey: getEmailConfig().pubkey });
+  
   }
 });
 
@@ -5743,29 +5743,23 @@ async function sendAktivitaetNotification(type, verantw, kunde, aktivitaet, datu
     subject = `⏰ Erinnerung fällig: ${aktivitaet} – ${kunde}`;
     message = `Hallo ${verantw},\n\ndie folgende Aktivität ist bald fällig oder bereits überfällig:\n\nAktivität: ${aktivitaet}\nKunde: ${kunde}\nFällig am: ${datumFmt}\nPriorität: ${prioritaet}\n\nBitte kümmere dich zeitnah darum.\n\nViele Grüße\nPaironloop CRM`;
   }
-try {
-  showToast(`⏳ E-Mail wird gesendet…`);
-  const _cfg = getEmailConfig();
-  const res = await fetch("https://ftkriccztlcwccgetdqt.supabase.co/functions/v1/send-email", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      to: email,
-      from: _cfg.from || "info@paironloop.com",
-      fromName: _cfg.fromName || "PairOnLoop",
-      replyTo: _cfg.from || "info@paironloop.com",
+  try {
+    showToast(`⏳ E-Mail wird gesendet…`);
+    if(typeof emailjs === "undefined") { showToast("⚠ EmailJS nicht geladen", true); return; }
+  
+    const _cfg = getEmailConfig();
+    await emailjs.send(_cfg.service, _cfg.template, {
+      to_email:  email,
+      from_name: _cfg.fromName || "PairOnLoop",
+      reply_to:  _cfg.from    || "info@paironloop.com",
       subject,
-      html: message.replace(/\n/g, "<br>") + getEmailSignature(),
-      bcc: "info@paironloop.com"
-    })
-  });
-  const result = await res.json();
-  if (!res.ok || result.error) throw new Error(result.error || "Versand fehlgeschlagen");
-  showToast(`✓ E-Mail an ${verantw} (${email}) gesendet`);
-} catch(err) {
-  showToast(`△ Fehler beim Senden: ${err?.message || "Unbekannter Fehler"}`, true);
-  console.error("Resend error:", err);
-}
+      message:   message.replace(/\n/g, "<br>") + getEmailSignature(),
+    });
+    showToast(`✓ E-Mail an ${verantw} (${email}) gesendet`);
+  } catch(err) {
+    showToast(`⚠ Fehler beim Senden: ${err?.text || err?.message || "Unbekannter Fehler"}`, true);
+    console.error("EmailJS error:", err);
+  }
 }
 
 function sendReminderForAktivitaet(id) {
@@ -7855,8 +7849,8 @@ async function sendEmailBulkDirect() {
   const empfaenger = src.filter(k => emailSelectedIds.has(String(k.id || k.nr)) && k.email);
   if (!empfaenger.length) { showToast("⚠ Keine Kontakte mit E-Mail-Adresse ausgewählt"); return; }
 
-  if(typeof emailjs === "undefined") { showToast("⚠ EmailJS nicht geladen"); return; }
-  emailjs.init({ publicKey: getEmailConfig().pubkey });
+
+
 
   // Vorlagen-Variablen prüfen
   if(vorlage.text.includes("{{individueller_satz}}")) {
@@ -7907,13 +7901,21 @@ async function sendEmailBulkDirect() {
 
     try {
       const cfg = getEmailConfig();
-      await emailjs.send(cfg.service, cfg.template, {
-        to_email:  k.email,
-        from_name: cfg.fromName || "PairOnLoop",
-        reply_to:  cfg.from    || "info@paironloop.com",
-        subject:   betreff,
-        message:   text.replace(/\n/g, "<br>") + getEmailSignature(),
+      const res = await fetch("https://ftkriccztlcwccgetdqt.supabase.co/functions/v1/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: k.email,
+          from: cfg.from || "info@paironloop.com",
+          fromName: cfg.fromName || "PairOnLoop",
+          replyTo: cfg.from || "info@paironloop.com",
+          subject: betreff,
+          html: text.replace(/\n/g, "<br>") + getEmailSignature(),
+          bcc: "info@paironloop.com"
+        })
       });
+      const result = await res.json();
+      if (!res.ok || result.error) throw new Error(result.error || "Versand fehlgeschlagen");
       success++;
       // Auto-create Journey entry (skip own email)
       if(!isDemoMode && k.email !== "info@paironloop.com") {
@@ -7954,9 +7956,9 @@ async function sendEmailBulkDirect() {
       }
     } catch(err) {
       failed++;
-      const msg = err?.text || err?.message || (typeof err === "string" ? err : JSON.stringify(err)) || "Unbekannter Fehler";
-      console.error("EmailJS error for", k.email, "| status:", err?.status, "| text:", err?.text, "| full:", err);
-      showToast("⚠ EmailJS: " + msg.slice(0, 120), true);
+      const msg = err?.message || (typeof err === "string" ? err : JSON.stringify(err)) || "Unbekannter Fehler";
+      console.error("Resend error for", k.email, err);
+      showToast("⚠ Fehler: " + msg.slice(0, 120), true);
     }
   }
 

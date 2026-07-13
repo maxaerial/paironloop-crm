@@ -5743,23 +5743,29 @@ async function sendAktivitaetNotification(type, verantw, kunde, aktivitaet, datu
     subject = `⏰ Erinnerung fällig: ${aktivitaet} – ${kunde}`;
     message = `Hallo ${verantw},\n\ndie folgende Aktivität ist bald fällig oder bereits überfällig:\n\nAktivität: ${aktivitaet}\nKunde: ${kunde}\nFällig am: ${datumFmt}\nPriorität: ${prioritaet}\n\nBitte kümmere dich zeitnah darum.\n\nViele Grüße\nPaironloop CRM`;
   }
-  try {
-    showToast(`⏳ E-Mail wird gesendet…`);
-    if(typeof emailjs === "undefined") { showToast("⚠ EmailJS nicht geladen", true); return; }
-    emailjs.init({ publicKey: getEmailConfig().pubkey });
-    const _cfg = getEmailConfig();
-    await emailjs.send(_cfg.service, _cfg.template, {
-      to_email:  email,
-      from_name: _cfg.fromName || "PairOnLoop",
-      reply_to:  _cfg.from    || "info@paironloop.com",
+try {
+  showToast(`⏳ E-Mail wird gesendet…`);
+  const _cfg = getEmailConfig();
+  const res = await fetch("https://ftkriccztlcwccgetdqt.supabase.co/functions/v1/send-email", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      to: email,
+      from: _cfg.from || "info@paironloop.com",
+      fromName: _cfg.fromName || "PairOnLoop",
+      replyTo: _cfg.from || "info@paironloop.com",
       subject,
-      message:   message.replace(/\n/g, "<br>") + getEmailSignature(),
-    });
-    showToast(`✓ E-Mail an ${verantw} (${email}) gesendet`);
-  } catch(err) {
-    showToast(`⚠ Fehler beim Senden: ${err?.text || err?.message || "Unbekannter Fehler"}`, true);
-    console.error("EmailJS error:", err);
-  }
+      html: message.replace(/\n/g, "<br>") + getEmailSignature(),
+      bcc: "info@paironloop.com"
+    })
+  });
+  const result = await res.json();
+  if (!res.ok || result.error) throw new Error(result.error || "Versand fehlgeschlagen");
+  showToast(`✓ E-Mail an ${verantw} (${email}) gesendet`);
+} catch(err) {
+  showToast(`△ Fehler beim Senden: ${err?.message || "Unbekannter Fehler"}`, true);
+  console.error("Resend error:", err);
+}
 }
 
 function sendReminderForAktivitaet(id) {

@@ -7936,23 +7936,6 @@ async function sendEmailBulkDirect() {
           user_id: userId,
       company_id: await getCompanyId()
         });
-        // Auto-create follow-up activity in 7 days
-        const followUpDate = new Date();
-        followUpDate.setDate(followUpDate.getDate() + 7);
-        const followUpNr = await getNextAktivitaetNr();
-        await sb.from("aktivitaeten").insert({
-          nr: followUpNr,
-          kunde: k.unternehmen || k.email.split("@")[1]?.split(".")[0] || k.email,
-          kontakt_id: k.id || null,
-          typ: "Nachfassen",
-          datum: followUpDate.toISOString().split("T")[0],
-          prioritaet: "Mittel",
-          beschreibung: `Nachfassen nach Kooperationsanfrage via E-Mail (${vorlage.name})`,
-          verantwortlich: "Max",
-          status: "Offen",
-          user_id: userId,
-      company_id: await getCompanyId()
-        });
       }
     } catch(err) {
       failed++;

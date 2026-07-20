@@ -1958,7 +1958,10 @@ tbody td { font-feature-settings: "zero" 0; }
       <!-- Kontakte auswählen -->
       <div class="card">
         <div class="card-header" style="display:flex;flex-direction:column;align-items:stretch;gap:10px">
-          <div class="card-title">Empfänger</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap">
+            <div class="card-title" style="flex:0 0 auto;white-space:nowrap">Empfänger</div>
+            <input id="email-empfaenger-suche" type="text" class="filter-select" style="flex:0 1 140px;min-width:70px" placeholder="Empfänger suchen…" oninput="filterEmailKontakte()">
+          </div>
           <div style="display:flex;gap:5px;align-items:center;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px">
             <select id="email-branche-filter" class="filter-select" style="flex:0 0 auto;max-width:108px;padding:7px 8px" onchange="filterEmailKontakte()">
               <option value="">Alle Branchen</option>
@@ -1986,7 +1989,6 @@ tbody td { font-feature-settings: "zero" 0; }
               <option value="faellig">Fällige Aktivitäten</option>
               <option>Angebot</option><option>Meeting</option><option>Anruf</option><option>E-Mail</option><option>Nachfassen</option>
             </select>
-            <input id="email-empfaenger-suche" type="text" class="filter-select" style="flex:1 1 130px;min-width:110px" placeholder="Empfänger suchen…" oninput="filterEmailKontakte()">
             <div style="position:relative;flex:0 0 210px">
               <select id="email-search-kontakte" class="filter-select" style="width:100%;min-width:210px;padding:7px 8px" onchange="addEmailEmpfaenger(this.value);this.value=''">
                 <option value="">+ Kontakt hinzufügen…</option>

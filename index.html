@@ -2158,18 +2158,18 @@ tbody td { font-feature-settings: "zero" 0; }
   </div>
 
   <div class="settings-section">
-    <div class="settings-section-title">📧 E-Mail Konfiguration</div>
+    <div class="settings-section-title">📧 Meine Absender-E-Mail</div>
 
     <!-- Info -->
     <div style="margin-bottom:16px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px 14px">
       <div style="font-size:12px;font-weight:700;color:var(--text1);margin-bottom:6px">✅ E-Mail-Versand über Resend</div>
-      <div style="font-size:12px;color:var(--text3);line-height:1.6">Der Versand läuft automatisch über <strong style="color:var(--text2)">Resend</strong> — keine weiteren Zugangsdaten nötig. Trage unten einfach deine Absender-E-Mail und deinen Absendernamen ein und klicke auf Speichern.</div>
+      <div style="font-size:12px;color:var(--text3);line-height:1.6">Diese Adresse ist <strong style="color:var(--text2)">individuell für dich</strong> — jeder Mitarbeiter versendet mit seiner eigenen Absender-Mail. Die Adresse muss auf die Domain enden, die weiter unten unter „🌐 Absender-Domain" für eure Firma verifiziert wurde.</div>
     </div>
 
     <div class="profile-form">
       <div class="field">
         <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Absender E-Mail</label>
-        <input id="email-from" type="email" placeholder="info@meinefirma.de">
+        <input id="email-from" type="email" placeholder="max@meinefirma.de">
       </div>
       <div class="field">
         <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Absender Name</label>
@@ -2178,6 +2178,22 @@ tbody td { font-feature-settings: "zero" 0; }
     </div>
     <button type="button" class="profile-save-btn" onclick="saveEmailConfig()">E-Mail Konfiguration speichern</button>
     <div id="email-config-msg" style="font-size:12px;text-align:center;margin-top:8px;display:none"></div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">🌐 Absender-Domain (Firma)</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Einmal pro Firma einrichten. Danach kann jeder Mitarbeiter oben seine eigene Adresse auf dieser Domain als Absender nutzen (z.B. max@eurefirma.com, sandra@eurefirma.com).</div>
+    <div id="domain-status-info" style="font-size:12px;color:var(--text2);margin-bottom:12px;font-weight:600">Lädt…</div>
+    <div class="profile-form">
+      <div class="field form-full">
+        <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Domain</label>
+        <input id="domain-input" placeholder="eurefirma.com">
+      </div>
+    </div>
+    <button type="button" class="profile-save-btn" onclick="createDomain()">Domain einrichten</button>
+    <button type="button" class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px;justify-content:center" onclick="checkDomain()">Verifizierung prüfen</button>
+    <div id="domain-dns-records" style="margin-top:12px"></div>
+    <div id="domain-msg" style="font-size:12px;text-align:center;margin-top:8px;display:none"></div>
   </div>
 
   <div class="settings-section">
@@ -3767,18 +3783,36 @@ let profileData = {};
 
 async function saveEmailConfig() {
   const msg = document.getElementById("email-config-msg");
-  const cid = await getCompanyId();
-  if(!cid) { showToast("⚠ Keine Company gefunden", true); return; }
-  const config = {
-    email_from:        document.getElementById("email-from").value.trim(),
-    email_from_name:   document.getElementById("email-from-name").value.trim(),
-  };
-  const {error} = await sb.from("companies").update(config).eq("id", cid);
+  const userId = await getCurrentUserId();
+  if(!userId) { showToast("⚠ Nicht angemeldet", true); return; }
+  const emailFrom     = document.getElementById("email-from").value.trim();
+  const emailFromName = document.getElementById("email-from-name").value.trim();
+
+  // Falls die Firmen-Domain bereits verifiziert ist: Absender muss darauf enden
+  if(emailFrom) {
+    const cid = await getCompanyId();
+    if(cid) {
+      const {data: comp} = await sb.from("companies").select("email_domain,domain_status").eq("id", cid).single();
+      if(comp?.domain_status === "verified" && comp?.email_domain) {
+        const domainPart = emailFrom.split("@")[1]?.toLowerCase();
+        if(domainPart !== comp.email_domain.toLowerCase()) {
+          msg.textContent = `Fehler: Absender-Mail muss auf @${comp.email_domain} enden`;
+          msg.style.color = "var(--red)";
+          msg.style.display = "block";
+          return;
+        }
+      }
+    }
+  }
+
+  const config = { id: userId, email_from: emailFrom, email_from_name: emailFromName };
+  const {error} = await sb.from("profiles").upsert(config);
   if(error) {
     msg.textContent = "Fehler: " + error.message;
     msg.style.color = "var(--red)";
   } else {
     window._emailConfig = config;
+    profileData = {...profileData, ...config};
     msg.textContent = "✓ E-Mail Konfiguration gespeichert";
     msg.style.color = "var(--green)";
   }
@@ -3787,13 +3821,88 @@ async function saveEmailConfig() {
 }
 
 async function loadEmailConfig() {
-  const cid = await getCompanyId();
-  if(!cid) return;
-  const {data} = await sb.from("companies").select("email_from,email_from_name").eq("id", cid).single();
+  const userId = await getCurrentUserId();
+  if(!userId) return;
+  const {data} = await sb.from("profiles").select("email_from,email_from_name").eq("id", userId).single();
   if(!data) return;
   window._emailConfig = data;
   document.getElementById("email-from").value        = data.email_from        || "";
   document.getElementById("email-from-name").value   = data.email_from_name   || "";
+}
+
+// ── ABSENDER-DOMAIN (Resend, pro Firma) ────────────────────────────────────
+async function callManageDomain(action, extra) {
+  extra = extra || {};
+  const { data: { session } } = await sb.auth.getSession();
+  const token = session?.access_token;
+  if(!token) return { error: "Nicht angemeldet" };
+  const res = await fetch("https://ftkriccztlcwccgetdqt.supabase.co/functions/v1/manage-domain", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+    body: JSON.stringify({ action, ...extra })
+  });
+  return res.json().catch(() => ({ error: "Unerwartete Antwort vom Server" }));
+}
+
+function renderDomainStatus(data) {
+  const info = document.getElementById("domain-status-info");
+  const recordsEl = document.getElementById("domain-dns-records");
+  if(!info || !recordsEl) return;
+  const status = data.domain_status || data.status || "not_configured";
+  const domain = data.email_domain || data.domain || "";
+  const statusLabel = {
+    verified: "✅ Verifiziert — bereit für individuelle Absender",
+    pending: "⏳ Ausstehend — bitte DNS-Einträge unten eintragen",
+    failed: "❌ Fehlgeschlagen — DNS-Einträge prüfen",
+    not_configured: "Noch keine Domain eingerichtet"
+  }[status] || status;
+  info.textContent = domain ? `Domain: ${domain} — ${statusLabel}` : statusLabel;
+  const domainInput = document.getElementById("domain-input");
+  if(domainInput && domain && !domainInput.value) domainInput.value = domain;
+
+  const records = data.dns_records || data.records || [];
+  if(records.length) {
+    recordsEl.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:6px">DNS-Einträge bei deinem Domain-Provider eintragen:</div>' +
+      records.map(r => `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:11px;font-family:monospace;line-height:1.6">
+        <div>Type: ${r.record || r.type || "–"}</div>
+        <div>Name: ${r.name || "–"}</div>
+        <div style="word-break:break-all">Value: ${r.value || "–"}</div>
+      </div>`).join("");
+  } else {
+    recordsEl.innerHTML = "";
+  }
+}
+
+async function loadDomainStatus() {
+  const result = await callManageDomain("status");
+  if(!result || result.error) { renderDomainStatus({}); return; }
+  renderDomainStatus(result);
+}
+
+async function createDomain() {
+  const domain = document.getElementById("domain-input").value.trim().toLowerCase();
+  const msg = document.getElementById("domain-msg");
+  if(!domain) { showToast("⚠ Bitte Domain eingeben"); return; }
+  showToast("⏳ Domain wird bei Resend angelegt…");
+  const result = await callManageDomain("create", { domain });
+  if(result.error) {
+    msg.textContent = "Fehler: " + result.error;
+    msg.style.color = "var(--red)";
+    msg.style.display = "block";
+    showToast("⚠ " + result.error, true);
+    return;
+  }
+  msg.style.display = "none";
+  renderDomainStatus(result);
+  showToast("✓ Domain angelegt — trage jetzt die DNS-Einträge ein");
+}
+
+async function checkDomain() {
+  showToast("⏳ Prüfe Verifizierung bei Resend…");
+  const result = await callManageDomain("check");
+  if(result.error) { showToast("⚠ " + result.error, true); return; }
+  renderDomainStatus(result);
+  showToast(result.status === "verified" ? "✓ Domain verifiziert!" : `⏳ Noch nicht verifiziert (Status: ${result.status})`);
 }
 
 // ── COMPANY LOGO ──────────────────────────────────────────────────────────────
@@ -4304,6 +4413,7 @@ function openSettings() {
     const emailTxt = document.getElementById("settings-email");
     if(emailDisp && emailTxt) emailDisp.textContent = emailTxt.textContent;
     loadEmailConfig();
+    loadDomainStatus();
     loadCompanyLogo();
   }
   renderTeamMembersList();

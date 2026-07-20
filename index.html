@@ -1957,43 +1957,43 @@ tbody td { font-feature-settings: "zero" 0; }
 
       <!-- Kontakte auswählen -->
       <div class="card">
-        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div class="card-header" style="display:flex;flex-direction:column;align-items:stretch;gap:10px">
           <div class="card-title">Empfänger</div>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <select id="email-branche-filter" class="filter-select" onchange="filterEmailKontakte()">
+          <div style="display:flex;gap:5px;align-items:center;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px">
+            <select id="email-branche-filter" class="filter-select" style="flex:0 0 auto;max-width:108px;padding:7px 8px" onchange="filterEmailKontakte()">
               <option value="">Alle Branchen</option>
               <option>Hospitality</option><option>Restaurant</option><option>Weingut</option>
               <option>Freizeitaktivität</option><option>Café</option><option>Bar</option><option>Sonstiges</option>
             </select>
-            <select id="email-phase-filter" class="filter-select" onchange="filterEmailKontakte()">
+            <select id="email-phase-filter" class="filter-select" style="flex:0 0 auto;max-width:98px;padding:7px 8px" onchange="filterEmailKontakte()">
               <option value="">Alle Phasen</option>
               <option>Bewusstsein</option><option>Interesse</option><option>Angebot</option><option>Kauf</option><option>Empfehlung</option>
             </select>
-            <select id="email-newsletter-filter" class="filter-select" onchange="filterEmailKontakte()">
+            <select id="email-newsletter-filter" class="filter-select" style="flex:0 0 auto;max-width:118px;padding:7px 8px" onchange="filterEmailKontakte()">
               <option value="">Newsletter: alle</option>
               <option value="ja">Newsletter: Ja</option>
               <option value="nein">Newsletter: Nein</option>
             </select>
-            <select id="email-sprache-filter" class="filter-select" onchange="filterEmailKontakte()">
+            <select id="email-sprache-filter" class="filter-select" style="flex:0 0 auto;max-width:120px;padding:7px 8px" onchange="filterEmailKontakte()">
               <option value="">Alle Sprachen</option>
               <option value="de">Deutsch</option>
               <option value="en">Englisch</option>
               <option value="it">Italienisch</option>
               <option value="fr">Französisch</option>
             </select>
-            <select id="email-aktivtyp-filter" class="filter-select" onchange="filterEmailKontakte()">
+            <select id="email-aktivtyp-filter" class="filter-select" style="flex:0 0 auto;max-width:120px;padding:7px 8px" onchange="filterEmailKontakte()">
               <option value="">Alle Aktivitäten</option>
               <option value="faellig">Fällige Aktivitäten</option>
               <option>Angebot</option><option>Meeting</option><option>Anruf</option><option>E-Mail</option><option>Nachfassen</option>
             </select>
-            <input id="email-empfaenger-suche" type="text" class="filter-select" style="min-width:180px" placeholder="Empfänger suchen…" oninput="filterEmailKontakte()">
-            <div style="position:relative">
-              <select id="email-search-kontakte" class="filter-select" style="min-width:200px" onchange="addEmailEmpfaenger(this.value);this.value=''">
+            <input id="email-empfaenger-suche" type="text" class="filter-select" style="flex:1 1 130px;min-width:110px" placeholder="Empfänger suchen…" oninput="filterEmailKontakte()">
+            <div style="position:relative;flex:0 0 210px">
+              <select id="email-search-kontakte" class="filter-select" style="width:100%;min-width:210px;padding:7px 8px" onchange="addEmailEmpfaenger(this.value);this.value=''">
                 <option value="">+ Kontakt hinzufügen…</option>
               </select>
             </div>
-            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="emailSelectAll()">Alle</button>
-            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="emailDeselectAll()">Leeren</button>
+            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1);flex:0 0 auto;white-space:nowrap;padding:7px 10px" onclick="emailSelectAll()">Alle</button>
+            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1);flex:0 0 auto;white-space:nowrap;padding:7px 10px" onclick="emailDeselectAll()">Leeren</button>
           </div>
         </div>
         <div class="card-body" style="padding:8px 0">

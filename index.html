@@ -2175,14 +2175,33 @@ tbody td { font-feature-settings: "zero" 0; }
         <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Absender Name</label>
         <input id="email-from-name" placeholder="Max Mustermann">
       </div>
+      <div class="field form-full">
+        <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">BCC-Kopie an (optional)</label>
+        <input id="email-bcc" type="email" placeholder="leer lassen = Kopie geht an dich selbst">
+      </div>
     </div>
+    <div style="font-size:11px;color:var(--text3);margin:-8px 0 12px">Jede versendete E-Mail geht zusätzlich als Kopie an diese Adresse — z.B. für ein Team-Postfach. Leer lassen, um die Kopie an deine eigene Absender-Adresse zu bekommen.</div>
     <button type="button" class="profile-save-btn" onclick="saveEmailConfig()">E-Mail Konfiguration speichern</button>
     <div id="email-config-msg" style="font-size:12px;text-align:center;margin-top:8px;display:none"></div>
   </div>
 
   <div class="settings-section">
+    <div class="settings-section-title">🔑 Euer Resend-Account (Abrechnung)</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px" id="resend-key-info">Lädt…</div>
+    <div class="profile-form">
+      <div class="field form-full">
+        <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Euer eigener Resend API Key</label>
+        <input id="resend-api-key-input" type="password" placeholder="re_xxxxxxxxxxxxxxxx" autocomplete="off">
+      </div>
+    </div>
+    <button type="button" class="profile-save-btn" onclick="saveResendApiKey()">API Key speichern</button>
+    <button type="button" class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px;justify-content:center" onclick="removeResendApiKey()">Eigenen Key entfernen (zurück zum Test-Account)</button>
+    <div id="resend-key-msg" style="font-size:12px;text-align:center;margin-top:8px;display:none"></div>
+  </div>
+
+  <div class="settings-section">
     <div class="settings-section-title">🌐 Absender-Domain (Firma)</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Einmal pro Firma einrichten. Danach kann jeder Mitarbeiter oben seine eigene Adresse auf dieser Domain als Absender nutzen (z.B. max@eurefirma.com, sandra@eurefirma.com).</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Einmal pro Firma einrichten. Danach kann jeder Mitarbeiter oben seine eigene Adresse auf dieser Domain als Absender nutzen (z.B. max@eurefirma.com, sandra@eurefirma.com). Läuft über den oben hinterlegten Resend-Account.</div>
     <div id="domain-status-info" style="font-size:12px;color:var(--text2);margin-bottom:12px;font-weight:600">Lädt…</div>
     <div class="profile-form">
       <div class="field form-full">
@@ -3787,6 +3806,7 @@ async function saveEmailConfig() {
   if(!userId) { showToast("⚠ Nicht angemeldet", true); return; }
   const emailFrom     = document.getElementById("email-from").value.trim();
   const emailFromName = document.getElementById("email-from-name").value.trim();
+  const emailBcc       = document.getElementById("email-bcc").value.trim();
 
   // Falls die Firmen-Domain bereits verifiziert ist: Absender muss darauf enden
   if(emailFrom) {
@@ -3805,7 +3825,7 @@ async function saveEmailConfig() {
     }
   }
 
-  const config = { id: userId, email_from: emailFrom, email_from_name: emailFromName };
+  const config = { id: userId, email_from: emailFrom, email_from_name: emailFromName, email_bcc: emailBcc };
   const {error} = await sb.from("profiles").upsert(config);
   if(error) {
     msg.textContent = "Fehler: " + error.message;
@@ -3823,11 +3843,12 @@ async function saveEmailConfig() {
 async function loadEmailConfig() {
   const userId = await getCurrentUserId();
   if(!userId) return;
-  const {data} = await sb.from("profiles").select("email_from,email_from_name").eq("id", userId).single();
+  const {data} = await sb.from("profiles").select("email_from,email_from_name,email_bcc").eq("id", userId).single();
   if(!data) return;
   window._emailConfig = data;
   document.getElementById("email-from").value        = data.email_from        || "";
   document.getElementById("email-from-name").value   = data.email_from_name   || "";
+  document.getElementById("email-bcc").value         = data.email_bcc         || "";
 }
 
 // ── ABSENDER-DOMAIN (Resend, pro Firma) ────────────────────────────────────
@@ -3847,6 +3868,12 @@ async function callManageDomain(action, extra) {
 function renderDomainStatus(data) {
   const info = document.getElementById("domain-status-info");
   const recordsEl = document.getElementById("domain-dns-records");
+  const keyInfo = document.getElementById("resend-key-info");
+  if(keyInfo) {
+    keyInfo.textContent = data.usingOwnKey
+      ? "✅ Ihr nutzt euren eigenen Resend-Account — eure Domains laufen über eure eigene Rechnung."
+      : "ℹ️ Aktuell wird der gemeinsame PairOnLoop-Test-Account genutzt (begrenztes Kontingent, nur für erste Tests geeignet). Für eine eigene Domain solltet ihr euren eigenen Resend API Key hinterlegen.";
+  }
   if(!info || !recordsEl) return;
   const status = data.domain_status || data.status || "not_configured";
   const domain = data.email_domain || data.domain || "";
@@ -3877,6 +3904,34 @@ async function loadDomainStatus() {
   const result = await callManageDomain("status");
   if(!result || result.error) { renderDomainStatus({}); return; }
   renderDomainStatus(result);
+}
+
+async function saveResendApiKey() {
+  const input = document.getElementById("resend-api-key-input");
+  const msg = document.getElementById("resend-key-msg");
+  const key = input.value.trim();
+  if(!key) { showToast("⚠ Bitte API Key eingeben"); return; }
+  showToast("⏳ Prüfe API Key bei Resend…");
+  const result = await callManageDomain("set_api_key", { resendApiKey: key });
+  if(result.error) {
+    msg.textContent = "Fehler: " + result.error;
+    msg.style.color = "var(--red)";
+    msg.style.display = "block";
+    showToast("⚠ " + result.error, true);
+    return;
+  }
+  input.value = "";
+  msg.style.display = "none";
+  showToast("✓ Euer Resend API Key wurde gespeichert");
+  loadDomainStatus();
+}
+
+async function removeResendApiKey() {
+  if(!confirm("Eigenen Resend API Key entfernen und zurück zum gemeinsamen Test-Account wechseln?")) return;
+  const result = await callManageDomain("set_api_key", { resendApiKey: "" });
+  if(result.error) { showToast("⚠ " + result.error, true); return; }
+  showToast("✓ Eigener Key entfernt");
+  loadDomainStatus();
 }
 
 async function createDomain() {
@@ -4096,9 +4151,11 @@ async function renderEmail() {
 
 function getEmailConfig() {
   const cfg = window._emailConfig;
+  const from = cfg?.email_from || "info@paironloop.com";
   return {
-    from:     cfg?.email_from        || "info@paironloop.com",
-    fromName: cfg?.email_from_name   || "PairOnLoop"
+    from,
+    fromName: cfg?.email_from_name   || "PairOnLoop",
+    bcc:      cfg?.email_bcc || from   // individuell einstellbar, Default: Kopie an sich selbst
   };
 }
 
@@ -7920,7 +7977,7 @@ async function sendEmailBulkDirect() {
           replyTo: cfg.from || "info@paironloop.com",
           subject: betreff,
           html: text.replace(/\n/g, "<br>") + getEmailSignature(),
-          bcc: "info@paironloop.com"
+          bcc: cfg.bcc
         })
       });
       const result = await res.json();

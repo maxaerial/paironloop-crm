@@ -1986,6 +1986,7 @@ tbody td { font-feature-settings: "zero" 0; }
               <option value="faellig">Fällige Aktivitäten</option>
               <option>Angebot</option><option>Meeting</option><option>Anruf</option><option>E-Mail</option><option>Nachfassen</option>
             </select>
+            <input id="email-empfaenger-suche" type="text" class="filter-select" style="min-width:180px" placeholder="Empfänger suchen…" oninput="filterEmailKontakte()">
             <div style="position:relative">
               <select id="email-search-kontakte" class="filter-select" style="min-width:200px" onchange="addEmailEmpfaenger(this.value);this.value=''">
                 <option value="">+ Kontakt hinzufügen…</option>
@@ -3149,7 +3150,7 @@ function updateTopbarTitle() {
 // ── AUTH ──────────────────────────────────────────────────────────────────────
 
 // ── DEMO MODE ─────────────────────────────────────────────────────────────────
-const DEMO_DATA = {
+const DEMO_DATA = window.DEMO_DATA = {
   kontakte: [
     {id:"d-k1",nr:"001",unternehmen:"Weingut Loacker",vorname:"Markus",nachname:"Loacker",ort:"Bozen",land:"Italien",email:"markus@loacker.it",telefon:"+39 0471 123456",kanal:"Instagram",status:"Aktiv",branche:"Weingut",dealwert:3500,letzter_kontakt:"2026-05-28",kommentar:"Drohnenfilm für Weinberge im Herbst"},
     {id:"d-k2",nr:"002",unternehmen:"Hotel Adler Resort",vorname:"Sandra",nachname:"Mayr",ort:"Ortisei",land:"Italien",email:"info@adler-resort.com",telefon:"+39 0471 234567",kanal:"Empfehlung",status:"Aktiv",branche:"Hospitality",dealwert:8500,letzter_kontakt:"2026-05-30",kommentar:"Imagefilm für Website und Instagram"},
@@ -8144,6 +8145,7 @@ function populateEmailKontakteDropdown() {
   const newsletter = document.getElementById("email-newsletter-filter")?.value || "";
   const aktivtyp   = document.getElementById("email-aktivtyp-filter")?.value || "";
   const sprache    = document.getElementById("email-sprache-filter")?.value || "";
+  const suche      = (document.getElementById("email-empfaenger-suche")?.value || "").trim().toLowerCase();
   const sel = document.getElementById("email-search-kontakte");
   if(!sel) return;
   const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
@@ -8170,6 +8172,10 @@ function populateEmailKontakteDropdown() {
     if(newsletter && k.newsletter !== newsletter) return false;
     if(aktivtyp && !matchByAktiv.has(k.unternehmen)) return false;
     if(sprache && k.sprache !== sprache) return false;
+    if(suche) {
+      const haystack = `${k.vorname||""} ${k.nachname||""} ${k.unternehmen||""} ${k.email||""}`.toLowerCase();
+      if(!haystack.includes(suche)) return false;
+    }
     return true;
   });
 
@@ -8193,6 +8199,7 @@ function emailSelectAll() {
   const newsletter= document.getElementById("email-newsletter-filter")?.value || "";
   const aktivtyp  = document.getElementById("email-aktivtyp-filter")?.value || "";
   const sprache   = document.getElementById("email-sprache-filter")?.value || "";
+  const suche     = (document.getElementById("email-empfaenger-suche")?.value || "").trim().toLowerCase();
   const src = isDemoMode ? (window.DEMO_DATA?.kontakte || []) : (kontakteData || []);
   let matchByPhase = new Set();
   if(phase) {
@@ -8213,6 +8220,10 @@ function emailSelectAll() {
     if(newsletter && k.newsletter !== newsletter) return false;
     if(aktivtyp && !matchByAktiv.has(k.unternehmen)) return false;
     if(sprache && k.sprache !== sprache) return false;
+    if(suche) {
+      const haystack = `${k.vorname||""} ${k.nachname||""} ${k.unternehmen||""} ${k.email||""}`.toLowerCase();
+      if(!haystack.includes(suche)) return false;
+    }
     return true;
   }).forEach(k => emailSelectedIds.add(String(k.id || k.nr)));
   renderEmailKontakteList();

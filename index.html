@@ -1911,11 +1911,21 @@ tbody td { font-feature-settings: "zero" 0; }
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div>
               <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">HTML-Code</div>
-              <textarea id="email-signature-editor" rows="10" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;font-family:monospace;padding:10px;resize:vertical;outline:none" placeholder="&lt;p&gt;Mit freundlichen Grüßen,&lt;br&gt;Max Mustermann&lt;/p&gt;" oninput="updateSigPreview()"></textarea>
+              <textarea id="email-signature-editor" rows="10" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;font-family:monospace;padding:10px;resize:vertical;outline:none" placeholder="&lt;p&gt;Mit freundlichen Grüßen,&lt;br&gt;Max Mustermann&lt;/p&gt;" oninput="updateSigPreviewFromCode()"></textarea>
             </div>
             <div>
-              <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Vorschau</div>
-              <div id="sig-html-preview" style="background:white;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;min-height:220px;overflow:auto"></div>
+              <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Vorschau — hier kannst du auch direkt tippen/formatieren</div>
+              <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px">
+                <button type="button" class="btn btn-ghost btn-sm" style="padding:3px 8px;font-weight:700" onmousedown="event.preventDefault()" onclick="sigExec('bold')">B</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="padding:3px 8px;font-style:italic" onmousedown="event.preventDefault()" onclick="sigExec('italic')">I</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="padding:3px 8px;text-decoration:underline" onmousedown="event.preventDefault()" onclick="sigExec('underline')">U</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="padding:3px 8px" onmousedown="event.preventDefault()" onclick="sigExec('insertUnorderedList')">• Liste</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="padding:3px 8px" onmousedown="event.preventDefault()" onclick="sigExecLink()">🔗 Link</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="padding:3px 8px" onmousedown="event.preventDefault()" onclick="sigExecImage()">🖼 Bild</button>
+                <input type="color" id="sig-color-picker" title="Textfarbe" onmousedown="event.preventDefault()" oninput="sigExec('foreColor', this.value)" style="width:26px;height:26px;padding:0;border:1px solid var(--border);border-radius:4px;background:none;cursor:pointer">
+                <button type="button" class="btn btn-ghost btn-sm" style="padding:3px 8px" onmousedown="event.preventDefault()" onclick="sigExec('removeFormat')">Format entfernen</button>
+              </div>
+              <div id="sig-html-preview" contenteditable="true" style="background:white;color:#1a1a1a;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;min-height:220px;overflow:auto" oninput="updateSigCodeFromPreview()"></div>
             </div>
           </div>
           <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
@@ -4180,11 +4190,41 @@ function closeSignatureEditor() {
   document.getElementById("email-signature-edit-area").style.display = "none";
 }
 
-function updateSigPreview() {
+// Code-Editor -> Vorschau (beim Tippen im HTML-Textfeld)
+function updateSigPreviewFromCode() {
   const editor = document.getElementById("email-signature-editor");
   const preview = document.getElementById("sig-html-preview");
   if(!editor || !preview) return;
   preview.innerHTML = editor.value || "<em style='color:#999'>Kein HTML eingegeben</em>";
+}
+
+// Vorschau -> Code-Editor (beim direkten Tippen/Formatieren in der Vorschau)
+function updateSigCodeFromPreview() {
+  const editor = document.getElementById("email-signature-editor");
+  const preview = document.getElementById("sig-html-preview");
+  if(!editor || !preview) return;
+  editor.value = preview.innerHTML;
+}
+
+// Mini-Toolbar für die WYSIWYG-Bearbeitung direkt in der Vorschau
+function sigExec(cmd, value) {
+  const preview = document.getElementById("sig-html-preview");
+  if(!preview) return;
+  preview.focus();
+  document.execCommand(cmd, false, value || null);
+  updateSigCodeFromPreview();
+}
+
+function sigExecLink() {
+  const url = prompt("Link-URL:", "https://");
+  if(!url) return;
+  sigExec("createLink", url);
+}
+
+function sigExecImage() {
+  const url = prompt("Bild-URL:", "https://");
+  if(!url) return;
+  sigExec("insertImage", url);
 }
 
 async function saveEmailSignature() {

@@ -1887,26 +1887,41 @@ tbody td { font-feature-settings: "zero" 0; }
 
       <!-- Signatur -->
       <div class="card" style="margin-bottom:16px" id="email-signature-card">
-        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
-          <div class="card-title">✍️ Signatur</div>
-          <button class="btn btn-ghost btn-sm" onclick="toggleSignatureEditor()" id="btn-toggle-sig">Bearbeiten</button>
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div class="card-title">✍️ Meine Signaturen</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1)" onclick="editSelectedSignature()" id="btn-edit-sig">Bearbeiten</button>
+            <button class="btn btn-sm" style="background:transparent;color:var(--red);border:1px solid rgba(240,110,110,.25)" onclick="deleteSignatureSelected()" id="btn-delete-sig">× Löschen</button>
+            <button class="btn btn-primary btn-sm" onclick="newEmailSignature()">+ Neue Signatur</button>
+          </div>
         </div>
-        <div id="email-signature-preview-area" style="padding:12px 20px">
-          <div id="email-sig-preview-text" style="font-size:12px;color:var(--text3);font-style:italic">Klicke auf "Bearbeiten" um deine Signatur einzurichten.</div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+          <select id="email-signature-select" class="filter-select" style="width:100%;max-width:100%" onchange="onSignatureSelectChange()">
+            <option value="">— Keine Signatur —</option>
+          </select>
+          <div id="email-signature-active-preview" style="display:none;background:white;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;max-height:220px;overflow:auto"></div>
+          <div id="email-sig-preview-text" style="font-size:12px;color:var(--text3);font-style:italic">Noch keine Signatur angelegt — klicke auf "+ Neue Signatur".</div>
         </div>
+
         <div id="email-signature-edit-area" style="display:none;padding:14px 20px;border-top:1px solid var(--border)">
-          <div style="font-size:12px;color:var(--text3);margin-bottom:8px">HTML-Signatur — wird automatisch an jede E-Mail angehängt.</div>
-          <textarea id="email-signature-editor" rows="8" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;font-family:monospace;padding:10px;resize:vertical;outline:none" placeholder="&lt;p&gt;Mit freundlichen Grüßen,&lt;br&gt;Max Mustermann&lt;/p&gt;" oninput="updateSigPreview()"></textarea>
-          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-            <button class="btn btn-primary btn-sm" onclick="saveEmailSignature()">Signatur speichern</button>
-            <button class="btn btn-ghost btn-sm" onclick="toggleSignatureEditor()">Schließen</button>
-            <div style="flex:1"></div>
-            <div id="sig-preview-toggle" style="font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px">
-              <span>Vorschau:</span>
-              <button class="btn btn-ghost btn-sm" onclick="showSigHtmlPreview()">HTML-Vorschau</button>
+          <div class="field" style="margin-bottom:10px">
+            <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Name der Signatur</label>
+            <input id="email-signature-name" placeholder="z.B. Standard, Kurz, Englisch">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">HTML-Code</div>
+              <textarea id="email-signature-editor" rows="10" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;font-family:monospace;padding:10px;resize:vertical;outline:none" placeholder="&lt;p&gt;Mit freundlichen Grüßen,&lt;br&gt;Max Mustermann&lt;/p&gt;" oninput="updateSigPreview()"></textarea>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Vorschau</div>
+              <div id="sig-html-preview" style="background:white;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;min-height:220px;overflow:auto"></div>
             </div>
           </div>
-          <div id="sig-html-preview" style="display:none;margin-top:12px;background:white;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px"></div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="saveEmailSignature()">Speichern</button>
+            <button class="btn btn-ghost btn-sm" onclick="closeSignatureEditor()">Abbrechen</button>
+          </div>
         </div>
       </div>
 
@@ -2180,7 +2195,7 @@ tbody td { font-feature-settings: "zero" 0; }
         <input id="email-bcc" type="email" placeholder="leer lassen = Kopie geht an dich selbst">
       </div>
     </div>
-    <div style="font-size:11px;color:var(--text3);margin:-8px 0 12px">Jede versendete E-Mail geht zusätzlich als Kopie an diese Adresse — z.B. für ein Team-Postfach. Leer lassen, um die Kopie an deine eigene Absender-Adresse zu bekommen.</div>
+    <div style="font-size:11px;color:var(--text3);margin:6px 0 12px">Jede versendete E-Mail geht zusätzlich als Kopie an diese Adresse — z.B. für ein Team-Postfach. Leer lassen, um die Kopie an deine eigene Absender-Adresse zu bekommen.</div>
     <button type="button" class="profile-save-btn" onclick="saveEmailConfig()">E-Mail Konfiguration speichern</button>
     <div id="email-config-msg" style="font-size:12px;text-align:center;margin-top:8px;display:none"></div>
   </div>
@@ -3607,7 +3622,7 @@ function onLogin(user) {
   loadProfile();
   loadEmailConfig();
   loadCompanyLogo();
-  loadEmailSignature();
+  loadEmailSignatures();
   // Always land on Dashboard after login
   showPage('dashboard', document.querySelector('.nav-item'));
   renderAll();
@@ -4077,67 +4092,156 @@ async function loadCompanyLogo() {
   if(saveBtn) saveBtn.style.display = "none";
 }
 
-// ── SIGNATURE EDITOR UI ───────────────────────────────────────────────────────
-function toggleSignatureEditor() {
-  const editArea    = document.getElementById("email-signature-edit-area");
-  const previewArea = document.getElementById("email-signature-preview-area");
-  const btn         = document.getElementById("btn-toggle-sig");
-  const isOpen      = editArea.style.display !== "none";
-  editArea.style.display    = isOpen ? "none" : "block";
-  previewArea.style.display = isOpen ? "block" : "none";
-  btn.textContent = isOpen ? "Bearbeiten" : "Schließen";
-  if(!isOpen) {
-    // Populate editor with current signature
-    const editor = document.getElementById("email-signature-editor");
-    if(editor) editor.value = window._emailSignature || "";
-    updateSigPreview();
+// ── SIGNATUR-VERWALTUNG (mehrere Signaturen pro User) ─────────────────────────
+let emailSignatures = [];      // Liste der Signaturen des eingeloggten Users
+let editingSignatureId = null; // null = neue Signatur wird angelegt
+
+function renderSignatureSelect() {
+  const sel = document.getElementById("email-signature-select");
+  if(!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Keine Signatur —</option>' +
+    emailSignatures.map(s => `<option value="${s.id}">${s.name}</option>`).join("");
+  if(emailSignatures.some(s => s.id === current)) sel.value = current;
+}
+
+function renderActiveSignaturePreview() {
+  const sel = document.getElementById("email-signature-select");
+  const preview = document.getElementById("email-signature-active-preview");
+  const text = document.getElementById("email-sig-preview-text");
+  if(!sel || !preview || !text) return;
+  const sig = emailSignatures.find(s => s.id === sel.value);
+  if(sig) {
+    preview.innerHTML = sig.html || "<em style='color:#999'>Leere Signatur</em>";
+    preview.style.display = "block";
+    text.style.display = "none";
+  } else {
+    preview.style.display = "none";
+    text.style.display = "block";
+    text.textContent = emailSignatures.length
+      ? 'Keine Signatur ausgewählt — es wird ohne Signatur versendet.'
+      : 'Noch keine Signatur angelegt — klicke auf "+ Neue Signatur".';
   }
+}
+
+async function loadEmailSignatures() {
+  if(isDemoMode) { window._emailSignature = DEMO_SIGNATURE; return; }
+  const userId = await getCurrentUserId();
+  if(!userId) return;
+  const { data } = await sb.from("email_signatures").select("*").eq("user_id", userId).order("created_at");
+  emailSignatures = data || [];
+  renderSignatureSelect();
+
+  const sel = document.getElementById("email-signature-select");
+  const defaultId = profileData?.default_signature_id;
+  if(sel) {
+    if(defaultId && emailSignatures.some(s => s.id === defaultId)) sel.value = defaultId;
+    else if(!sel.value && emailSignatures.length === 1) sel.value = emailSignatures[0].id;
+  }
+  const active = emailSignatures.find(s => s.id === sel?.value);
+  window._emailSignature = active?.html || "";
+  renderActiveSignaturePreview();
+}
+
+async function onSignatureSelectChange() {
+  const sel = document.getElementById("email-signature-select");
+  const active = emailSignatures.find(s => s.id === sel.value);
+  window._emailSignature = active?.html || "";
+  renderActiveSignaturePreview();
+  if(isDemoMode) return;
+  // Auswahl als neuen Standard merken (leise im Hintergrund)
+  const userId = await getCurrentUserId();
+  if(userId) {
+    await sb.from("profiles").update({ default_signature_id: sel.value || null }).eq("id", userId);
+    profileData.default_signature_id = sel.value || null;
+  }
+}
+
+function newEmailSignature() {
+  editingSignatureId = null;
+  document.getElementById("email-signature-name").value = "";
+  document.getElementById("email-signature-editor").value = "";
+  document.getElementById("sig-html-preview").innerHTML = "";
+  document.getElementById("email-signature-edit-area").style.display = "block";
+}
+
+function editSelectedSignature() {
+  const sel = document.getElementById("email-signature-select");
+  const sig = emailSignatures.find(s => s.id === sel.value);
+  if(!sig) { showToast("⚠ Bitte zuerst eine Signatur auswählen"); return; }
+  editingSignatureId = sig.id;
+  document.getElementById("email-signature-name").value = sig.name;
+  document.getElementById("email-signature-editor").value = sig.html;
+  document.getElementById("sig-html-preview").innerHTML = sig.html;
+  document.getElementById("email-signature-edit-area").style.display = "block";
+}
+
+function closeSignatureEditor() {
+  document.getElementById("email-signature-edit-area").style.display = "none";
 }
 
 function updateSigPreview() {
   const editor = document.getElementById("email-signature-editor");
-  const preview = document.getElementById("email-sig-preview-text");
-  if(!editor || !preview) return;
-  const val = editor.value.trim();
-  preview.innerHTML = val
-    ? '<span style="font-size:12px;color:var(--green)">✓ Signatur hinterlegt (' + val.length + ' Zeichen)</span>'
-    : '<span style="font-size:12px;color:var(--text3);font-style:italic">Keine Signatur hinterlegt</span>';
-}
-
-function showSigHtmlPreview() {
-  const editor  = document.getElementById("email-signature-editor");
   const preview = document.getElementById("sig-html-preview");
   if(!editor || !preview) return;
-  if(preview.style.display === "none") {
-    preview.innerHTML = editor.value || "<em style='color:#999'>Kein HTML eingegeben</em>";
-    preview.style.display = "block";
+  preview.innerHTML = editor.value || "<em style='color:#999'>Kein HTML eingegeben</em>";
+}
+
+async function saveEmailSignature() {
+  if(isDemoMode) { showToast("Demo-Modus — wird nicht gespeichert"); return; }
+  const name = document.getElementById("email-signature-name").value.trim() || "Signatur";
+  const html = document.getElementById("email-signature-editor").value;
+  const userId = await getCurrentUserId();
+  if(!userId) { showToast("⚠ Nicht angemeldet", true); return; }
+
+  let savedId = editingSignatureId;
+  if(editingSignatureId) {
+    const { error } = await sb.from("email_signatures")
+      .update({ name, html, updated_at: new Date().toISOString() })
+      .eq("id", editingSignatureId);
+    if(error) { showToast("Fehler: " + error.message, true); return; }
   } else {
-    preview.style.display = "none";
+    const { data, error } = await sb.from("email_signatures")
+      .insert({ user_id: userId, name, html })
+      .select().single();
+    if(error) { showToast("Fehler: " + error.message, true); return; }
+    savedId = data.id;
   }
+
+  await loadEmailSignatures();
+  const sel = document.getElementById("email-signature-select");
+  if(sel) { sel.value = savedId; await onSignatureSelectChange(); }
+  closeSignatureEditor();
+  showToast("✓ Signatur gespeichert");
+}
+
+async function deleteSignatureSelected() {
+  const sel = document.getElementById("email-signature-select");
+  const sig = emailSignatures.find(s => s.id === sel.value);
+  if(!sig) { showToast("⚠ Bitte zuerst eine Signatur auswählen"); return; }
+  if(!confirm(`Signatur "${sig.name}" wirklich löschen?`)) return;
+  const { error } = await sb.from("email_signatures").delete().eq("id", sig.id);
+  if(error) { showToast("Fehler: " + error.message, true); return; }
+  if(profileData?.default_signature_id === sig.id) {
+    const userId = await getCurrentUserId();
+    if(userId) await sb.from("profiles").update({ default_signature_id: null }).eq("id", userId);
+    profileData.default_signature_id = null;
+  }
+  await loadEmailSignatures();
+  showToast("✓ Signatur gelöscht");
 }
 
 async function renderEmail() {
   // load signature into preview on tab open
   await loadEmailVorlagen();
-  await loadEmailSignature();
+  await loadEmailSignatures();
   updateEmailVorlageSelect();
   renderEmailVorlagenList();
-  // update sig preview
-  const preview = document.getElementById("email-sig-preview-text");
   const sigCard = document.getElementById("email-signature-card");
-  const PAIRONLOOP_ID = "00000000-0000-0000-0000-000000000001";
-  const cid = await getCompanyId();
   if(isDemoMode) {
-    if(preview) preview.innerHTML = '<span style="font-size:12px;color:var(--green)">✓ Demo-Signatur aktiv (Alex Demo · Demo GmbH)</span>';
-    if(sigCard) sigCard.style.display = "none";
-  } else if(cid === PAIRONLOOP_ID) {
     if(sigCard) sigCard.style.display = "none";
   } else {
     if(sigCard) sigCard.style.display = "block";
-    const sig = window._emailSignature || "";
-    if(preview) preview.innerHTML = sig
-      ? '<span style="font-size:12px;color:var(--green)">✓ Signatur hinterlegt (' + sig.length + ' Zeichen)</span>'
-      : '<span style="font-size:12px;color:var(--text3);font-style:italic">Noch keine Signatur hinterlegt — klicke auf "Bearbeiten".</span>';
   }
   // Ensure contacts are loaded
   if(!isDemoMode && (!kontakteData || !kontakteData.length)) {
@@ -5680,53 +5784,7 @@ const EMAILJS_SERVICE  = "service_hrlpxqc";
 const EMAILJS_TEMPLATE = "template_eiax419";
 const EMAILJS_PUBLIC   = "IF5buA7n2MWaXOlh5";
 
-// ── EMAIL SIGNATURE ──────────────────────────────────────────────────────────
-// Default signature for PairOnLoop (company_id 00000000-0000-0000-0000-000000000001)
-const PAIRONLOOP_SIGNATURE = `<br><br>
-<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;max-width:500px;">
-  <tbody>
-    <tr>
-      <td style="padding:18px 0 16px 0;border-top:1px solid #cccccc;">
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:4px;width:100%">
-          <tbody>
-            <tr>
-              <td style="vertical-align:middle">
-                <div style="font-size:17px;font-weight:bold;color:#1a1a1a">Elena &amp; Max</div>
-                <div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#999999;margin-top:4px">Content Creator</div>
-              </td>
-              <td style="text-align:right;vertical-align:middle;padding-left:20px">
-                <img src="https://paironloop.com/wp-content/uploads/2026/05/cropped-infinity-500-x-500-px.webp" alt="Pair On Loop" width="120" style="display:block;border:0px">
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div style="border-top:1px solid #eeeeee;margin:4px 0 6px 0"><br></div>
-        <table cellpadding="0" cellspacing="0" border="0">
-          <tbody>
-            <tr><td style="padding:0 0 2px 0;font-size:11px;font-family:Arial,sans-serif;color:#1a1a1a">+49 176 17755780</td></tr>
-            <tr><td style="padding:0 0 2px 0"><a href="mailto:info@paironloop.com" style="font-size:11px;font-family:Arial,sans-serif;color:#c0392b;text-decoration:none">info@paironloop.com</a></td></tr>
-            <tr><td style="padding:0 0 10px 0"><a href="https://www.paironloop.com" style="font-size:11px;font-family:Arial,sans-serif;color:#1a1a1a;text-decoration:none">www.paironloop.com</a></td></tr>
-          </tbody>
-        </table>
-        <table cellpadding="0" cellspacing="0" border="0">
-          <tbody>
-            <tr>
-              <td><a href="https://www.instagram.com/paironloop" style="font-size:11px;font-family:Arial,sans-serif;color:#555555;text-decoration:none">Instagram</a></td>
-              <td style="padding:0 8px;color:#cccccc;font-size:11px">|</td>
-              <td><a href="https://www.tiktok.com/@paironloop" style="font-size:11px;font-family:Arial,sans-serif;color:#555555;text-decoration:none">TikTok</a></td>
-              <td style="padding:0 8px;color:#cccccc;font-size:11px">|</td>
-              <td><a href="https://www.youtube.com/@paironloop" style="font-size:11px;font-family:Arial,sans-serif;color:#555555;text-decoration:none">YouTube</a></td>
-              <td style="padding:0 8px;color:#cccccc;font-size:11px">|</td>
-              <td><a href="https://wa.me/4917617755780" style="font-size:11px;font-family:Arial,sans-serif;color:#555555;text-decoration:none">WhatsApp</a></td>
-            </tr>
-          </tbody>
-        </table>
-      </td>
-    </tr>
-  </tbody>
-</table>`;
-
-// Company signature — loaded from Supabase on login
+// ── EMAIL SIGNATURE (Demo-Fallback) ────────────────────────────────────────────
 window._emailSignature = null;
 
 const DEMO_SIGNATURE = `<br><br>
@@ -5747,42 +5805,8 @@ const DEMO_SIGNATURE = `<br><br>
 
 function getEmailSignature() {
   if(isDemoMode) return DEMO_SIGNATURE;
-  // PairOnLoop company gets the hardcoded signature
-  const PAIRONLOOP_COMPANY_ID = "00000000-0000-0000-0000-000000000001";
-  if(window._companyId === PAIRONLOOP_COMPANY_ID) return PAIRONLOOP_SIGNATURE;
-  // Other companies: use their custom signature or nothing
+  // Individuelle, vom User in "Meine Signaturen" ausgewählte Signatur
   return window._emailSignature || "";
-}
-
-async function loadEmailSignature() {
-  if(isDemoMode) return;
-  const cid = await getCompanyId();
-  if(!cid) return;
-  const PAIRONLOOP_COMPANY_ID = "00000000-0000-0000-0000-000000000001";
-  if(cid === PAIRONLOOP_COMPANY_ID) {
-    window._emailSignature = PAIRONLOOP_SIGNATURE;
-  } else {
-    const { data } = await sb.from("companies").select("email_signature").eq("id", cid).single();
-    window._emailSignature = data?.email_signature || "";
-  }
-  // Populate signature editor if open
-  const el = document.getElementById("email-signature-editor");
-  if(el) el.value = window._emailSignature || "";
-}
-
-async function saveEmailSignature() {
-  if(isDemoMode) { showToast("Demo-Modus — wird nicht gespeichert"); return; }
-  const cid = await getCompanyId();
-  if(!cid) { showToast("⚠ Keine Company gefunden", true); return; }
-  const PAIRONLOOP_COMPANY_ID = "00000000-0000-0000-0000-000000000001";
-  if(cid === PAIRONLOOP_COMPANY_ID) {
-    showToast("ℹ PairOnLoop-Signatur ist fest hinterlegt"); return;
-  }
-  const sig = document.getElementById("email-signature-editor")?.value || "";
-  const { error } = await sb.from("companies").update({ email_signature: sig }).eq("id", cid);
-  if(error) { showToast("Fehler: " + error.message, true); return; }
-  window._emailSignature = sig;
-  showToast("✓ Signatur gespeichert");
 }
 
 // E-Mail init after DOM ready

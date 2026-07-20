@@ -1957,12 +1957,9 @@ tbody td { font-feature-settings: "zero" 0; }
 
       <!-- Kontakte auswählen -->
       <div class="card">
-        <div class="card-header" style="display:flex;flex-direction:column;align-items:stretch;gap:10px">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap">
+        <div class="card-header" style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px">
             <div class="card-title" style="flex:0 0 auto;white-space:nowrap">Empfänger</div>
-            <input id="email-empfaenger-suche" type="text" class="filter-select" style="flex:0 1 140px;min-width:70px" placeholder="Empfänger suchen…" oninput="filterEmailKontakte()">
-          </div>
-          <div style="display:flex;gap:5px;align-items:center;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px">
+            <input id="email-empfaenger-suche" type="text" class="filter-select" style="flex:0 0 110px;min-width:110px" placeholder="Empfänger suchen…" oninput="filterEmailKontakte()">
             <select id="email-branche-filter" class="filter-select" style="flex:0 0 auto;max-width:108px;padding:7px 8px" onchange="filterEmailKontakte()">
               <option value="">Alle Branchen</option>
               <option>Hospitality</option><option>Restaurant</option><option>Weingut</option>
@@ -1996,7 +1993,6 @@ tbody td { font-feature-settings: "zero" 0; }
             </div>
             <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1);flex:0 0 auto;white-space:nowrap;padding:7px 10px" onclick="emailSelectAll()">Alle</button>
             <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1);flex:0 0 auto;white-space:nowrap;padding:7px 10px" onclick="emailDeselectAll()">Leeren</button>
-          </div>
         </div>
         <div class="card-body" style="padding:8px 0">
           <div id="email-kontakte-list" style="max-height:260px;overflow-y:auto"></div>

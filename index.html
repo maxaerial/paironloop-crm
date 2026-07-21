@@ -2268,8 +2268,12 @@ tbody td { font-feature-settings: "zero" 0; }
         <input id="new-team-email" type="email" placeholder="max@paironloop.com" onkeydown="if(event.key==='Enter')addTeamMember()">
       </div>
     </div>
+    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);margin:2px 0 12px">
+      <input id="new-team-invite-access" type="checkbox">
+      Auch Zugriff auf unsere Daten geben (verschickt Einladungs-E-Mail zum Login)
+    </label>
     <button type="button" class="profile-save-btn" onclick="addTeamMember()">+ Teammitglied hinzufügen</button>
-    <div style="font-size:11px;color:var(--text3);margin-top:8px">Diese Namen erscheinen im Dropdown „Verantwortlich" bei Aktivitäten.</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px">Ohne Häkchen erscheint der Name nur im Dropdown „Verantwortlich" bei Aktivitäten, ohne Login-Zugriff. Mit Häkchen bekommt die Person eine Einladungs-Mail und sieht danach dieselben Kontakte, Deals, Journeys und Aktivitäten wie du.</div>
   </div>
 
   <div class="settings-section">
@@ -3702,22 +3706,58 @@ function addTeamMember() {
   try {
     const inp = document.getElementById("new-team-member");
     const emailInp = document.getElementById("new-team-email");
+    const inviteInp = document.getElementById("new-team-invite-access");
     const name = inp?.value.trim();
     const email = emailInp?.value.trim() || "";
+    const wantsInvite = !!inviteInp?.checked;
     if(!name) { showToast("⚠ Name eingeben"); return; }
+    if(wantsInvite && !email) { showToast("⚠ Für Datenbankzugriff eine E-Mail-Adresse angeben"); return; }
     const names = teamMembers.map(m => typeof m === "string" ? m : m.name);
     if(names.includes(name)) { showToast("⚠ Name bereits vorhanden"); return; }
     teamMembers.push({name, email});
     saveTeamMembers();
     if(inp) inp.value = "";
     if(emailInp) emailInp.value = "";
+    if(inviteInp) inviteInp.checked = false;
     renderTeamMembersList();
     fillVerantwortlichDropdowns();
     showToast("✓ " + name + " hinzugefügt");
+
+    if(wantsInvite) {
+      if(isDemoMode) { showToast("⚠ Einladungen sind im Demo-Modus deaktiviert"); return; }
+      showToast(`⏳ Einladung an ${email} wird gesendet…`);
+      sendTeamInvite(email, name).then(() => {
+        showToast(`✓ Einladung an ${email} verschickt`);
+      }).catch(err => {
+        showToast(`⚠ Einladung fehlgeschlagen: ${err.message}`, true);
+      });
+    }
   } catch(err) {
     showToast("Fehler: " + err.message);
     console.error("addTeamMember error:", err);
   }
+}
+
+async function sendTeamInvite(email, name) {
+  const { data: { session } } = await sb.auth.getSession();
+  if(!session) throw new Error("Nicht angemeldet");
+  const [vorname, ...rest] = name.split(" ");
+  const res = await fetch("https://ftkriccztlcwccgetdqt.supabase.co/functions/v1/invite-team-member", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({
+      email,
+      vorname: vorname || "",
+      nachname: rest.join(" "),
+      redirectTo: window.location.origin + window.location.pathname,
+    }),
+  });
+  const result = await res.json();
+  if(!res.ok || result.error) throw new Error(result.error || "Einladung fehlgeschlagen");
+  return result;
 }
 
 function removeTeamMember(name) {
@@ -4512,15 +4552,29 @@ async function doLogout() {
   closeSettings();
 }
 
-sb.auth.getSession().then(({data:{session}}) => { if(session) onLogin(session.user); });
+function isInviteOrRecoveryRedirect() {
+  const hash = window.location.hash || "";
+  return hash.includes("type=invite") || hash.includes("type=recovery");
+}
 
-// Handle password recovery redirect
+function showPasswordSetupUI() {
+  document.getElementById("login-screen").style.display = "flex";
+  document.getElementById("app").style.display = "none";
+  showPasswordResetForm();
+}
+
+sb.auth.getSession().then(({data:{session}}) => {
+  if(!session) return;
+  // Eingeladene/zurückgesetzte User zuerst ein Passwort setzen lassen,
+  // statt sie direkt ohne gesetztes Passwort einzuloggen.
+  if(isInviteOrRecoveryRedirect()) { showPasswordSetupUI(); return; }
+  onLogin(session.user);
+});
+
+// Handle password recovery / invite acceptance redirect
 sb.auth.onAuthStateChange((event, session) => {
-  if (event === "PASSWORD_RECOVERY") {
-    // Show password reset UI
-    document.getElementById("login-screen").style.display = "flex";
-    document.getElementById("app").style.display = "none";
-    showPasswordResetForm();
+  if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && isInviteOrRecoveryRedirect())) {
+    showPasswordSetupUI();
   }
 });
 
@@ -4547,7 +4601,9 @@ async function doSetNewPassword() {
   if (error) { msg.textContent = error.message; msg.style.display="block"; msg.style.color="var(--red)"; return; }
   msg.textContent = "✓ Passwort gespeichert! Du wirst eingeloggt…";
   msg.style.display="block"; msg.style.color="var(--green)";
-  setTimeout(() => { const {data:{session}} = sb.auth.getSession(); window.location.reload(); }, 1500);
+  // Hash (type=invite/recovery) entfernen, sonst zeigt der Reload wieder das Passwort-Formular
+  history.replaceState(null, "", window.location.pathname + window.location.search);
+  setTimeout(() => { window.location.reload(); }, 1500);
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────

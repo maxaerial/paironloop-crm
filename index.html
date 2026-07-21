@@ -1986,14 +1986,14 @@ tbody td { font-feature-settings: "zero" 0; }
               <option value="faellig">Fällige Aktivitäten</option>
               <option>Angebot</option><option>Meeting</option><option>Anruf</option><option>E-Mail</option><option>Nachfassen</option>
             </select>
-            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1);flex:0 0 auto;white-space:nowrap;padding:7px 10px" onclick="emailSelectAll()">Alle</button>
-            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1);flex:0 0 auto;white-space:nowrap;padding:7px 10px" onclick="emailDeselectAll()">Leeren</button>
             <div style="position:relative;flex:0 0 210px">
               <select id="email-search-kontakte" class="filter-select" style="width:100%;min-width:210px;padding:7px 8px" onchange="addEmailEmpfaenger(this.value);this.value=''">
                 <option value="">+ Kontakt hinzufügen…</option>
               </select>
             </div>
             <input id="email-empfaenger-suche" type="text" class="filter-select" style="flex:1 1 auto;min-width:80px" placeholder="suchen" oninput="filterEmailKontakte()">
+            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1);flex:0 0 auto;white-space:nowrap;padding:7px 10px" onclick="emailSelectAll()">Alle</button>
+            <button class="btn btn-sm" style="background:var(--bg3);color:var(--text1);flex:0 0 auto;white-space:nowrap;padding:7px 10px" onclick="emailDeselectAll()">Leeren</button>
           </div>
         </div>
         <div class="card-body" style="padding:8px 0">

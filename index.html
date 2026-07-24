@@ -8327,12 +8327,15 @@ function updateEmailVorlagePreview() {
 
   const absName  = ((profileData?.vorname||"") + " " + (profileData?.nachname||"")).trim() || "Dein Name";
   const absFirma = profileData?.firma || "Dein Unternehmen";
+  const previewAnrede = v.sprache === "it" ? "Gentile team di Beispiel GmbH"
+    : v.sprache === "en" ? "Dear Beispiel GmbH Team"
+    : "Sehr geehrte Damen und Herren";
   const sub = s => s
     .replace(/{{absender_name}}/g, absName)
     .replace(/{{absender_firma}}/g, absFirma)
     .replace(/{{vorname}}/g, "Max").replace(/{{nachname}}/g, "Mustermann")
     .replace(/{{unternehmen}}/g, "Beispiel GmbH")
-    .replace(/{{anrede}}/g, "Sehr geehrte Damen und Herren")
+    .replace(/{{anrede}}/g, previewAnrede)
     .replace(/{{individueller_satz}}/g, "[individueller Satz]")
     .replace(/{{unternehmen_url}}/g, "Beispiel%20GmbH");
 

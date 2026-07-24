@@ -6606,6 +6606,7 @@ const HILFE_CONTENT = {
     <li><code>{{anrede}}</code> — automatische Anrede je nach Geschlecht & Sprache</li>
     <li><code>{{unternehmen}}</code> — Unternehmensname</li>
     <li><code>{{individueller_satz}}</code> — individueller Satz aus dem Kontaktstamm</li>
+    <li><code>{{unternehmen_url}}</code> — URL-codierter Unternehmensname, z.B. für personalisierte Kooperations-Links</li>
   </ul>
 </div>
 
@@ -6696,6 +6697,7 @@ const HILFE_CONTENT = {
     <li><code>{{anrede}}</code> — automatic salutation based on gender & language</li>
     <li><code>{{unternehmen}}</code> — company name</li>
     <li><code>{{individueller_satz}}</code> — individual sentence from the contact record</li>
+    <li><code>{{unternehmen_url}}</code> — URL-encoded company name, e.g. for personalized cooperation links</li>
   </ul>
   <p>After sending via Titan, a journey touchpoint is created automatically. A BCC copy goes to info@paironloop.com.</p>
 </div>
@@ -8058,8 +8060,13 @@ async function sendEmailBulkDirect() {
     // Gender-aware salutation
     const hasName = k.vorname && k.vorname !== "–" && k.nachname && k.nachname !== "–";
     const isEn = k.sprache === "en";
+    const isIt = k.sprache === "it";
     const anrede = isEn
       ? (hasName ? `Dear ${k.vorname}` : `Dear ${k.unternehmen||"Team"} Team`)
+      : isIt
+      ? (k.geschlecht === "m" && hasName ? `Caro ${k.vorname}` :
+         k.geschlecht === "f" && hasName ? `Cara ${k.vorname}` :
+         `Gentile team di ${k.unternehmen||"Hotel"}`)
       : (k.geschlecht === "m" && hasName ? `Lieber ${k.vorname}` :
          k.geschlecht === "f" && hasName ? `Liebe ${k.vorname}` :
          `Liebes ${k.unternehmen||"Team"}-Team`);
@@ -8067,6 +8074,7 @@ async function sendEmailBulkDirect() {
     // Sender info from profile
     const _absName  = ((profileData?.vorname||"") + " " + (profileData?.nachname||"")).trim() || getEmailConfig().fromName || "";
     const _absFirma = profileData?.firma || getEmailConfig().fromName || "";
+    const _unternehmenUrl = k.unternehmen_url || encodeURIComponent(k.unternehmen||"");
 
     const betreff = vorlage.betreff
       .replace(/{{vorname}}/g, k.vorname||"")
@@ -8074,7 +8082,8 @@ async function sendEmailBulkDirect() {
       .replace(/{{unternehmen}}/g, k.unternehmen||"")
       .replace(/{{anrede}}/g, anrede)
       .replace(/{{absender_name}}/g, _absName)
-      .replace(/{{absender_firma}}/g, _absFirma);
+      .replace(/{{absender_firma}}/g, _absFirma)
+      .replace(/{{unternehmen_url}}/g, _unternehmenUrl);
     const text = vorlage.text
       .replace(/{{vorname}}/g, k.vorname||"")
       .replace(/{{nachname}}/g, k.nachname||"")
@@ -8083,6 +8092,7 @@ async function sendEmailBulkDirect() {
       .replace(/{{individueller_satz}}/g, k.individueller_satz||"[bitte individuellen Satz eintragen]")
       .replace(/{{absender_name}}/g, _absName)
       .replace(/{{absender_firma}}/g, _absFirma)
+      .replace(/{{unternehmen_url}}/g, _unternehmenUrl)
       .replace(/^Hallo {{vorname}},/m, anrede + ",")
       .replace(/^Hallo {{vorname}}/m, anrede);
 
@@ -8323,7 +8333,8 @@ function updateEmailVorlagePreview() {
     .replace(/{{vorname}}/g, "Max").replace(/{{nachname}}/g, "Mustermann")
     .replace(/{{unternehmen}}/g, "Beispiel GmbH")
     .replace(/{{anrede}}/g, "Sehr geehrte Damen und Herren")
-    .replace(/{{individueller_satz}}/g, "[individueller Satz]");
+    .replace(/{{individueller_satz}}/g, "[individueller Satz]")
+    .replace(/{{unternehmen_url}}/g, "Beispiel%20GmbH");
 
   preview.style.display = "block";
   preview.innerHTML = `<div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:600">Betreff</div>
